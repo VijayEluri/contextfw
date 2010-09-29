@@ -1,0 +1,60 @@
+div.cbutton-enabled, div.cbutton-disabled, div.cbutton-active {
+	float: left;
+	height: 24px;
+	line-height: 24px;
+	max-width: 250px;
+	background: url('/hierarchy-web-static/gfx/cbutton.png');
+	cursor: pointer;
+	font-size: 9pt;
+	padding: 0 0 0 4px;
+}
+
+div.cbutton-enabled{
+	background-position: top left;
+	background-repeat:no-repeat;
+}
+
+div.cbutton-active {
+	background-position: center left;
+	background-repeat:no-repeat;
+}
+
+div.cbutton-disabled {
+	background-position: bottom left;
+	background-repeat:no-repeat;
+	cursor: default;
+}
+
+div.cbutton {
+	margin: 4px 6px 4px 0;
+}
+
+div.cbutton-enabled div, div.cbutton-disabled div, div.cbutton-active div {
+	background: url('/hierarchy-web-static/gfx/cbutton.png');
+	padding: 2px 4px 2px 0;
+	margin: 0 -4px 0 0;
+	height: 20px;
+	line-height: 20px;
+	-moz-user-select: none;//mozilla browsers
+    -khtml-user-select: none;//webkit browsers
+}
+
+div.cbutton-enabled div {
+	background-position: top right;
+	background-repeat:no-repeat;
+}
+
+div.cbutton-disabled div {
+	background-position: bottom right;
+	background-repeat:no-repeat;
+	color: #999999;
+}
+
+div.cbutton-active div {
+	background-position: center right;
+	background-repeat:no-repeat;
+}
+
+div.cbutton-i img {
+	vertical-align: text-bottom;
+}

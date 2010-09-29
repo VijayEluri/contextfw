@@ -1,0 +1,45 @@
+div.Pane {
+	border: 1px solid #8CACBB;
+	margin-top: 2px;
+	clear: both;
+}
+
+div.Pane div.title {
+	height: 21px;
+	line-height: 21px;
+	margin: 0px;
+	padding: 0px 4px 0 4px;
+	background: #DEE7EC;
+	vertical-align: middle;
+	cursor: move;
+}
+
+div.Pane div.title img {
+	vertical-align: middle;
+	margin: -1px 0px 0 0;
+}
+
+div.Pane div.pane-content {
+	border-top: 1px solid #8CACBB;
+	background: #FFFFFF;
+	padding: 10px;
+}
+
+div.long_text div.content {
+	height: 100px !important;
+	overflow: auto;
+}
+
+img.pane-open {
+}
+
+div.Pane div.title-text {
+	float: left;
+}
+
+div.Pane div.title-buttons {
+	width: 40px;
+	float: right;
+	text-align: right;
+	display:inline;
+}

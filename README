@@ -1,0 +1,56 @@
+CONTEXT FRAMEWORK
+
+This is a project containing experimental web application framework based on XML and XSL.
+
+ACTIVE MODULES
+
+Context :: Web
+
+  Parent module to provide implentation for Context Web Application Framework
+
+Context :: Web :: Service
+
+  Module containing service layer for the framework. Used as backend/low level support
+
+Context :: Web :: Application
+ 
+  Module containing direct functionality to create web applications
+
+Context :: Remoting
+
+  Parent module for remote interfaces
+
+Context :: Remoting :: Fluent
+
+  Provides implementation of fluent remoting interface based on Hessian
+
+Context :: Demo
+
+  Provides playground to experiment different ways to use web application framework.
+
+  Demo is divided to two services which are connected to each other by Fluent Remoting interface.
+
+Context :: Demo :: Persistence
+
+  Provides persistence service for web applications.
+
+Context :: Demo :: Web
+
+  Provides frontend service for web applications
+
+
+
+INACTIVE MODULES (Not in development)
+
+Context :: Transaction
+
+  - A super module of simple implementation to provide transactional support in OSGI environment.
+
+Context :: Transaction :: Common
+
+   - Common parts for transactional suppport in OSGI environment
+
+Context :: Transaction :: Hibernate
+
+   - Hibernate specific extension for transactional suppport in OSGI environment
+

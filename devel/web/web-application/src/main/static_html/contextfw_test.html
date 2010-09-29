@@ -1,0 +1,43 @@
+<html>
+<head>
+    <title>Test</title>
+    <script type="text/javascript" src="scripts/jquery.js"></script>
+    <script type="text/javascript" src="scripts/contextfw.js"></script>
+    <script type="text/javascript" src="scripts/sarissa.js"></script>
+    <script type="text/javascript" src="scripts/sarissa_ieemu_xpath.js"></script>
+    <script type="text/javascript" src="scripts/json.js"></script>
+<script type="text/javascript">
+$(document).ready(function() {
+//	HierarchyWeb.initPage("kkk");
+});
+
+function test(text, tester) {
+	document.write("<p>");
+	if (tester()) {
+		document.write(text + ': <span style="color: green">Passed</span>');
+	}
+	else {
+		document.write(text + ': <span style="color: red">Failed</span>');
+	}
+	document.write("</p>");
+}
+
+</script>
+</head>
+<body>
+<h1>Tests</h1>
+<script type="text/javascript">
+
+test("Test existence", function() {
+	return contextfw != null;
+});
+
+test("Test init", function() {
+	contextfw.init("some_handle");
+	return contextfw.handle == "some_handle";
+});
+
+contextfw.setTimeout();
+</script>
+</body>
+</html>
