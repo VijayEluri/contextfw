@@ -32,6 +32,7 @@ limitations under the License.
 
   <modules>
     <module>web-application</module>
+    <module>web-quickstart</module>
   </modules>
 
   <dependencies>
