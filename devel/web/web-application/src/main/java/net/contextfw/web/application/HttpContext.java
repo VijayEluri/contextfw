@@ -1,4 +1,4 @@
-package net.contextfw.web.service.application;
+package net.contextfw.web.application;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;

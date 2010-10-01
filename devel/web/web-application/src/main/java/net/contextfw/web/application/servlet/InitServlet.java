@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.contextfw.web.service.application.InitHandler;
+import net.contextfw.web.application.internal.service.InitHandler;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;

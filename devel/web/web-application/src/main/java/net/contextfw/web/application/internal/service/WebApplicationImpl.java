@@ -1,11 +1,14 @@
-package net.contextfw.web.service.application;
+package net.contextfw.web.application.internal.service;
 
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import net.contextfw.web.application.HttpContext;
 import net.contextfw.web.application.ModuleConfiguration;
+import net.contextfw.web.application.WebApplicationException;
+import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.annotations.WebApplicationScoped;
 import net.contextfw.web.application.dom.AttributeHandler;
 import net.contextfw.web.application.dom.DOMBuilder;

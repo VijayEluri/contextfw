@@ -10,7 +10,7 @@ import java.util.List;
 
 import javax.servlet.ServletException;
 
-import net.contextfw.web.service.application.WebApplicationException;
+import net.contextfw.web.application.WebApplicationException;
 
 public abstract class JarResourceServlet extends ResourceServlet {
 

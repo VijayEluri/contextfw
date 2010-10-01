@@ -1,7 +1,7 @@
 package net.contextfw.web.application.internal.providers;
 
+import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.internal.scope.WebApplicationScopedBeans;
-import net.contextfw.web.service.application.WebApplicationHandle;
 
 import com.google.inject.Key;
 import com.google.inject.Provider;

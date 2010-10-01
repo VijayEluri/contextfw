@@ -9,7 +9,6 @@ import net.contextfw.web.application.servlet.CSSServlet;
 import net.contextfw.web.application.servlet.InitServlet;
 import net.contextfw.web.application.servlet.ScriptServlet;
 import net.contextfw.web.application.servlet.UpdateServlet;
-import net.contextfw.web.service.application.WebApplicationException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

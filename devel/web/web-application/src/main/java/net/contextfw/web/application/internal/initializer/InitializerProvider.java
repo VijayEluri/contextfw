@@ -11,11 +11,11 @@ import java.util.regex.PatternSyntaxException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.WebApplicationServletModule;
 import net.contextfw.web.application.annotations.WebApplicationScoped;
 import net.contextfw.web.application.elements.CElement;
 import net.contextfw.web.application.initializer.Initializer;
-import net.contextfw.web.service.application.WebApplicationException;
 
 import com.google.inject.Singleton;
 

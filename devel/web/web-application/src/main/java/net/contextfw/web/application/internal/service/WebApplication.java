@@ -1,9 +1,10 @@
-package net.contextfw.web.service.application;
+package net.contextfw.web.application.internal.service;
 
 import java.util.List;
 
 import com.google.inject.ImplementedBy;
 
+import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.elements.CElement;
 
 @ImplementedBy(WebApplicationImpl.class)

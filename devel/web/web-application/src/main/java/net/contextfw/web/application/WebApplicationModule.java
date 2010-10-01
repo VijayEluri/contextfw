@@ -14,9 +14,6 @@ import net.contextfw.web.application.internal.providers.WebApplicationHandleProv
 import net.contextfw.web.application.internal.scope.WebApplicationScope;
 import net.contextfw.web.application.internal.util.PackageUtils;
 import net.contextfw.web.application.request.Request;
-import net.contextfw.web.service.application.HttpContext;
-import net.contextfw.web.service.application.WebApplicationException;
-import net.contextfw.web.service.application.WebApplicationHandle;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.name.Names;

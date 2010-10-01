@@ -1,4 +1,4 @@
-package net.contextfw.web.service.application;
+package net.contextfw.web.application.internal.service;
 
 import java.io.IOException;
 
@@ -11,8 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.contextfw.web.application.ModuleConfiguration;
-import net.contextfw.web.service.WebApplicationContext;
-import net.contextfw.web.service.WebApplicationContextHandler;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;

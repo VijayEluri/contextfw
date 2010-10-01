@@ -3,10 +3,10 @@ package net.contextfw.web.application.elements.enhanced;
 import java.util.HashSet;
 import java.util.Set;
 
+import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.dom.DOMBuilder;
 import net.contextfw.web.application.dom.RemoteCallBuilder;
 import net.contextfw.web.application.elements.CElement;
-import net.contextfw.web.service.application.WebApplicationException;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;

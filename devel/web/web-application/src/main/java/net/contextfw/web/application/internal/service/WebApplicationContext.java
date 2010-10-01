@@ -1,9 +1,8 @@
-package net.contextfw.web.service;
+package net.contextfw.web.application.internal.service;
 
+import net.contextfw.web.application.HttpContext;
+import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.internal.scope.WebApplicationScopedBeans;
-import net.contextfw.web.service.application.HttpContext;
-import net.contextfw.web.service.application.WebApplication;
-import net.contextfw.web.service.application.WebApplicationHandle;
 
 public class WebApplicationContext {
 

@@ -19,9 +19,9 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamSource;
 
 import net.contextfw.web.application.ModuleConfiguration;
+import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.WebApplicationServletModule;
 import net.contextfw.web.application.internal.util.PackageUtils;
-import net.contextfw.web.service.application.WebApplicationException;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;

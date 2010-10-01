@@ -1,4 +1,4 @@
-package net.contextfw.web.service.application;
+package net.contextfw.web.application;
 
 import java.io.Serializable;
 

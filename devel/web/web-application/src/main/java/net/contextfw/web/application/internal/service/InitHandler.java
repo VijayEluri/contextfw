@@ -1,4 +1,4 @@
-package net.contextfw.web.service.application;
+package net.contextfw.web.application.internal.service;
 
 import java.io.IOException;
 import java.util.List;
@@ -11,12 +11,13 @@ import javax.servlet.http.HttpServletResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import net.contextfw.web.application.HttpContext;
+import net.contextfw.web.application.WebApplicationException;
+import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.WebApplicationServletModule;
 import net.contextfw.web.application.elements.CElement;
 import net.contextfw.web.application.internal.initializer.InitializerProvider;
 import net.contextfw.web.application.internal.scope.WebApplicationScopedBeans;
-import net.contextfw.web.service.WebApplicationContext;
-import net.contextfw.web.service.WebApplicationContextHandler;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;

@@ -1,4 +1,4 @@
-package net.contextfw.web.service;
+package net.contextfw.web.application.internal.service;
 
 import java.util.HashMap;
 import java.util.Iterator;
@@ -9,8 +9,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.contextfw.web.application.ModuleConfiguration;
+import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.WebApplicationServletModule;
-import net.contextfw.web.service.application.WebApplicationHandle;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;

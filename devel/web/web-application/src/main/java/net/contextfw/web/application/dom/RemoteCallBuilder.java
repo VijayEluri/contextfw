@@ -1,25 +1,23 @@
 package net.contextfw.web.application.dom;
 
+import org.apache.commons.lang.StringEscapeUtils;
 
 public class RemoteCallBuilder {
 
-    public static void buildCall(DOMBuilder superBuilder, String ns, String id, String method, Object... args) {
-        DOMBuilder scriptBuilder = superBuilder.descend("Script").descend("JavascriptCall");
-        scriptBuilder.attr("ns", ns).attr("id", id).attr("method", method);
+    public static void buildCall(DOMBuilder b, String ns, String id, String method, Object... args) {
+        StringBuilder sb = new StringBuilder(ns + "('"+id+"')."+method+"(");
+        String separator = "";
         if (args != null) {
             for (Object arg : args) {
-                DOMBuilder argBuilder = scriptBuilder.descend("arg");
-                if (arg == null) {
-                    argBuilder.descend("Null");
+                if (Boolean.class.isAssignableFrom(arg.getClass()) || Number.class.isAssignableFrom(arg.getClass())) {
+                    sb.append(separator + StringEscapeUtils.escapeJavaScript(arg.toString()));
+                } else {
+                    sb.append(separator + "'"+StringEscapeUtils.escapeJavaScript(arg.toString())+"'");
                 }
-                else
-                if (Number.class.isAssignableFrom(arg.getClass())) {
-                    argBuilder.descend("Number").text(arg);
-                }
-                else {
-                    argBuilder.descend("String").text(arg);
-                }
+                separator = ",";
             }
         }
+        sb.append(");");
+        b.descend("Script").text(sb);
     }
 }

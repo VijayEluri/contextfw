@@ -5,10 +5,10 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Locale;
 
+import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.elements.CElement;
 import net.contextfw.web.application.initializer.InitializerContext;
 import net.contextfw.web.application.internal.InternalWebApplicationException;
-import net.contextfw.web.service.application.WebApplicationException;
 
 import com.google.inject.Injector;
 
