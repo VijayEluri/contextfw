@@ -6,6 +6,8 @@ import java.util.List;
 import net.contextfw.web.application.annotations.WebApplicationScoped;
 import net.contextfw.web.application.dom.AttributeHandler;
 import net.contextfw.web.application.elements.CElement;
+import net.contextfw.web.application.elements.enhanced.AutoRegisterListener;
+import net.contextfw.web.application.elements.enhanced.EnhancedElement;
 import net.contextfw.web.application.initializer.Initializer;
 import net.contextfw.web.application.internal.initializer.InitializerProvider;
 import net.contextfw.web.application.internal.providers.HttpContextProvider;
@@ -16,11 +18,18 @@ import net.contextfw.web.application.internal.util.PackageUtils;
 import net.contextfw.web.application.request.Request;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.TypeLiteral;
+import com.google.inject.matcher.Matchers;
 import com.google.inject.name.Names;
+import com.google.inject.spi.TypeEncounter;
+import com.google.inject.spi.TypeListener;
 
 public class WebApplicationModule extends AbstractModule {
 
     private final ModuleConfiguration configuration;
+    
+    @SuppressWarnings("rawtypes")
+    private AutoRegisterListener autoRegisterListener = new AutoRegisterListener();
     
     public WebApplicationModule(ModuleConfiguration configuration) {
         this.configuration = configuration;
@@ -40,11 +49,14 @@ public class WebApplicationModule extends AbstractModule {
         bind(AttributeHandler.class).to(configuration.getAttributeHandlerClass());
         bind(InitializerProvider.class).toInstance(configureInitializers());
         bind(ModuleConfiguration.class).toInstance(configuration);
-        
-//        bind(CSSServlet.class).toInstance(new CSSServlet(configuration.isDebugMode(),
-//                configuration.getResourceRootPackages()));
-//        bind(ScriptServlet.class).toInstance(new ScriptServlet(configuration.isDebugMode(),
-//                configuration.getResourceRootPackages()));
+        this.bindListener(Matchers.any(), new TypeListener() {
+            @Override
+            public <I> void hear(TypeLiteral<I> typeLiteral, TypeEncounter<I> typeEncounter) {
+                if (EnhancedElement.class.isAssignableFrom(typeLiteral.getRawType())) {
+                    typeEncounter.register(autoRegisterListener);
+                }
+            }
+        });
     }
     
     @SuppressWarnings("unchecked")

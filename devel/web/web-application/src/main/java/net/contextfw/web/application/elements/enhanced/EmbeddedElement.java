@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
 @Target( { FIELD, METHOD })
 @Retention(RUNTIME)
 public @interface EmbeddedElement {
-    
+    boolean autoRegister() default true;
     String name() default "";
     BuildPhase phase() default BuildPhase.BOTH;
     String[] updateModes() default {};
