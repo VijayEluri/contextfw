@@ -107,8 +107,7 @@ public class WebResponder {
         return _transformer.get();
     }
 
-    public Reader getXSLDocument() {
-
+    protected String getXSLDocumentContent() {
         List<File> resources = new ArrayList<File>();
         try {
             for (String pckg : configuration.getResourceRootPackages()) {
@@ -154,14 +153,14 @@ public class WebResponder {
                 }
             }
             StringWriter content = new StringWriter();
-            OutputFormat format = OutputFormat.createPrettyPrint();
+            OutputFormat format = OutputFormat.createCompactFormat();
             format.setXHTML(true);
             format.setTrimText(false);
             format.setPadText(true);
-            HTMLWriter writer = new HTMLWriter( content, format );
+            format.setNewlines(false);
+            XMLWriter writer = new XMLWriter( content, format );
             writer.write( document );
-            return new StringReader(content.toString());
-            
+            return content.toString();
         } catch (DocumentException e) {
             throw new WebApplicationException(e);
         } catch (UnsupportedEncodingException e) {
@@ -169,6 +168,10 @@ public class WebResponder {
         } catch (IOException e) {
             throw new WebApplicationException(e);
         }
+    }
+    
+    public Reader getXSLDocument() {
+        return new StringReader(getXSLDocumentContent());
     }
     
     public void sendResponse(Document document, HttpServletResponse resp, Mode mode) throws ServletException, IOException {
@@ -212,16 +215,16 @@ public class WebResponder {
             }
             Document rDocument = result.getDocument();
 
-            rDocument.addDocType("html", "-//W3C//DTD XHTML 1.0 Transitional//EN",
-                    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd");
-
-            OutputFormat format = OutputFormat.createPrettyPrint();
+            OutputFormat format = OutputFormat.createCompactFormat();
             format.setXHTML(true);
             format.setTrimText(false);
             format.setPadText(true);
+            format.setNewlines(false);
             format.setExpandEmptyElements(true);
             
             if (mode == Mode.INIT) {
+                rDocument.addDocType("html", "-//W3C//DTD XHTML 1.0 Transitional//EN",
+                    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd");
                 new HTMLWriter(resp.getWriter(), format).write(rDocument);    
             } else {
                 new XMLWriter(resp.getWriter(), format).write(rDocument);
