@@ -13,7 +13,6 @@ import com.google.inject.Injector;
 
 public abstract class EnhancedElement extends CElement {
 
-    private Injector injector;
     private EnhancedElementBuilder builder;
     
     private Set<String> updateModes = new HashSet<String>();
@@ -64,12 +63,6 @@ public abstract class EnhancedElement extends CElement {
         partialUpdates.clear();
     }
 
-    protected <T extends CElement> T createChild(Class<T> clazz) {
-        T child = injector.getInstance(clazz);
-        this.registerChild(child);
-        return child;
-    }
-
     @Override
     public final void build(DOMBuilder superBuilder) {
         try {
@@ -95,16 +88,7 @@ public abstract class EnhancedElement extends CElement {
     public void jsCall(DOMBuilder b, String method, Object... args) {
         jsCall(b, this, method, args);
     }
-    
-    @Inject
-    public void setInjector(Injector injector) {
-        this.injector = injector;
-    }
-
-    protected Injector getInjector() {
-        return injector;
-    }
-    
+   
     @Inject
     public void setBuilder(EnhancedElementBuilder builder) {
         this.builder = builder;

@@ -107,6 +107,8 @@ public class WebApplicationImpl implements WebApplication {
                     rootElement.doCascadedUpdate(d);
                 }
                 
+                rootElement.clearCascadedUpdate();
+                
                 if (configuration.getXmlParamName() == null || httpContext.getRequest().getParameter(configuration.getXmlParamName()) == null) {
                     responder.sendResponse(d.toDocument(), httpContext.getResponse(), mode);
                 } else {

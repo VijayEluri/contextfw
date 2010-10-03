@@ -38,8 +38,7 @@ public abstract class CElement implements CSimpleElement {
                     child.doCascadedUpdate(b);
                 }
             }
-        }
-        else if (refreshMode == RefreshMode.UPDATE) {
+        } else if (refreshMode == RefreshMode.UPDATE) {
             buildUpdate(b);
         }
         clearCascadedUpdate();
@@ -64,9 +63,10 @@ public abstract class CElement implements CSimpleElement {
             children = new HashSet<CElement>();
             waitingToRegister = new HashSet<CElement>();
         }
+
         children.add(el);
         el.parent = this;
-        
+
         if (bubbleRegisterUp(el)) {
             el.registerChildren();
         } else {
@@ -89,7 +89,7 @@ public abstract class CElement implements CSimpleElement {
         } else {
             return false;
         }
-       
+
     }
 
     protected void bubbleUnregisterUp(CElement el) {
@@ -106,16 +106,17 @@ public abstract class CElement implements CSimpleElement {
     }
 
     public void refresh() {
-        refreshMode = RefreshMode.UPDATE;
-        CElement p = parent;
+        if (id != null) {
+            refreshMode = RefreshMode.UPDATE;
+            CElement p = parent;
 
-        while (p != null) {
-            if (p.refreshMode == RefreshMode.NONE) {
-                p.refreshMode = RefreshMode.PASS;
-                p = p.parent;
-            }
-            else {
-                p = null;
+            while (p != null) {
+                if (p.refreshMode == RefreshMode.NONE) {
+                    p.refreshMode = RefreshMode.PASS;
+                    p = p.parent;
+                } else {
+                    p = null;
+                }
             }
         }
     }

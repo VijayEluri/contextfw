@@ -18,12 +18,15 @@ public class ElementRegister {
     }
 
     public void register(CElement element) {
-        element.setId(getNextId());
-        elements.put(element.getId(), element);
+        if (element.getId() == null) {
+            element.setId(getNextId());
+            elements.put(element.getId(), element);
+        }
     }
 
     public void unregister(CElement element) {
         elements.remove(element.getId());
+        element.setId(null);
     }
 
     public CElement findElement(String id) {
