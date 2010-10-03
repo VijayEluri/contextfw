@@ -58,7 +58,7 @@ public abstract class CElement implements CSimpleElement {
 
     public abstract void buildUpdate(DOMBuilder b);
 
-    public void registerChild(CElement el) {
+    public <T extends CElement> T registerChild(T el) {
         if (children == null) {
             children = new HashSet<CElement>();
             waitingToRegister = new HashSet<CElement>();
@@ -72,6 +72,7 @@ public abstract class CElement implements CSimpleElement {
         } else {
             waitingToRegister.add(el);
         }
+        return el;
     }
 
     private void registerChildren() {

@@ -1,14 +1,12 @@
 package net.contextfw.web.application.internal.initializer;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Locale;
 
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.elements.CElement;
 import net.contextfw.web.application.initializer.InitializerContext;
-import net.contextfw.web.application.internal.InternalWebApplicationException;
+import net.contextfw.web.application.initializer.InitializerElement;
 
 import com.google.inject.Injector;
 
@@ -50,27 +48,9 @@ public class InitializerContextImpl implements InitializerContext {
 
         CElement child = injector.getInstance(cl);
         
-        Method initializerMethod = null;
-        
-        try {
-            initializerMethod = cl.getMethod("initialize", InitializerContext.class);
-        } catch (SecurityException e) {
-            throw new WebApplicationException(e);
-        } catch (NoSuchMethodException e) {
-            // Ignored
-        }
-        
-        if (initializerMethod != null) {
+        if (InitializerElement.class.isAssignableFrom(cl)) {
             currentIndex++;
-            try {
-                initializerMethod.invoke(child, this);
-            } catch (IllegalArgumentException e) {
-                throw new InternalWebApplicationException(e);
-            } catch (IllegalAccessException e) {
-                throw new InternalWebApplicationException(e);
-            } catch (InvocationTargetException e) {
-                throw new InternalWebApplicationException(e);
-            }
+            ((InitializerElement) child).initialize(this);
         }
         
         return child;

@@ -35,8 +35,9 @@ public class WebApplicationElement extends CElement {
         child.buildUpdate(b);
     }
 
-    public void registerChild(CElement child) {
-        super.registerChild(child);
-        this.child = child;
+    @Override
+    public <T extends CElement> T registerChild(T el) {
+        this.child = super.registerChild(el);
+        return el;
     }
 }
