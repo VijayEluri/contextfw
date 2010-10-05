@@ -5,12 +5,12 @@
    <parent>
 		<artifactId>web</artifactId>
 		<groupId>net.contextfw</groupId>
-		<version>0.4.0</version>
+		<version>0.5.0</version>
 	</parent>
 
   <groupId>net.contextfw</groupId>
   <artifactId>web-quickstart</artifactId>
-  <version>0.1.0</version>
+  <version>0.5.0</version>
   <packaging>maven-archetype</packaging>
 
   <name>Context :: Web :: Quickstart</name>
