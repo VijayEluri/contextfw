@@ -18,28 +18,28 @@ limitations under the License.
 
   <modelVersion>4.0.0</modelVersion>
 
-  <parent>
-    <artifactId>context</artifactId>
-    <groupId>net.contextfw</groupId>
-    <version>0.5.0</version>
-  </parent>
-  
-  <groupId>net.contextfw</groupId>
-  <artifactId>web</artifactId>
-  <packaging>pom</packaging>
-  <name>Context :: Web</name>
-  <version>0.5.0</version>
+	<parent>
+		<artifactId>context</artifactId>
+		<groupId>net.contextfw</groupId>
+		<version>0.5.0</version>
+	</parent>
 
-  <modules>
-    <module>web-application</module>
-    <module>web-quickstart</module>
-  </modules>
+	<groupId>net.contextfw</groupId>
+	<artifactId>web</artifactId>
+	<packaging>pom</packaging>
+	<name>Context :: Web</name>
+	<version>0.5.0</version>
 
-  <dependencies>
-	<dependency>
-    <groupId>javax.servlet</groupId>
-    <artifactId>servlet-api</artifactId>
-    <version>2.5</version>
-</dependency>
-  </dependencies>
+	<modules>
+		<module>web-application</module>
+		<module>web-quickstart</module>
+	</modules>
+
+	<dependencies>
+		<dependency>
+			<groupId>javax.servlet</groupId>
+			<artifactId>servlet-api</artifactId>
+			<version>2.5</version>
+		</dependency>
+	</dependencies>
 </project>
