@@ -1,12 +1,13 @@
-package net.contextfw.web.application.elements.enhanced;
+package net.contextfw.web.application.internal.enhanced;
 
 import java.lang.reflect.Method;
 
 import net.contextfw.web.application.dom.DOMBuilder;
 import net.contextfw.web.application.elements.CElement;
 import net.contextfw.web.application.elements.CSimpleElement;
+import net.contextfw.web.application.elements.enhanced.PartialUpdate;
 
-class PartialUpdateBuilder extends EmbeddedBuilder<Object> {
+class PartialUpdateBuilder extends Builder {
 
     private final Method method;
     private final String name;

@@ -11,10 +11,8 @@ import java.lang.annotation.Target;
 @Retention(RUNTIME)
 public @interface EmbeddedCollection {
     String name() default "";
-    String elementName();
+    String item() default "";
+    String builder() default "";
     BuildPhase phase() default BuildPhase.BOTH;
     String[] updateModes() default {};
-    
-    @SuppressWarnings("unchecked")
-    Class<? extends ElementBuilder> elementBuilder() default DefaultElementBuilder.class;
 }

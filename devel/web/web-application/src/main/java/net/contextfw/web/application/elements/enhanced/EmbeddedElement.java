@@ -14,7 +14,4 @@ public @interface EmbeddedElement {
     String name() default "";
     BuildPhase phase() default BuildPhase.BOTH;
     String[] updateModes() default {};
-
-    @SuppressWarnings("unchecked")
-    Class<? extends ElementBuilder> builder() default DefaultElementBuilder.class;
 }

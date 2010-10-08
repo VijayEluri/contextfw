@@ -3,6 +3,7 @@ package net.contextfw.web.application.elements.enhanced;
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.dom.DOMBuilder;
 import net.contextfw.web.application.elements.CSimpleElement;
+import net.contextfw.web.application.internal.enhanced.EnhancedElementBuilder;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;

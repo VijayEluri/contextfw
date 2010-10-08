@@ -7,9 +7,9 @@ import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.dom.DOMBuilder;
 import net.contextfw.web.application.dom.RemoteCallBuilder;
 import net.contextfw.web.application.elements.CElement;
+import net.contextfw.web.application.internal.enhanced.EnhancedElementBuilder;
 
 import com.google.inject.Inject;
-import com.google.inject.Injector;
 
 public abstract class EnhancedElement extends CElement {
 

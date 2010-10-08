@@ -12,7 +12,5 @@ import java.lang.annotation.Target;
 public @interface EmbeddedAttribute {
     String name() default "";
     BuildPhase phase() default BuildPhase.BOTH;
-    @SuppressWarnings("unchecked")
-    Class<? extends AttributeConverter> converter() default IdentityConverter.class;
     String[] updateModes() default {};
 }

@@ -1,9 +1,11 @@
-package net.contextfw.web.application.elements.enhanced;
+package net.contextfw.web.application.internal.enhanced;
 
 import java.lang.reflect.Field;
 
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.elements.CElement;
+import net.contextfw.web.application.elements.enhanced.EmbeddedElement;
+import net.contextfw.web.application.elements.enhanced.EnhancedElement;
 
 import com.google.inject.spi.InjectionListener;
 
