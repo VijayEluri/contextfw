@@ -5,20 +5,32 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-public final class ObjectBuilder<T> {
+import net.contextfw.web.application.elements.enhanced.Builder;
+
+public final class ObjectBuilder<T> implements Builder<T> {
 
     private final Set<Field> attributeFields = new HashSet<Field>();
-    private final Set<Field> textFields = new HashSet<Field>();;
+    private final Set<Field> textFields = new HashSet<Field>();
+    private final String elementName;
 
-    private ObjectBuilder() {}
+    private ObjectBuilder(String elementName) {
+        this.elementName = elementName;
+    }
     
-    public void build(DOMBuilder b, T t) {
+    public void build(DOMBuilder superb, T t) {
+        DOMBuilder b = elementName == null ? superb : superb.descend(elementName);
         try {
             for (Field field : attributeFields) {
-                b.attr(field.getName(), field.get(t));
+                Object obj = field.get(t);
+                if (obj != null) {
+                    b.attr(field.getName(), obj);
+                }
             }
             for (Field field : textFields) {
-                b.descend(field.getName()).text(field.get(t));
+                Object obj = field.get(t);
+                if (obj != null) {
+                    b.descend(field.getName()).text(obj);
+                }
             }
         }
         catch (IllegalArgumentException e) {
@@ -30,7 +42,11 @@ public final class ObjectBuilder<T> {
     }
     
     public static <T> ObjectBuilder<T> forClass (Class<T> clazz) {
-        ObjectBuilder<T> builder = new ObjectBuilder<T>();
+        return forClass(clazz, clazz.getSimpleName());
+    }
+    
+    public static <T> ObjectBuilder<T> forClass (Class<T> clazz, String elementName) {
+        ObjectBuilder<T> builder = new ObjectBuilder<T>(elementName);
         
         Class<?> currentClass = clazz;
 
