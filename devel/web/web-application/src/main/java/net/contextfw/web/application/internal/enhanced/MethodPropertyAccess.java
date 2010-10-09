@@ -5,7 +5,7 @@ import java.lang.reflect.Method;
 
 import net.contextfw.web.application.internal.InternalWebApplicationException;
 
-final class MethodPropertyAccess implements PropertyAccess {
+final class MethodPropertyAccess implements PropertyAccess<Object> {
 
     private final Method method;
     

@@ -5,9 +5,9 @@ import net.contextfw.web.application.elements.CSimpleElement;
 
 abstract class PropertyBuilder extends Builder {
 
-    private PropertyAccess propertyAccess;
+    private PropertyAccess<Object> propertyAccess;
     
-    protected PropertyBuilder(PropertyAccess propertyAccess) {
+    protected PropertyBuilder(PropertyAccess<Object> propertyAccess) {
         this.propertyAccess = propertyAccess;
     }
     

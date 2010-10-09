@@ -4,7 +4,7 @@ import net.contextfw.web.application.dom.DOMBuilder;
 
 public class AttributeBuilder extends NamedBuilder {
 
-    protected AttributeBuilder(PropertyAccess propertyAccess, String name) {
+    protected AttributeBuilder(PropertyAccess<Object> propertyAccess, String name) {
         super(propertyAccess, name);
     }
 

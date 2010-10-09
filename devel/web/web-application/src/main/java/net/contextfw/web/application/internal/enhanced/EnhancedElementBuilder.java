@@ -18,6 +18,7 @@ import net.contextfw.web.application.elements.enhanced.BuildPhase;
 import net.contextfw.web.application.elements.enhanced.CustomBuild;
 import net.contextfw.web.application.elements.enhanced.EmbeddedAttribute;
 import net.contextfw.web.application.elements.enhanced.EmbeddedElement;
+import net.contextfw.web.application.elements.enhanced.PartialUpdate;
 
 import com.google.inject.Singleton;
 
@@ -55,7 +56,6 @@ public class EnhancedElementBuilder {
         return builders.get(cl);
     }
 
-    @SuppressWarnings("unchecked")
     private void addEmbeddeds(Class<?> cl) throws IllegalAccessException, InvocationTargetException,
             NoSuchMethodException, IntrospectionException {
 
@@ -89,20 +89,6 @@ public class EnhancedElementBuilder {
                         phase = embeddedAttribute.phase();   
                     }
                 }
-//                {
-//                    EmbeddedCollection embeddedCollection = field.getAnnotation(EmbeddedCollection.class);
-//
-//                    if (embeddedCollection != null) {
-//                        
-//                        String name = "".equals(embeddedCollection.name()) ? field.getName() : embeddedCollection.name();
-//                        String elementName = embeddedCollection.elementName();
-//                        
-//                        ElementBuilder elementBuilder = injector.getInstance(embeddedCollection.elementBuilder());
-//                        EmbeddedElementBuilder embeddedBuilder = new EmbeddedElementBuilder((Field) null, elementName, elementBuilder);
-//                        EmbeddedCollectionBuilder builder = new EmbeddedCollectionBuilder(field, name, embeddedBuilder);
-//                        addToBuilders(cl, embeddedCollection.phase(), builder);
-//                    }
-//                }
                 {
                     CustomBuild customBuild = field.getAnnotation(CustomBuild.class);
                     if (customBuild != null) {
@@ -154,18 +140,17 @@ public class EnhancedElementBuilder {
                         phase = customBuild.phase();
                     }
                 }
-//                {
-//                    PartialUpdate partialUpdate = method.getAnnotation(PartialUpdate.class);
-//
-//                    if (partialUpdate != null) {
-//                        PartialUpdateBuilder builder = new PartialUpdateBuilder(partialUpdate, method);
-//                        addToBuilders(cl, BuildPhase.PARTIAL, builder);
-//                    }
-//                }
+                {
+                    PartialUpdate partialUpdate = method.getAnnotation(PartialUpdate.class);
+                    if (partialUpdate != null) {
+                        addToBuilders(cl, BuildPhase.PARTIAL, new PartialUpdateBuilder(partialUpdate, method));
+                    }
+                }
                 
                 if (builder != null) {
                     builder.addModes(updateModes);                        
                     addToBuilders(cl, phase, builder);
+                    builder = null;
                 }
             }
 

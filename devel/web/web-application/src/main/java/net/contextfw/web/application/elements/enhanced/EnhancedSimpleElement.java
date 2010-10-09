@@ -6,11 +6,9 @@ import net.contextfw.web.application.elements.CSimpleElement;
 import net.contextfw.web.application.internal.enhanced.EnhancedElementBuilder;
 
 import com.google.inject.Inject;
-import com.google.inject.Injector;
 
 public abstract class EnhancedSimpleElement implements CSimpleElement {
 
-    private Injector injector;
     private EnhancedElementBuilder builder;
     
     @Override
@@ -22,15 +20,6 @@ public abstract class EnhancedSimpleElement implements CSimpleElement {
         catch (Exception e) {
             throw new WebApplicationException(e);
         }
-    }
-
-    @Inject
-    public void setInjector(Injector injector) {
-        this.injector = injector;
-    }
-
-    protected Injector getInjector() {
-        return injector;
     }
 
     @Inject
