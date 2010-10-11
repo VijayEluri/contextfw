@@ -32,8 +32,8 @@ public class MyApplicationModule extends AbstractModule {
         
         bind(WebApplicationLocale.class).toProvider(WebApplicationLocaleProvider.class);
         
-        new WebApplicationModule(config).configure(this.binder());
-        new Jsr250Module().configure(this.binder());
-        new WebApplicationServletModule(config).configure(this.binder());
+        install(new WebApplicationModule(config));
+        install(new Jsr250Module());
+        install(new WebApplicationServletModule(config));
     }
 }
