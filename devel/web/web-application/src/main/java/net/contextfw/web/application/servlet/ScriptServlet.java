@@ -1,7 +1,7 @@
 package net.contextfw.web.application.servlet;
 
-import java.io.File;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import net.contextfw.web.application.ModuleConfiguration;
 
@@ -9,32 +9,33 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 @Singleton
-public class ScriptServlet extends JarResourceServlet {
+public class ScriptServlet extends ResourceServlet {
 
     private static final long serialVersionUID = 1L;
 
     private final boolean debugMode;
 
-    private final List<String> resourcePackages;
+    private final List<String> resourcePaths;
 
     @Inject
     public ScriptServlet(ModuleConfiguration configuration) {
         this.debugMode = configuration.isDebugMode();
-        this.resourcePackages = configuration.getResourceRootPackages();
+        this.resourcePaths = configuration.getResourcePaths();
     }
     
-    @Override
-    public List<String> getRootPackages() {
-        return resourcePackages;
-    }
-
     @Override
     public boolean clear() {
         return debugMode;
     }
 
     @Override
-    public boolean accept(File file) {
-        return file.getName().endsWith(".js");
+    protected Pattern getAcceptor() {
+        return Pattern.compile(".*\\.js", Pattern.CASE_INSENSITIVE);
     }
+
+    @Override
+    protected List<String> getRootPaths() {
+        return resourcePaths;
+    }
+
 }

@@ -2,14 +2,19 @@ package net.contextfw.web.application.servlet;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import net.contextfw.web.application.WebApplicationException;
+import net.contextfw.web.application.internal.util.ResourceScanner;
 
 public abstract class ResourceServlet extends HttpServlet {
 
@@ -19,19 +24,24 @@ public abstract class ResourceServlet extends HttpServlet {
 
     private long capacity = 0;
 
+    public void clean() {
+        content = null;
+        capacity = 0;
+    }
+    
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
 
         if (clear()) {
-            content = null;
-            capacity = 0;
+            clean();
         }
 
         if (content == null) {
             synchronized (this) {
                 if (content == null) {
                     StringBuilder contentBuilder = new StringBuilder();
-                    for (File file : getRoots()) {
+                    List<File> files = ResourceScanner.findResources(getRootPaths(), getAcceptor());
+                    for (File file : files) {
                         addContent(contentBuilder, file);
                     }
                     content = contentBuilder.toString();
@@ -43,38 +53,29 @@ public abstract class ResourceServlet extends HttpServlet {
         resp.getWriter().close();
     }
 
-    private void addContent(StringBuilder contentBuilder, File root) {
-
-        File[] files = root.listFiles();
-
+    private void addContent(StringBuilder contentBuilder, File file) {
+        String line = null;
         try {
-            for (File file : files) {
-                if (file.isDirectory()) {
-                    addContent(contentBuilder, file);
-                }
-                else if (accept(file)) {
-                    String line = null;
-                    BufferedReader r = new BufferedReader(new FileReader(file));
+            BufferedReader r = new BufferedReader(new FileReader(file));
 
-                    capacity = capacity + file.length();
-                    contentBuilder.ensureCapacity((int) capacity);
+            capacity = capacity + file.length();
+            contentBuilder.ensureCapacity((int) capacity);
 
-                    while ((line = r.readLine()) != null) {
-                        contentBuilder.append(line);
-                        contentBuilder.append("\n");
-                    }
-                    r.close();
-                }
+            while ((line = r.readLine()) != null) {
+                contentBuilder.append(line);
+                contentBuilder.append("\n");
             }
-        }
-        catch (Throwable e) {
-            e.printStackTrace();
+            r.close();
+        } catch (FileNotFoundException e) {
+            throw new WebApplicationException(e);
+        } catch (IOException e) {
+            throw new WebApplicationException(e);
         }
     }
 
     public abstract boolean clear();
 
-    public abstract boolean accept(File file);
+    protected abstract Pattern getAcceptor();
 
-    public abstract List<File> getRoots();
+    protected abstract List<String> getRootPaths();
 }

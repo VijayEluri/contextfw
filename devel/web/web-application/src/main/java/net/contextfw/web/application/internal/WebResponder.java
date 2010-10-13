@@ -6,9 +6,9 @@ import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.regex.Pattern;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
@@ -18,10 +18,10 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamSource;
 
+import net.contextfw.web.application.HttpContext;
 import net.contextfw.web.application.ModuleConfiguration;
 import net.contextfw.web.application.WebApplicationException;
-import net.contextfw.web.application.WebApplicationServletModule;
-import net.contextfw.web.application.internal.util.PackageUtils;
+import net.contextfw.web.application.internal.util.ResourceScanner;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -37,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 @Singleton
@@ -62,6 +63,9 @@ public class WebResponder {
     }
     
     private final ModuleConfiguration configuration;
+    
+    @Inject
+    private Provider<HttpContext> httpContext;
     
     @Inject
     public WebResponder(ModuleConfiguration configuration) {
@@ -94,29 +98,27 @@ public class WebResponder {
 
     private Transformer getTransformer() {
         if (_transformer == null || configuration.isDebugMode()) {
-            _transformer = new ThreadLocal<Transformer>() {
-                protected Transformer initialValue() {
-                    try {
-                        return factory.newTransformer(new StreamSource(getXSLDocument()));
-                    } catch (TransformerConfigurationException e) {
-                        throw new WebApplicationException("Could not get transformer", e);
-                    }
-                }
-            };
+            clean();
         }
         return _transformer.get();
     }
 
-    protected String getXSLDocumentContent() {
-        List<File> resources = new ArrayList<File>();
-        try {
-            for (String pckg : configuration.getResourceRootPackages()) {
-                resources.addAll(PackageUtils.getResources(pckg,
-                        Thread.currentThread().getContextClassLoader()));
+    public void clean() {
+        _transformer = new ThreadLocal<Transformer>() {
+            protected Transformer initialValue() {
+                try {
+                    return factory.newTransformer(new StreamSource(getXSLDocument()));
+                } catch (TransformerConfigurationException e) {
+                    throw new WebApplicationException("Could not get transformer", e);
+                }
             }
-        } catch (IOException e1) {
-            throw new WebApplicationException(e1);
-        }
+        };
+    }
+
+    protected String getXSLDocumentContent() {
+        List<File> resources = ResourceScanner
+            .findResources(configuration.getResourcePaths(), 
+                    Pattern.compile(".*\\.xsl", Pattern.CASE_INSENSITIVE));
 
         File root = null;
 
