@@ -17,9 +17,6 @@ public class InitializerContextImpl implements InitializerContext {
     
     private int currentIndex = 0;
     
-    private String redirectUrl = null;
-    private Integer errorCode = null;
-    private String errorMsg = null;
     private Locale locale = null;
     
     public InitializerContextImpl(Injector injector, List<Class<? extends CElement>> chain) {
@@ -54,35 +51,6 @@ public class InitializerContextImpl implements InitializerContext {
         }
         
         return child;
-    }
-
-    @Override
-    public void sendRedirect(String url) {
-        this.redirectUrl = url;
-    }
-
-    @Override
-    public void sendError(int code) {
-        sendError(code, null);
-    }
-
-    @Override
-    public void sendError(int code, String msg) {
-        this.errorCode = code;
-        this.errorMsg = msg;
-        
-    }
-
-    public String getRedirectUrl() {
-        return redirectUrl;
-    }
-
-    public Integer getErrorCode() {
-        return errorCode;
-    }
-
-    public String getErrorMsg() {
-        return errorMsg;
     }
 
     @Override

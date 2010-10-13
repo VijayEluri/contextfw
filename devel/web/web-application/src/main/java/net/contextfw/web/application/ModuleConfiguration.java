@@ -13,7 +13,7 @@ public class ModuleConfiguration {
     private Class<? extends AttributeHandler> attributeHandler;
 
     private final List<String> initializerRootPackages = new ArrayList<String>();
-    private final List<String> resourceRootPackages = new ArrayList<String>();
+    private final List<String> resourcePaths = new ArrayList<String>();
     private boolean debugMode = false;
     private boolean logXML = false;
     private String resourcesPrefix = "/resources";
@@ -48,12 +48,25 @@ public class ModuleConfiguration {
         }
         return this;
     }
-    
-    public ModuleConfiguration resourceRootPackages(String... packages) {
-        if (packages != null) {
-            for (String pck : packages) {
+
+    /**
+     * Add paths where to look for resources.
+     * 
+     * <p>Supported possibilities are</p>
+     * 
+     * <ul>
+     *  <li>package name</li>
+     *  <li>classpath:directory</li>
+     *  <li>file:directory</li>
+     * </ul>
+     * @param resources
+     * @return
+     */
+    public ModuleConfiguration addResourcePaths(String... resources) {
+        if (resources != null) {
+            for (String pck : resources) {
                 if (pck != null && pck.trim().length() != 0) {
-                    resourceRootPackages.add(pck);
+                    resourcePaths.add(pck);
                 }
             }
         }
@@ -64,8 +77,8 @@ public class ModuleConfiguration {
         return initializerRootPackages;
     }
 
-    public List<String> getResourceRootPackages() {
-        return resourceRootPackages;
+    public List<String> getResourcePaths() {
+        return resourcePaths;
     }
 
     public boolean isDebugMode() {
@@ -87,7 +100,13 @@ public class ModuleConfiguration {
     public boolean isLogXML() {
         return logXML;
     }
-
+    
+    /**
+     * Set's the prefix for public resources files.
+     * 
+     * <p>That is javascript and css-files</p>
+     * @param resourcesPrefix
+     */
     public void setResourcesPrefix(String resourcesPrefix) {
         this.resourcesPrefix = resourcesPrefix;
     }

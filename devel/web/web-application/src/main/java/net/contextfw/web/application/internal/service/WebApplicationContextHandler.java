@@ -5,12 +5,11 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import net.contextfw.web.application.ModuleConfiguration;
 import net.contextfw.web.application.WebApplicationHandle;
-import net.contextfw.web.application.WebApplicationServletModule;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;

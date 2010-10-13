@@ -1,10 +1,10 @@
 package net.contextfw.web.application;
 
-import java.io.IOException;
+import java.util.List;
 import java.util.TreeSet;
 
 import net.contextfw.web.application.initializer.Initializer;
-import net.contextfw.web.application.internal.util.PackageUtils;
+import net.contextfw.web.application.internal.util.ClassScanner;
 import net.contextfw.web.application.servlet.CSSServlet;
 import net.contextfw.web.application.servlet.InitServlet;
 import net.contextfw.web.application.servlet.ScriptServlet;
@@ -18,7 +18,7 @@ import com.google.inject.servlet.ServletModule;
 public class WebApplicationServletModule extends ServletModule {
 
     private Logger logger = LoggerFactory.getLogger(WebApplicationServletModule.class);
-    
+
     private final ModuleConfiguration configuration;
 
     public WebApplicationServletModule(ModuleConfiguration configuration) {
@@ -42,24 +42,17 @@ public class WebApplicationServletModule extends ServletModule {
         logger.info("Configuring initializer-servlets:");
         TreeSet<String> urls = new TreeSet<String>();
 
-        for (String pck : configuration.getInitializerRootPackages()) {
-            try {
-                for (Class<?> cl : PackageUtils.getClasses(pck, Thread
-                        .currentThread().getContextClassLoader())) {
-                    Initializer initializer = cl
+        List<Class<?>> classes = ClassScanner.getClasses(configuration.getInitializerRootPackages());
+
+        for (Class<?> cl : classes) {
+            Initializer initializer = cl
                             .getAnnotation(Initializer.class);
-                    if (initializer != null) {
-                        if (!"".equals(initializer.urlMatcher())) {
-                            urls.add(initializer.urlMatcher());
-                        } else if (!"".equals(initializer.url())) {
-                            urls.add(initializer.url());
-                        }
-                    }
+            if (initializer != null) {
+                if (!"".equals(initializer.urlMatcher())) {
+                    urls.add(initializer.urlMatcher());
+                } else if (!"".equals(initializer.url())) {
+                    urls.add(initializer.url());
                 }
-            } catch (ClassNotFoundException e) {
-                throw new WebApplicationException(e);
-            } catch (IOException e) {
-                throw new WebApplicationException(e);
             }
         }
 

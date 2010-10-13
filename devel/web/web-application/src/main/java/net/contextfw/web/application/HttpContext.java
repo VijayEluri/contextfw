@@ -15,6 +15,25 @@ public class HttpContext {
 
     private String requestUrl;
     private String queryString;
+    private String redirectUrl;
+    private String errorMsg;
+    private Integer errorCode;
+    private boolean reload = false;
+    
+    public void reloadPage() {
+        reload = true;
+    }
+    
+    public void sendRedirect(String url) {
+        this.redirectUrl = url;
+    }
+    public void sendError(int code) {
+        sendError(code, null);
+    }
+    public void sendError(int code, String msg) {
+        this.errorCode = code;
+        this.errorMsg = msg;
+    }
 
     public void setServlet(HttpServlet servlet) {
         this.servlet = servlet;
@@ -57,5 +76,18 @@ public class HttpContext {
         }
 
         return requestUrl;
+    }
+    public String getRedirectUrl() {
+        return redirectUrl;
+    }
+    public String getErrorMsg() {
+        return errorMsg;
+    }
+    public Integer getErrorCode() {
+        return errorCode;
+    }
+
+    public boolean isReload() {
+        return reload;
     }
 }
