@@ -20,11 +20,11 @@ public class HttpContext {
     private Integer errorCode;
     private boolean reload = false;
     
-    public void reloadPage() {
+    public void reload() {
         reload = true;
     }
     
-    public void sendRedirect(String url) {
+    public void redirect(String url) {
         this.redirectUrl = url;
     }
     public void sendError(int code) {
