@@ -4,12 +4,28 @@ contextfw = {
 	refreshUrl: null,
 	removeUrl:  null,
 	serializer: new XMLSerializer(),
+	afterCall: null,
+	defaultBeforeCall: null,
+	defaultAfterCall: null,
 	
-	init: function(handle) {
+	init: function(context, handle, defaultBeforeCall, defaultAfterCall) {
 		this.handle = handle;
-		this.updateUrl = "/contextfw-update/"+handle+"?";
-		this.refreshUrl = "/contextfw-refresh/"+handle+"?";
-		this.removeUrl = "/contextfw-remove/"+handle+"?";
+		this.updateUrl = context + "/contextfw-update/"+handle+"?";
+		this.refreshUrl = context + "/contextfw-refresh/"+handle+"?";
+		this.removeUrl = context + "/contextfw-remove/"+handle+"?";
+		
+		if ($.isFunction(defaultBeforeCall)) {
+			this.defaultBeforeCall = defaultBeforeCall;
+		} else {
+			this.defaultBeforeCall = function(){};
+		}
+		
+		if ($.isFunction(defaultAfterCall)) {
+			this.defaultAfterCall = defaultAfterCall;
+		} else {
+			this.defaultAfterCall = function(){};
+		}
+		
 		this.setRefresh();
 	},
 	
@@ -20,14 +36,22 @@ contextfw = {
 	},
 	
 	setRefresh: function() {
-		setTimeout("contextfw.refresh();", 30000);
+		setTimeout("contextfw.refresh();", 300000);
 	},
 	
 	unload: function() {
 		$.get(this.removeUrl);
 	},
 	
-	call: function(elId, method) {
+	call: function(elId, method, beforeCall, afterCall) {
+		
+		if ($.isFunction(beforeCall)) {
+			beforeCall();
+		} else {
+			this.defaultBeforeCall();
+		}
+		
+		this.afterCall = afterCall;
 		
 		var params = {}
 		
@@ -44,7 +68,7 @@ contextfw = {
 		params.method = method;
 		
 		$("#body").addClass("updating");
-		jQuery.post(this.updateUrl + "?check="+ Date.getMilliseconds(), params, function(data, textStatus) {
+		jQuery.post(this.updateUrl, params, function(data, textStatus) {
 			contextfw._handleResponse(data);
 			$("#body").removeClass("updating");
 	    });
@@ -74,6 +98,13 @@ contextfw = {
 	},
 	
 	_handleResponse: function(domDocument) {
+	
+		if ($.isFunction(this.afterCall)) {
+			this.afterCall();
+			this.afterCall = null;
+		} else {
+			this.defaultAfterCall();
+		}
 		
 	    nodes = domDocument.selectNodes("/updates/replace");
 	    
@@ -140,19 +171,20 @@ contextfw = {
 	}
 };
 
-jQuery.fn.serializeObject = function()
-{
-   var o = {};
-   var a = this.serializeArray();
-   jQuery.each(a, function() {
-       if (o[this.name]) {
-           if (!o[this.name].push) {
-               o[this.name] = [o[this.name]];
-           }
-           o[this.name].push(this.value || '');
-       } else {
-           o[this.name] = this.value || '';
-       }
-   });
-   return o;
+jQuery.fn.serializeObject = function() {
+  var o = {};
+  var a = this.serializeArray();   
+  jQuery.each(a, function() {
+  	if (this.name.match("\\[\\]$")=="[]") {
+  	  var name = this.name.substr(0, this.name.length-2);
+      if (!o[name]) {
+        o[name] = [];
+      }
+      o[name].push(this.value || '');
+  	}
+  	else {
+      o[this.name] = this.value || '';
+  	}
+  });
+  return o;
 };

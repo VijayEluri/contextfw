@@ -4,12 +4,28 @@ contextfw = {
 	refreshUrl: null,
 	removeUrl:  null,
 	serializer: new XMLSerializer(),
+	afterCall: null,
+	defaultBeforeCall: null,
+	defaultAfterCall: null,
 	
-	init: function(context, handle) {
+	init: function(context, handle, defaultBeforeCall, defaultAfterCall) {
 		this.handle = handle;
 		this.updateUrl = context + "/contextfw-update/"+handle+"?";
 		this.refreshUrl = context + "/contextfw-refresh/"+handle+"?";
 		this.removeUrl = context + "/contextfw-remove/"+handle+"?";
+		
+		if ($.isFunction(defaultBeforeCall)) {
+			this.defaultBeforeCall = defaultBeforeCall;
+		} else {
+			this.defaultBeforeCall = function(){};
+		}
+		
+		if ($.isFunction(defaultAfterCall)) {
+			this.defaultAfterCall = defaultAfterCall;
+		} else {
+			this.defaultAfterCall = function(){};
+		}
+		
 		this.setRefresh();
 	},
 	
@@ -27,7 +43,15 @@ contextfw = {
 		$.get(this.removeUrl);
 	},
 	
-	call: function(elId, method) {
+	call: function(elId, method, beforeCall, afterCall) {
+		
+		if ($.isFunction(beforeCall)) {
+			beforeCall();
+		} else {
+			this.defaultBeforeCall();
+		}
+		
+		this.afterCall = afterCall;
 		
 		var params = {}
 		
@@ -74,6 +98,13 @@ contextfw = {
 	},
 	
 	_handleResponse: function(domDocument) {
+	
+		if ($.isFunction(this.afterCall)) {
+			this.afterCall();
+			this.afterCall = null;
+		} else {
+			this.defaultAfterCall();
+		}
 		
 	    nodes = domDocument.selectNodes("/updates/replace");
 	    
