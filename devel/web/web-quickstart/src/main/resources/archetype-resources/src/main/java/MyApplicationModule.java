@@ -23,7 +23,7 @@ public class MyApplicationModule extends AbstractModule {
 
         ModuleConfiguration config = new ModuleConfiguration()
             .attributeHandlerClass(MyAttributeHandler.class)
-            .resourceRootPackages("${package}")
+            .addResourcePaths("${package}")
             .initializerRootPackages("${package}.views")
             .debugMode(true);
         
