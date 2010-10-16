@@ -2,8 +2,7 @@
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:txt="http://contextfw.net/ns/txt">
 
 <xsl:variable name="lang"><xsl:value-of select="/WebApplication/@lang"/><xsl:value-of select="/WebApplicationUpdate/@lang"/></xsl:variable>
-<xsl:variable name="servletContext"><xsl:value-of select="/WebApplication/@servletContext"/></xsl:variable>
-<xsl:variable name="updatePath"><xsl:value-of select="/WebApplication/content/@updatePath"/></xsl:variable>
+<xsl:variable name="servletContext"><xsl:value-of select="/WebApplication/@contextPath"/></xsl:variable>
 
 <xsl:template match="/">
 	<xsl:apply-templates select="/WebApplication.update" mode="context" />
@@ -39,21 +38,21 @@
 		<meta http-equiv="pragma" content="no-cache, no-store" />  
 
 		<!-- Sarissa must be loaded before jquery -->
-		<script type="text/javascript" src="{@servletContext}/scripts/sarissa.js"></script>
-		<script type="text/javascript" src="{@servletContext}/scripts/sarissa_ieemu_xpath.js"></script>
-		<script type="text/javascript" src="{@servletContext}/scripts/jquery.js"></script>
-		<script type="text/javascript" src="{@servletContext}/scripts/contextfw.js"></script>
-		<script type="text/javascript" src="{@servletContext}/scripts/json.js"></script>
-		<script type="text/javascript" src="{@servletContext}/scripts/jquery.textarea.js"></script>
-		<script type="text/javascript" src="{@servletContext}/scripts/shortcut.js"></script>
-		<script type="text/javascript" src="{@servletContext}/resources.js"></script>
+		<script type="text/javascript" src="{$contextPath}/scripts/sarissa.js"></script>
+		<script type="text/javascript" src="{$contextPath}/scripts/sarissa_ieemu_xpath.js"></script>
+		<script type="text/javascript" src="{$contextPath}/scripts/jquery.js"></script>
+		<script type="text/javascript" src="{$contextPath}/scripts/contextfw.js"></script>
+		<script type="text/javascript" src="{$contextPath}/scripts/json.js"></script>
+		<script type="text/javascript" src="{$contextPath}/scripts/jquery.textarea.js"></script>
+		<script type="text/javascript" src="{$contextPath}/scripts/shortcut.js"></script>
+		<script type="text/javascript" src="{$contextPath}/resources.js"></script>
 		
-		<link rel="stylesheet" type="text/css" href="{@servletContext}/resources.css"></link>
-		<link rel="stylesheet" type="text/css" href="{@servletContext}/main.css"></link>
+		<link rel="stylesheet" type="text/css" href="{$contextPath}/resources.css"></link>
+		<link rel="stylesheet" type="text/css" href="{$contextPath}/main.css"></link>
 
 		<script type="text/javascript">
 $(document).ready(function() {
-	contextfw.init("<xsl:value-of select="$updatePath" />", "<xsl:value-of select="@handle" />");
+	contextfw.init("<xsl:value-of select="$contextPath" />", "<xsl:value-of select="@handle" />");
 	<xsl:apply-templates select="//Script" mode="script" />
 });
 $.ajaxSetup({ scriptCharset: "utf-8" ,contentType: "application/x-www-form-urlencoded; charset=UTF-8" });
