@@ -100,7 +100,7 @@ public class WebApplicationImpl implements WebApplication {
                 }
 
                 d.attr("handle", webApplicationHandle.getKey());
-                d.attr("servletContext", httpContext.getServlet().getServletContext().getContextPath());
+                d.attr("contextPath", configuration.getContextPath());
 
                 if (context.getLocale() != null) {
                     d.attr("xml:lang", context.getLocale().toString());

@@ -27,10 +27,13 @@ public class WebApplicationServletModule extends ServletModule {
 
     @Override
     protected void configureServlets() {
+        
+        String contextPath = configuration.getContextPath();
+        
         logger.info("Configuring default servlets");
-        serve(configuration.getResourcesPrefix() + ".js").with(
+        serve(contextPath + configuration.getResourcesPrefix() + ".js").with(
                 ScriptServlet.class);
-        serve(configuration.getResourcesPrefix() + ".css").with(
+        serve(contextPath + configuration.getResourcesPrefix() + ".css").with(
                 CSSServlet.class);
         serveRegex(".*/contextfw-update/.*").with(UpdateServlet.class);
         serveRegex(".*/contextfw-refresh/.*").with(UpdateServlet.class);
@@ -39,6 +42,9 @@ public class WebApplicationServletModule extends ServletModule {
     }
 
     private void serveInitializers() {
+        
+        String contextPath = ""; //+ configuration.getContextPath();
+        
         logger.info("Configuring initializer-servlets:");
         TreeSet<String> urls = new TreeSet<String>();
 
@@ -49,16 +55,16 @@ public class WebApplicationServletModule extends ServletModule {
                             .getAnnotation(Initializer.class);
             if (initializer != null) {
                 if (!"".equals(initializer.urlMatcher())) {
-                    urls.add(initializer.urlMatcher());
+                    urls.add(contextPath + initializer.urlMatcher());
                 } else if (!"".equals(initializer.url())) {
-                    urls.add(initializer.url());
+                    urls.add(contextPath + initializer.url());
                 }
             }
         }
 
         for (String url : urls.descendingSet()) {
             logger.info("  Serving url: {}", url);
-            serveRegex(url).by(InitServlet.class);
+            serveRegex(contextPath + url).by(InitServlet.class);
         }
     }
 }

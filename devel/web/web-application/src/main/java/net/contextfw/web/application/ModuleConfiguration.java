@@ -20,7 +20,7 @@ public class ModuleConfiguration {
     private long pollTime = 1000*60*5; // 5 minutes
     private long maxInactivity = 1000*60*11; // 11 minutes
     private long errorTime = 2000;
-    
+    private String contextPath = "";
     
     private String xmlParamName = null;
     
@@ -137,5 +137,14 @@ public class ModuleConfiguration {
 
     public long getErrorTime() {
         return errorTime;
+    }
+
+    public String getContextPath() {
+        return contextPath;
+    }
+
+    public ModuleConfiguration setContextPath(String contextPath) {
+        this.contextPath = contextPath;
+        return this;
     }
 }
