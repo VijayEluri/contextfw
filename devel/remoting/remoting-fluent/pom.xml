@@ -22,12 +22,12 @@ limitations under the License.
   <parent>
     <artifactId>remoting</artifactId>
     <groupId>net.contextfw</groupId>
-    <version>0.6.0</version>
+    <version>0.6.1</version>
   </parent>
 	
   <groupId>net.contextfw</groupId>
   <artifactId>remoting-fluent</artifactId>
-  <version>0.6.0</version>
+  <version>0.6.1</version>
   <name>Context :: Remoting :: Fluent</name>
   <description>Fluent-style remoting interface implementation on top of Hessian</description>
   <packaging>jar</packaging>
