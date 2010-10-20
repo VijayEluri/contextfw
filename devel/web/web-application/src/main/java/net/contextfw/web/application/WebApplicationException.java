@@ -1,5 +1,8 @@
 package net.contextfw.web.application;
 
+/**
+ * A general exception thrown by application
+ */ 
 public class WebApplicationException extends RuntimeException {
     private static final long serialVersionUID = -3864752109086700032L;
 

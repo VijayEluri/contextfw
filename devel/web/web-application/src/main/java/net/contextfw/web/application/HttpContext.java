@@ -6,6 +6,15 @@ import javax.servlet.http.HttpServletResponse;
 
 import net.contextfw.web.application.annotations.WebApplicationScoped;
 
+/**
+ * Marks class to be bound to web application 
+ * 
+ * <p>
+ *  When class is annotated with this then there exists only on instance of the class
+ *  in the page.
+ * </p>
+ *   
+ */
 @WebApplicationScoped
 public class HttpContext {
 
