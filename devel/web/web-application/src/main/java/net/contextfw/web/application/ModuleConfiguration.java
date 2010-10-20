@@ -7,6 +7,9 @@ import net.contextfw.web.application.dom.AttributeHandler;
 
 import com.google.inject.Singleton;
 
+/**
+ * Configures the application during initalization
+ */
 @Singleton
 public class ModuleConfiguration {
 
@@ -21,6 +24,7 @@ public class ModuleConfiguration {
     private long maxInactivity = 1000*60*11; // 11 minutes
     private long errorTime = 2000;
     private String contextPath = "";
+    private int transformerCount = 1;
     
     private String xmlParamName = null;
     
@@ -146,5 +150,38 @@ public class ModuleConfiguration {
     public ModuleConfiguration setContextPath(String contextPath) {
         this.contextPath = contextPath;
         return this;
+    }
+
+    /**
+     * Sets the number of concurrent transformers
+     * 
+     * <p>Transformers are used to transform DOM-tree via XSL to XHTML.</p>
+     * 
+     * <p>
+     *  This methods sets the number of that can be used concurrently. 
+     *  This requirement comes from the fact that transformers are not thread-safe.
+     * </p>
+     * <p>
+     *   By default the number of transformers is 1 and is usable in development.
+     *   Hoverer for production the number should be increased, but there is a down side
+     *   for large number of transformer, which is memory consumption. Templates
+     *   must be loaded for every transformer and they cannot be shared.
+     * </p>
+     *  
+     * @param transformerCount
+     *  The number of transformers. Minimum is 1.
+     * @return
+     *  The configuration
+     */
+    public ModuleConfiguration setTransformerCount(int transformerCount) {
+        if (transformerCount < 1) {
+            throw new IllegalArgumentException("At least 1 transformed must be specified");
+        }
+        this.transformerCount = transformerCount;
+        return this;
+    }
+
+    public int getTransformerCount() {
+        return transformerCount;
     }
 }

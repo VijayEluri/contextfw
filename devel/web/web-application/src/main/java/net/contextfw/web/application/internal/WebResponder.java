@@ -2,12 +2,13 @@ package net.contextfw.web.application.internal;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.Reader;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.Semaphore;
 import java.util.regex.Pattern;
 
 import javax.servlet.ServletException;
@@ -45,6 +46,9 @@ public class WebResponder {
 
     private Logger logger = LoggerFactory.getLogger(WebResponder.class);
     
+    private int currentTransformer = 0;
+    private List<Transformer> transformers;
+    
     public enum Mode {
         
         INIT("text/html;charset=UTF-8"), 
@@ -75,11 +79,6 @@ public class WebResponder {
     private final static TransformerFactory factory = TransformerFactory
             .newInstance();
 
-    /*
-     * Transformer is not thread safe
-     */
-    private static ThreadLocal<Transformer> _transformer = null;
-
     public void logXML(Document d) {
         try {
             OutputFormat format = OutputFormat.createPrettyPrint();
@@ -97,22 +96,26 @@ public class WebResponder {
     }
 
     private Transformer getTransformer() {
-        if (_transformer == null || configuration.isDebugMode()) {
+        if (transformers == null || configuration.isDebugMode()) {
             clean();
         }
-        return _transformer.get();
+        currentTransformer = (currentTransformer + 1) % configuration.getTransformerCount();
+        return transformers.get(currentTransformer);
     }
 
-    public void clean() {
-        _transformer = new ThreadLocal<Transformer>() {
-            protected Transformer initialValue() {
-                try {
-                    return factory.newTransformer(new StreamSource(getXSLDocument()));
-                } catch (TransformerConfigurationException e) {
-                    throw new WebApplicationException("Could not get transformer", e);
-                }
+    public synchronized void clean() {
+        transformers = new ArrayList<Transformer>(configuration.getTransformerCount());
+        
+        String xslDocumenContent = getXSLDocumentContent();
+        
+        for (int i = 0; i < configuration.getTransformerCount(); i++) {
+            try {
+                transformers.add(factory.newTransformer(
+                        new StreamSource(new StringReader(xslDocumenContent))));
+            } catch (TransformerConfigurationException e) {
+                throw new WebApplicationException("Could not get transformer", e);
             }
-        };
+        }
     }
 
     protected String getXSLDocumentContent() {
@@ -172,9 +175,9 @@ public class WebResponder {
         }
     }
     
-    public Reader getXSLDocument() {
-        return new StringReader(getXSLDocumentContent());
-    }
+//    public Reader getXSLDocument() {
+//        return new StringReader(getXSLDocumentContent());
+//    }
     
     public void sendResponse(Document document, HttpServletResponse resp, Mode mode) throws ServletException, IOException {
         if (configuration.isLogXML()) {
