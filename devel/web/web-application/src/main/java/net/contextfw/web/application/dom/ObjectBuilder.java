@@ -5,8 +5,6 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import com.sun.istack.internal.Builder;
-
 public final class ObjectBuilder<T>  {
 
     private final Set<Field> attributeFields = new HashSet<Field>();

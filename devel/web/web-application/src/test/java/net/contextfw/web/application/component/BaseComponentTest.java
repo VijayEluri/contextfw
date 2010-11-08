@@ -18,7 +18,7 @@ import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class BaseComponentTest {
+public abstract class BaseComponentTest {
     
     protected Logger log = LoggerFactory.getLogger(BaseComponentTest.class); 
     
