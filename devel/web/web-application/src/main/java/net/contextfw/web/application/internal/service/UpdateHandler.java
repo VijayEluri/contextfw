@@ -7,10 +7,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import net.contextfw.web.application.ModuleConfiguration;
+import net.contextfw.web.application.internal.LifecycleListeners;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import net.contextfw.web.application.ModuleConfiguration;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -23,11 +24,17 @@ public class UpdateHandler {
     private final WebApplicationContextHandler handler;
 
     private final ModuleConfiguration configuration;
+
+    private final LifecycleListeners listeners;
     
     @Inject
-    public UpdateHandler(WebApplicationContextHandler handler, ModuleConfiguration configuration) {
+    public UpdateHandler(
+            WebApplicationContextHandler handler, 
+            ModuleConfiguration configuration, 
+            LifecycleListeners listeners) {
         this.handler = handler;
         this.configuration = configuration;
+        this.listeners = listeners;
     }
 
     public final void handleRequest(HttpServlet servlet, HttpServletRequest request, HttpServletResponse response)
@@ -64,13 +71,20 @@ public class UpdateHandler {
                                 app.getHttpContext().setServlet(servlet);
                                 app.getHttpContext().setRequest(request);
                                 app.getHttpContext().setResponse(response);
-
-                                app.getApplication().updateState();
-                                app.getApplication().sendResponse();
-
-                                app.getHttpContext().setServlet(null);
-                                app.getHttpContext().setRequest(null);
-                                app.getHttpContext().setResponse(null);
+                                try {
+                                    listeners.beforeUpdate();
+                                    app.getApplication().updateState();
+                                    listeners.afterUpdate();
+                                    listeners.beforeRender();
+                                    app.getApplication().sendResponse();
+                                    listeners.afterRender();
+                                } catch (Exception e) {
+                                    listeners.onException(e);
+                                } finally {
+                                    app.getHttpContext().setServlet(null);
+                                    app.getHttpContext().setRequest(null);
+                                    app.getHttpContext().setResponse(null);
+                                }
                             } else if ("contextfw-refresh".equals(command)) {
                                 response.setStatus(HttpServletResponse.SC_OK);
                             }

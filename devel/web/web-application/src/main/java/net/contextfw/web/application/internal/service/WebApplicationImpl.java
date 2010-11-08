@@ -10,15 +10,16 @@ import net.contextfw.web.application.ModuleConfiguration;
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.annotations.WebApplicationScoped;
+import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.dom.AttributeHandler;
 import net.contextfw.web.application.dom.DOMBuilder;
-import net.contextfw.web.application.elements.CElement;
-import net.contextfw.web.application.internal.ElementRegister;
-import net.contextfw.web.application.internal.ElementUpdateHandler;
-import net.contextfw.web.application.internal.ElementUpdateHandlerFactory;
-import net.contextfw.web.application.internal.WebApplicationElement;
+import net.contextfw.web.application.internal.ComponentUpdateHandler;
+import net.contextfw.web.application.internal.ComponentUpdateHandlerFactory;
 import net.contextfw.web.application.internal.WebResponder;
 import net.contextfw.web.application.internal.WebResponder.Mode;
+import net.contextfw.web.application.internal.component.ComponentBuilder;
+import net.contextfw.web.application.internal.component.ComponentRegister;
+import net.contextfw.web.application.internal.component.WebApplicationComponent;
 import net.contextfw.web.application.internal.initializer.InitializerContextImpl;
 import net.contextfw.web.application.request.Request;
 
@@ -29,9 +30,12 @@ import com.google.inject.Injector;
 public class WebApplicationImpl implements WebApplication {
 
     @Inject
-    private ElementUpdateHandlerFactory euhf;
+    private ComponentUpdateHandlerFactory euhf;
 
-    private static volatile Map<String, ElementUpdateHandler> updateHandlers = new HashMap<String, ElementUpdateHandler>();
+    @Inject
+    private ComponentBuilder builder;
+    
+    private static volatile Map<String, ComponentUpdateHandler> updateHandlers = new HashMap<String, ComponentUpdateHandler>();
 
     @Inject
     private Injector injector;
@@ -39,12 +43,12 @@ public class WebApplicationImpl implements WebApplication {
     @Inject
     private HttpContext httpContext;
 
-    private final ElementRegister elementRegister = new ElementRegister();
+    private final ComponentRegister componentRegister = new ComponentRegister();
 
-    private final WebApplicationElement rootElement =
-            new WebApplicationElement(elementRegister);
+    private final WebApplicationComponent rootComponent =
+            new WebApplicationComponent(componentRegister);
 
-    private List<Class<? extends CElement>> chain;
+    private List<Class<? extends Component>> chain;
 
     private InitializerContextImpl context;
 
@@ -68,7 +72,7 @@ public class WebApplicationImpl implements WebApplication {
     @Override
     public void initState() throws WebApplicationException {
         context = new InitializerContextImpl(injector, chain);
-        rootElement.registerChild(context.initChild());
+        rootComponent.registerChild(context.initChild());
     }
 
     @Override
@@ -94,9 +98,9 @@ public class WebApplicationImpl implements WebApplication {
                 DOMBuilder d;
 
                 if (mode == Mode.INIT) {
-                    d = new DOMBuilder("WebApplication", attributes);
+                    d = new DOMBuilder("WebApplication", attributes, builder);
                 } else {
-                    d = new DOMBuilder("WebApplication.update", attributes);
+                    d = new DOMBuilder("WebApplication.update", attributes, builder);
                 }
 
                 d.attr("handle", webApplicationHandle.getKey());
@@ -106,7 +110,7 @@ public class WebApplicationImpl implements WebApplication {
                     d.attr("xml:lang", context.getLocale().toString());
                 }
                 if (mode == Mode.INIT) {
-                    rootElement.build(d);
+                    rootComponent.buildChild(d);
                 } else if (httpContext.getRedirectUrl() != null) {
                     d.descend("Redirect").attr("href", httpContext.getRedirectUrl());
                 } else if (httpContext.getErrorCode() != null) {
@@ -114,10 +118,10 @@ public class WebApplicationImpl implements WebApplication {
                 } else if (httpContext.isReload()) {
                     d.descend("Reload");
                 } else {
-                    rootElement.doCascadedUpdate(d);
+                    rootComponent.buildChildUpdate(d, builder);
                 }
 
-                rootElement.clearCascadedUpdate();
+                rootComponent.clearCascadedUpdate();
 
                 if (configuration.getXmlParamName() == null
                         || httpContext.getRequest().getParameter(configuration.getXmlParamName()) == null) {
@@ -152,15 +156,15 @@ public class WebApplicationImpl implements WebApplication {
 
                 for (String id : elementIds) {
                     String event = request.param("method").getStringValue(null);
-                    CElement element = elementRegister.findElement(id);
+                    Component element = componentRegister.findComponent(id);
 
-                    String key = ElementUpdateHandler.getKey(element.getClass(), event);
+                    String key = ComponentUpdateHandler.getKey(element.getClass(), event);
 
                     if (!updateHandlers.containsKey(key) || configuration.isDebugMode()) {
                         updateHandlers.put(key, euhf.createHandler(element.getClass(), event));
                     }
 
-                    ElementUpdateHandler handler = updateHandlers.get(key);
+                    ComponentUpdateHandler handler = updateHandlers.get(key);
 
                     if (handler != null) {
                         handler.invoke(element, request.subRequest(element.getId()));
@@ -173,7 +177,7 @@ public class WebApplicationImpl implements WebApplication {
     }
 
     @Override
-    public void setInitializerChain(List<Class<? extends CElement>> chain) {
+    public void setInitializerChain(List<Class<? extends Component>> chain) {
         this.chain = chain;
     }
 }

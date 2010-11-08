@@ -3,11 +3,10 @@ package net.contextfw.web.application;
 import java.util.List;
 
 import net.contextfw.web.application.annotations.WebApplicationScoped;
+import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.dom.AttributeHandler;
-import net.contextfw.web.application.elements.CElement;
-import net.contextfw.web.application.elements.enhanced.EnhancedElement;
 import net.contextfw.web.application.initializer.Initializer;
-import net.contextfw.web.application.internal.enhanced.AutoRegisterListener;
+import net.contextfw.web.application.internal.component.AutoRegisterListener;
 import net.contextfw.web.application.internal.initializer.InitializerProvider;
 import net.contextfw.web.application.internal.providers.HttpContextProvider;
 import net.contextfw.web.application.internal.providers.RequestProvider;
@@ -51,11 +50,13 @@ public class WebApplicationModule extends AbstractModule {
                 configuration.getAttributeHandlerClass());
         bind(InitializerProvider.class).toInstance(configureInitializers());
         bind(ModuleConfiguration.class).toInstance(configuration);
+        
         this.bindListener(Matchers.any(), new TypeListener() {
+            @SuppressWarnings("unchecked")
             @Override
             public <I> void hear(TypeLiteral<I> typeLiteral,
                     TypeEncounter<I> typeEncounter) {
-                if (EnhancedElement.class.isAssignableFrom(typeLiteral
+                if (Component.class.isAssignableFrom(typeLiteral
                         .getRawType())) {
                     typeEncounter.register(autoRegisterListener);
                 }
@@ -70,9 +71,9 @@ public class WebApplicationModule extends AbstractModule {
         List<Class<?>> classes = ClassScanner.getClasses(configuration.getInitializerRootPackages());
 
         for (Class<?> cl : classes) {
-            if (CElement.class.isAssignableFrom(cl)
+            if (Component.class.isAssignableFrom(cl)
                     && cl.getAnnotation(Initializer.class) != null) {
-                provider.addInitializer((Class<? extends CElement>) cl);
+                provider.addInitializer((Class<? extends Component>) cl);
             }
         }
 

@@ -1,0 +1,24 @@
+package net.contextfw.web.application.internal.component;
+
+import net.contextfw.web.application.dom.DOMBuilder;
+
+class ElementBuilder extends NamedBuilder {
+
+    private final ComponentBuilder componentBuilder;
+    
+    protected ElementBuilder(ComponentBuilder componentBuilder, PropertyAccess<Object> propertyAccess, String name, String accessName) {
+        super(propertyAccess, name, accessName);
+        this.componentBuilder = componentBuilder;
+    }
+
+    @Override
+    void buildNamedValue(DOMBuilder b, String name, Object value) {
+        if (value != null) {
+            if (componentBuilder.isBuildable(value.getClass())) {
+                componentBuilder.build(b.descend(name), value);
+            } else {
+                b.descend(name).text(value);
+            }
+        }
+    }
+}

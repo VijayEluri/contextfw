@@ -8,14 +8,13 @@ import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import net.contextfw.web.application.WebApplicationException;
+import net.contextfw.web.application.annotations.WebApplicationScoped;
+import net.contextfw.web.application.component.Component;
+import net.contextfw.web.application.initializer.Initializer;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import net.contextfw.web.application.WebApplicationException;
-import net.contextfw.web.application.WebApplicationServletModule;
-import net.contextfw.web.application.annotations.WebApplicationScoped;
-import net.contextfw.web.application.elements.CElement;
-import net.contextfw.web.application.initializer.Initializer;
 
 import com.google.inject.Singleton;
 
@@ -24,15 +23,15 @@ public class InitializerProvider {
 
     private Logger logger = LoggerFactory.getLogger(InitializerProvider.class);
     
-    private final Map<Pattern, Class<? extends CElement>> initializers 
-        = new HashMap<Pattern, Class<? extends CElement>>();
+    private final Map<Pattern, Class<? extends Component>> initializers 
+        = new HashMap<Pattern, Class<? extends Component>>();
     
-    private final Map<Class<? extends CElement>, List<Class<? extends CElement>>> chain
-         = new HashMap<Class<? extends CElement>, List<Class<? extends CElement>>>(); 
+    private final Map<Class<? extends Component>, List<Class<? extends Component>>> chain
+         = new HashMap<Class<? extends Component>, List<Class<? extends Component>>>(); 
 
     public InitializerProvider() {}
 
-    public void addInitializer(Class<? extends CElement> cl) {
+    public void addInitializer(Class<? extends Component> cl) {
 
         if (cl == null) {
             throw new WebApplicationException("Initializer was null");
@@ -48,13 +47,13 @@ public class InitializerProvider {
             
             initializers.put(Pattern.compile(url, Pattern.CASE_INSENSITIVE), cl);
             
-            List<Class<? extends CElement>> classes = new ArrayList<Class<? extends CElement>>();
+            List<Class<? extends Component>> classes = new ArrayList<Class<? extends Component>>();
             
-            Class<? extends CElement> currentClass = annotation.parent();
+            Class<? extends Component> currentClass = annotation.parent();
             
             logger.info("Registered initializer: {}", cl.getName());
             classes.add(cl);
-            while (!currentClass.equals(CElement.class)) {
+            while (!currentClass.equals(Component.class)) {
                 Initializer anno = processClass(currentClass);
                 classes.add(0, currentClass);
                 currentClass = anno.parent();
@@ -65,8 +64,8 @@ public class InitializerProvider {
         }
     }
 
-    public List<Class<? extends CElement>> findChain(String url) {
-        for (Entry<Pattern, Class<? extends CElement>> entry : initializers.entrySet()) {
+    public List<Class<? extends Component>> findChain(String url) {
+        for (Entry<Pattern, Class<? extends Component>> entry : initializers.entrySet()) {
             if (entry.getKey().matcher(url).matches()) {
                 return chain.get(entry.getValue());
             }

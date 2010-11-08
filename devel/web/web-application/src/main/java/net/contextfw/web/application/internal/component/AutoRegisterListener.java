@@ -1,11 +1,10 @@
-package net.contextfw.web.application.internal.enhanced;
+package net.contextfw.web.application.internal.component;
 
 import java.lang.reflect.Field;
 
 import net.contextfw.web.application.WebApplicationException;
-import net.contextfw.web.application.elements.CElement;
-import net.contextfw.web.application.elements.enhanced.EmbeddedElement;
-import net.contextfw.web.application.elements.enhanced.EnhancedElement;
+import net.contextfw.web.application.component.Component;
+import net.contextfw.web.application.component.Element;
 
 import com.google.inject.spi.InjectionListener;
 
@@ -16,18 +15,18 @@ public class AutoRegisterListener<I> implements InjectionListener<I> {
 
         Class<?> currentClass = injectee.getClass();
 
-        while (EnhancedElement.class.isAssignableFrom(currentClass)) {
+        while (Component.class.isAssignableFrom(currentClass)) {
             Field[] fields = currentClass.getDeclaredFields();
             for (Field field : fields) {
                 field.setAccessible(true);
-                if (CElement.class.isAssignableFrom(field.getType())) {
+                if (Component.class.isAssignableFrom(field.getType())) {
                     try {
-                        EmbeddedElement annotation = field
-                                .getAnnotation(EmbeddedElement.class);
-                        CElement element = (CElement) field.get(injectee);
-                        if (element != null && annotation != null
+                        Element annotation = field
+                                .getAnnotation(Element.class);
+                        Component component = (Component) field.get(injectee);
+                        if (component != null && annotation != null
                                 && annotation.autoRegister()) {
-                            ((EnhancedElement)injectee).registerChild(element);
+                            ((Component)injectee).registerChild(component);
                         }
                     } catch (IllegalArgumentException e) {
                         throw new WebApplicationException(e);

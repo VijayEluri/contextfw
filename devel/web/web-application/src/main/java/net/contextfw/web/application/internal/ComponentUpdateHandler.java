@@ -4,24 +4,25 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import net.contextfw.web.application.elements.CElement;
+import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.request.Request;
 
 import com.google.gson.Gson;
 
-public class ElementUpdateHandler {
+public class ComponentUpdateHandler {
 
-    Gson gson = new Gson();
+    private final Gson gson;
     
     private String key;
     private Method method;
 
-    public ElementUpdateHandler(String key, Method method) {
+    public ComponentUpdateHandler(String key, Method method, Gson gson) {
         this.key = key;
         this.method = method;
+        this.gson = gson;
     }
 
-    public static String getKey(Class<? extends CElement> elClass, String methodName) {
+    public static String getKey(Class<? extends Component> elClass, String methodName) {
         return elClass.getCanonicalName() + "." + methodName;
     }
 
@@ -29,7 +30,7 @@ public class ElementUpdateHandler {
         return key;
     }
 
-    public void invoke(CElement element, Request request) {
+    public void invoke(Component element, Request request) {
         try {
             invokeWithParams(element, request);
 
@@ -56,7 +57,7 @@ public class ElementUpdateHandler {
         }
     }
 
-    private void invokeWithParams(CElement element, Request request) throws IllegalArgumentException,
+    private void invokeWithParams(Component element, Request request) throws IllegalArgumentException,
             IllegalAccessException, InvocationTargetException, NoSuchMethodException, InstantiationException {
 
         Class<?>[] paramTypes = method.getParameterTypes();

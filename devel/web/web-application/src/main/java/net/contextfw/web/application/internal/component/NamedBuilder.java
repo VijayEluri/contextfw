@@ -1,4 +1,4 @@
-package net.contextfw.web.application.internal.enhanced;
+package net.contextfw.web.application.internal.component;
 
 import net.contextfw.web.application.dom.DOMBuilder;
 
@@ -6,8 +6,8 @@ abstract class NamedBuilder extends PropertyBuilder {
 
     private final String name;
     
-    protected NamedBuilder(PropertyAccess<Object> propertyAccess, String name) {
-        super(propertyAccess);
+    protected NamedBuilder(PropertyAccess<Object> propertyAccess, String name, String methodName) {
+        super(propertyAccess, methodName);
         this.name = name;
     }
 

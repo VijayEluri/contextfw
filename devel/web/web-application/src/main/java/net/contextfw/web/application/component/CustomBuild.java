@@ -1,4 +1,4 @@
-package net.contextfw.web.application.elements.enhanced;
+package net.contextfw.web.application.component;
 
 import static java.lang.annotation.ElementType.METHOD;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
@@ -6,8 +6,9 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
-@Target( { METHOD })
+@Target(METHOD)
 @Retention(RUNTIME)
-public @interface PartialUpdate {
-    String name() default "";
+public @interface CustomBuild {
+    boolean onCreate() default true;
+    boolean onUpdate() default true;
 }

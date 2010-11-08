@@ -1,4 +1,4 @@
-package net.contextfw.web.application.elements.enhanced;
+package net.contextfw.web.application.component;
 
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;
@@ -9,9 +9,9 @@ import java.lang.annotation.Target;
 
 @Target( { FIELD, METHOD })
 @Retention(RUNTIME)
-public @interface EmbeddedElement {
-    boolean autoRegister() default true;
+public @interface Element {
     String name() default "";
-    BuildPhase phase() default BuildPhase.BOTH;
-    String[] updateModes() default {};
+    boolean autoRegister() default true;
+    boolean onCreate() default true;
+    boolean onUpdate() default true;
 }

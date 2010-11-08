@@ -11,7 +11,8 @@ import javax.servlet.http.HttpServletResponse;
 import net.contextfw.web.application.HttpContext;
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.WebApplicationHandle;
-import net.contextfw.web.application.elements.CElement;
+import net.contextfw.web.application.component.Component;
+import net.contextfw.web.application.internal.LifecycleListeners;
 import net.contextfw.web.application.internal.initializer.InitializerProvider;
 import net.contextfw.web.application.internal.scope.WebApplicationScopedBeans;
 
@@ -33,21 +34,25 @@ public class InitHandler {
 
     private final Provider<WebApplication> webApplicationProvider;
     
+    private final LifecycleListeners listeners;
+    
     @Inject
     public InitHandler(WebApplicationContextHandler handler, 
-            Provider<WebApplication> webApplicationProvider, 
-            InitializerProvider initializers) {
+                       Provider<WebApplication> webApplicationProvider, 
+                       InitializerProvider initializers,
+                       LifecycleListeners listeners) {
         
         this.handler = handler;
         this.webApplicationProvider = webApplicationProvider;
         this.initializers = initializers;
+        this.listeners = listeners;
     }
 
     public final void handleRequest(HttpServlet servlet,
             HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
-            List<Class<? extends CElement>> chain = initializers.findChain(request.getRequestURI());
+            List<Class<? extends Component>> chain = initializers.findChain(request.getRequestURI());
             
             if (chain == null) {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -62,11 +67,21 @@ public class InitHandler {
                 handler.addContext(context);
     
                 synchronized (context.getApplication()) {
-                    app.initState();
-                    app.sendResponse();
-                    context.getHttpContext().setServlet(null);
-                    context.getHttpContext().setRequest(null);
-                    context.getHttpContext().setResponse(null);
+                    try {
+                        listeners.beforeInitialize();
+                        app.initState();
+                        listeners.afterInitialize();
+                        listeners.beforeRender();
+                        app.sendResponse();
+                        listeners.afterRender();
+                    } catch (Exception e) {
+                        listeners.onException(e);
+                        throw new WebApplicationException(e);
+                    } finally {
+                        context.getHttpContext().setServlet(null);
+                        context.getHttpContext().setRequest(null);
+                        context.getHttpContext().setResponse(null);
+                    }
                 }
             }
         } catch (Exception e) {

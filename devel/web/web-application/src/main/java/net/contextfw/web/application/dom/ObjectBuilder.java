@@ -5,9 +5,9 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.contextfw.web.application.elements.enhanced.Builder;
+import com.sun.istack.internal.Builder;
 
-public final class ObjectBuilder<T> implements Builder<T> {
+public final class ObjectBuilder<T>  {
 
     private final Set<Field> attributeFields = new HashSet<Field>();
     private final Set<Field> textFields = new HashSet<Field>();

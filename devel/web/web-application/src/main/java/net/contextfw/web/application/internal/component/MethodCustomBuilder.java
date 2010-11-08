@@ -1,22 +1,22 @@
-package net.contextfw.web.application.internal.enhanced;
+package net.contextfw.web.application.internal.component;
 
 import java.lang.reflect.Method;
 
 import net.contextfw.web.application.dom.DOMBuilder;
-import net.contextfw.web.application.elements.CSimpleElement;
 
 class MethodCustomBuilder extends Builder {
 
     private final Method method;
     
     public MethodCustomBuilder(Method method) {
+        super(method.getName());
         this.method = method;
     }
     
     @Override
-    public void build(DOMBuilder b, CSimpleElement element) {
+    public void build(DOMBuilder b, Object buildable) {
         try {
-            method.invoke(element, b);
+            method.invoke(buildable, b);
         }
         catch (Exception e) {
             throw new RuntimeException(e);

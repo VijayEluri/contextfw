@@ -1,4 +1,4 @@
-package net.contextfw.web.application.internal.enhanced;
+package net.contextfw.web.application.internal.component;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
