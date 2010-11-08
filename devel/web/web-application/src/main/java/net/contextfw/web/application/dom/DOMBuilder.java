@@ -45,8 +45,8 @@ public final class DOMBuilder {
         return this;
     }
     
-    public DOMBuilder child(Component component) {
-        componentBuilder.build(this, component);
+    public DOMBuilder child(Object object) {
+        componentBuilder.build(this, object);
         return this;
     }
 
