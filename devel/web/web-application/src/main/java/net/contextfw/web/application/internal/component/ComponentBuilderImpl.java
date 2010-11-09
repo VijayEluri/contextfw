@@ -25,6 +25,7 @@ public class ComponentBuilderImpl implements ComponentBuilder {
 
     private Map<Class<?>, List<Builder>> builders = new HashMap<Class<?>, List<Builder>>();
     private Map<Class<?>, List<Builder>> updateBuilders = new HashMap<Class<?>, List<Builder>>();
+    private Map<Class<?>, Buildable> annotations = new HashMap<Class<?>, Buildable>();
 
     private synchronized List<Builder> getBuilder(Class<?> cl) {
         if (builders.containsKey(cl)) {
@@ -137,10 +138,19 @@ public class ComponentBuilderImpl implements ComponentBuilder {
     @Override
     public void build(DOMBuilder sb, Object component) {
         Class<?> cl = getActualClass(component);
-        DOMBuilder b = sb.descend(cl.getSimpleName());
-        for (Builder builder : getBuilder(cl)) {
-            builder.build(b, component);
-        }        
+        if (isBuildable(cl)) {
+            DOMBuilder b;
+            if (annotations.get(cl).noWrapping()) {
+                b = sb;
+            } else {
+                b = sb.descend(cl.getSimpleName());
+            }
+            for (Builder builder : getBuilder(cl)) {
+                builder.build(b, component);
+            }
+        } else {
+            throw new WebApplicationException("Object must be annotated with @Buildable in order to be built");
+        }
     }
 
     @Override
@@ -168,6 +178,7 @@ public class ComponentBuilderImpl implements ComponentBuilder {
             while (current instanceof Object) {
                 if (current.isAnnotationPresent(Buildable.class)) {
                     createBuilders(cl);
+                    annotations.put(cl, current.getAnnotation(Buildable.class));
                     return true;
                 }
                 current = current.getSuperclass();

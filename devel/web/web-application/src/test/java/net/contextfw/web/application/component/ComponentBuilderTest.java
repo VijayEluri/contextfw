@@ -55,6 +55,9 @@ public class ComponentBuilderTest extends BaseComponentTest {
         
         @Element
         public Dee dee = new Dee();
+        
+        @Element
+        public Faa faa = new Faa();
     }
     
     @Buildable
@@ -69,6 +72,12 @@ public class ComponentBuilderTest extends BaseComponentTest {
         public String toString() {
             return "Ee.toString()";
         }
+    }
+    
+    @Buildable(noWrapping=true)
+    public static class Faa {
+        @Attribute
+        public String foo = "bar";
     }
     
     @Test
@@ -149,6 +158,7 @@ public class ComponentBuilderTest extends BaseComponentTest {
         assertDom("//WebApplication/Cee").hasNoAttribute("nullAttribute");
         assertDom("//WebApplication/Cee/dee/Dee").exists();
         assertDom("//WebApplication/Cee/dee/Dee/aa/Aa/bar/text()").hasText("foo");
+        assertDom("//WebApplication/Cee/faa").hasAttribute("foo", "bar");
     }
     
     @Test 
