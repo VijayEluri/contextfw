@@ -5,6 +5,9 @@ import java.util.Set;
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.dom.DOMBuilder;
 
+import com.google.inject.ImplementedBy;
+
+@ImplementedBy(ComponentBuilderImpl.class)
 public interface ComponentBuilder {
     
     void build(DOMBuilder b, Object object);

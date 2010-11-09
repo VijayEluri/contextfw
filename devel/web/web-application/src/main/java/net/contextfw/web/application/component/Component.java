@@ -101,7 +101,7 @@ public class Component {
         if (refreshMode == RefreshMode.UPDATE) {
             builder.buildUpdate(domBuilder, this, isNormalUpdate ? "update" : partialUpdateName, this.partialUpdates);
         }
-        else if (refreshMode == RefreshMode.PASS || !isNormalUpdate) {
+        if (refreshMode == RefreshMode.PASS || !isNormalUpdate) {
             if (children != null) {
                 for (Component child : children) {
                     child.buildComponentUpdate(domBuilder, builder);
@@ -117,6 +117,7 @@ public class Component {
             for (String partialUpdate : updates) {
                 partialUpdates.add(partialUpdate);
             }
+            partialUpdates.add("id");
         }
         refresh();
     }

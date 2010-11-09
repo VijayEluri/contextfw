@@ -164,4 +164,34 @@ public class ComponentBuilderTest extends BaseComponentTest {
         assertDom("//WebApplication//Aa.update[1]").exists();
         assertDom("//WebApplication//Aa.update[2]").exists();
     }
+    
+    @Test 
+    public void testCeePartialUpdate() {
+        Cee cee = new Cee();
+        cee.aa1 = cee.registerChild(new Aa());
+        cee.aa2 = cee.registerChild(new Aa());
+        webApplicationComponent.registerChild(cee);
+        cee.partialRefresh("aa1Update", "aa1");
+        webApplicationComponent.buildChildUpdate(domBuilder, componentBuilder);
+        logXML(domBuilder);
+        assertDom("//WebApplication/Cee.aa1Update").hasAttribute("id", "el1");
+        assertDom("//WebApplication/Cee.aa1Update/aa1/Aa").exists();
+        assertDom("//WebApplication/Cee.aa1Update/aa2/Aa").notExists();
+    }
+    
+    @Test 
+    public void testCeePartialUpdate2() {
+        Cee cee = new Cee();
+        cee.aa1 = cee.registerChild(new Aa());
+        cee.aa2 = cee.registerChild(new Aa());
+        webApplicationComponent.registerChild(cee);
+        cee.partialRefresh("aa1Update", "aa1");
+        cee.aa2.refresh();
+        webApplicationComponent.buildChildUpdate(domBuilder, componentBuilder);
+        logXML(domBuilder);
+        assertDom("//WebApplication/Cee.aa1Update").hasAttribute("id", "el1");
+        assertDom("//WebApplication/Cee.aa1Update/aa1/Aa").exists();
+        assertDom("//WebApplication/Cee.aa1Update/aa2/Aa").notExists();
+        assertDom("//WebApplication/Aa.update").exists();
+    }
 }
