@@ -88,7 +88,7 @@ public class WebResponder {
             writer = new XMLWriter(xml, format);
             writer.write(d);
             
-            logger.debug("Logged xml-response:\n{}", xml.toString());
+            logger.info("Logged xml-response:\n{}", xml.toString());
             
         } catch (Exception e) {
             throw new WebApplicationException(e);
