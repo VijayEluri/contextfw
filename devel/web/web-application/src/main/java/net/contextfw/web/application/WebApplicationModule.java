@@ -4,7 +4,6 @@ import java.util.List;
 
 import net.contextfw.web.application.annotations.WebApplicationScoped;
 import net.contextfw.web.application.component.Component;
-import net.contextfw.web.application.dom.AttributeHandler;
 import net.contextfw.web.application.initializer.Initializer;
 import net.contextfw.web.application.internal.component.AutoRegisterListener;
 import net.contextfw.web.application.internal.initializer.InitializerProvider;
@@ -46,8 +45,6 @@ public class WebApplicationModule extends AbstractModule {
         bind(WebApplicationHandle.class).toProvider(
                 WebApplicationHandleProvider.class);
         bind(Request.class).toProvider(RequestProvider.class);
-        bind(AttributeHandler.class).to(
-                configuration.getAttributeHandlerClass());
         bind(InitializerProvider.class).toInstance(configureInitializers());
         bind(ModuleConfiguration.class).toInstance(configuration);
         

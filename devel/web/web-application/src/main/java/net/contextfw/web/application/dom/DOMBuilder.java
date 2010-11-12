@@ -1,6 +1,6 @@
 package net.contextfw.web.application.dom;
 
-import net.contextfw.web.application.component.Component;
+import net.contextfw.web.application.converter.AttributeSerializer;
 import net.contextfw.web.application.internal.component.ComponentBuilder;
 
 import org.dom4j.Document;
@@ -10,12 +10,12 @@ import org.dom4j.Element;
 public final class DOMBuilder {
 
     private final Document document;
-    private final AttributeHandler attributes;
+    private final AttributeSerializer<Object> serializer;
     private final Element root;
     private final ComponentBuilder componentBuilder;
 
-    public DOMBuilder(String rootName, AttributeHandler attributes, ComponentBuilder componentBuilder) {
-        this.attributes = attributes;
+    public DOMBuilder(String rootName, AttributeSerializer<Object> serializer, ComponentBuilder componentBuilder) {
+        this.serializer = serializer;
         root = DocumentHelper.createElement(rootName);
         document = DocumentHelper.createDocument();
         document.setRootElement(root);
@@ -23,10 +23,10 @@ public final class DOMBuilder {
         this.componentBuilder = componentBuilder;
     }
 
-    private DOMBuilder(Document document, Element root, AttributeHandler attributes, ComponentBuilder componentBuilder) {
+    private DOMBuilder(Document document, Element root, AttributeSerializer<Object> serializer, ComponentBuilder componentBuilder) {
         this.document = document;
         this.root = root;
-        this.attributes = attributes;
+        this.serializer = serializer;
         this.componentBuilder = componentBuilder;
     }
 
@@ -36,7 +36,7 @@ public final class DOMBuilder {
 //    }
     
     public DOMBuilder attr(String name, Object value) {
-        root.addAttribute(name, attributes.toString(value));
+        root.addAttribute(name, serializer.serialize(value));
         return this;
     }
     
@@ -59,7 +59,7 @@ public final class DOMBuilder {
     }
 
     public DOMBuilder text(Object value) {
-        root.setText(attributes.toString(value));
+        root.setText(serializer.serialize(value));
         return this;
     }
 
@@ -69,6 +69,6 @@ public final class DOMBuilder {
     }
 
     public DOMBuilder descend(String elementName) {
-        return new DOMBuilder(document, root.addElement(elementName), attributes, componentBuilder);
+        return new DOMBuilder(document, root.addElement(elementName), serializer, componentBuilder);
     }
 }

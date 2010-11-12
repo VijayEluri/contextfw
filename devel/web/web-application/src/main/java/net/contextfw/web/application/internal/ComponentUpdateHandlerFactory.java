@@ -9,6 +9,8 @@ import net.contextfw.web.application.component.Component;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonSerializer;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
@@ -23,11 +25,11 @@ public class ComponentUpdateHandlerFactory {
         
         GsonBuilder builder = new GsonBuilder();
         
-        for (Entry<Class<?>, Class<?>> entry: configuration.getJsonSerializerClasses()) {
+        for (Entry<Class<?>, Class<? extends JsonSerializer<?>>> entry: configuration.getJsonSerializerClasses()) {
             builder.registerTypeAdapter(entry.getKey(), injector.getInstance(entry.getValue()));
         }
 
-        for (Entry<Class<?>, Class<?>> entry: configuration.getJsonDeserializerClasses()) {
+        for (Entry<Class<?>, Class<? extends JsonDeserializer<?>>> entry: configuration.getJsonDeserializerClasses()) {
             builder.registerTypeAdapter(entry.getKey(), injector.getInstance(entry.getValue()));
         }        
         

@@ -11,7 +11,6 @@ import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.annotations.WebApplicationScoped;
 import net.contextfw.web.application.component.Component;
-import net.contextfw.web.application.dom.AttributeHandler;
 import net.contextfw.web.application.dom.DOMBuilder;
 import net.contextfw.web.application.internal.ComponentUpdateHandler;
 import net.contextfw.web.application.internal.ComponentUpdateHandlerFactory;
@@ -21,6 +20,7 @@ import net.contextfw.web.application.internal.component.ComponentBuilder;
 import net.contextfw.web.application.internal.component.ComponentRegister;
 import net.contextfw.web.application.internal.component.WebApplicationComponent;
 import net.contextfw.web.application.internal.initializer.InitializerContextImpl;
+import net.contextfw.web.application.internal.util.AttributeHandler;
 import net.contextfw.web.application.request.Request;
 
 import com.google.inject.Inject;

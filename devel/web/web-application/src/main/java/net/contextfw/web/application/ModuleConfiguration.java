@@ -1,14 +1,18 @@
 package net.contextfw.web.application;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import net.contextfw.web.application.dom.AttributeHandler;
+import net.contextfw.web.application.converter.AttributeJsonSerializer;
+import net.contextfw.web.application.converter.AttributeSerializer;
 
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonSerializer;
 import com.google.inject.Singleton;
 
 /**
@@ -17,16 +21,17 @@ import com.google.inject.Singleton;
 @Singleton
 public class ModuleConfiguration {
 
-    private Class<? extends AttributeHandler> attributeHandler;
-
     private final List<String> initializerRootPackages = new ArrayList<String>();
     private final List<String> resourcePaths = new ArrayList<String>();
     
-    private final Map<Class<?>, Class<?>> jsonSerializerClasses 
-        = new HashMap<Class<?>, Class<?>>();
+    private final Map<Class<?>, Class<? extends AttributeSerializer<?>>> attributeSerializerClasses 
+    = new HashMap<Class<?>, Class<? extends AttributeSerializer<?>>>();
     
-    private final Map<Class<?>, Class<?>> jsonDeserializerClasses 
-        = new HashMap<Class<?>, Class<?>>();
+    private final Map<Class<?>, Class<? extends JsonSerializer<?>>> jsonSerializerClasses 
+        = new HashMap<Class<?>, Class<? extends JsonSerializer<?>>>();
+    
+    private final Map<Class<?>, Class<? extends JsonDeserializer<?>>> jsonDeserializerClasses 
+        = new HashMap<Class<?>, Class<? extends JsonDeserializer<?>>>();
     
     private boolean debugMode = false;
     private boolean logXML = false;
@@ -40,13 +45,8 @@ public class ModuleConfiguration {
     private String xmlParamName = null;
     private Class<? extends LifecycleListener> lifecycleListener;
     
-    public ModuleConfiguration attributeHandlerClass(Class<? extends AttributeHandler> attributeHandler) {
-        this.attributeHandler = attributeHandler; 
+    public ModuleConfiguration attributeHandlerClass() {
         return this;
-    }
-
-    public Class<? extends AttributeHandler> getAttributeHandlerClass() {
-        return attributeHandler;
     }
     
     public ModuleConfiguration debugMode(boolean debugMode) {
@@ -197,22 +197,45 @@ public class ModuleConfiguration {
         return transformerCount;
     }
 
-    public ModuleConfiguration addJsonSerializer(Class<?> cl, Class<?> serializerClass) {
+    /**
+     * Convinience method to add all serializer types at same time
+     * @param <S>
+     *      Type type of source
+     * @param type
+     *      The class of type
+     * @param serializer
+     *      The class of serializer
+     * @return
+     */
+    public <S> ModuleConfiguration addAttributeJsonSerializer(Class<S> type, 
+            Class<? extends AttributeJsonSerializer<S>> serializer) {
+        addJsonSerializerClass(type, serializer);
+        addJsonDeserializerClass(type, serializer);
+        addAttributeJsonSerializer(type, serializer);
+        return this;
+    }
+    
+    public ModuleConfiguration addJsonSerializerClass(Class<?> cl, Class<? extends JsonSerializer<?>> serializerClass) {
         jsonSerializerClasses.put(cl, serializerClass);
         return this;
     }
 
-    public ModuleConfiguration addJsonDeserializerClasses(Class<?> cl, Class<?> serializerClass) {
+    public ModuleConfiguration addJsonDeserializerClass(Class<?> cl, 
+                Class<? extends JsonDeserializer<?>> serializerClass) {
         jsonDeserializerClasses.put(cl, serializerClass);
         return this;
     }
     
-    public Set<Entry<Class<?>, Class<?>>> getJsonDeserializerClasses() {
-        return jsonDeserializerClasses.entrySet();
+    public Set<Entry<Class<?>, Class<? extends JsonDeserializer<?>>>> getJsonDeserializerClasses() {
+        return Collections.unmodifiableSet(jsonDeserializerClasses.entrySet());
     }
 
-    public Set<Entry<Class<?>, Class<?>>> getJsonSerializerClasses() {
-        return jsonSerializerClasses.entrySet();
+    public Set<Entry<Class<?>, Class<? extends JsonSerializer<?>>>> getJsonSerializerClasses() {
+        return Collections.unmodifiableSet(jsonSerializerClasses.entrySet());
+    }
+    
+    public Set<Entry<Class<?>, Class<? extends AttributeSerializer<?>>>> getAttributeSerializerClasses() {
+        return Collections.unmodifiableSet(attributeSerializerClasses.entrySet());
     }
 
     public ModuleConfiguration setLifecycleListener(Class<? extends LifecycleListener> lifecycleListener) {

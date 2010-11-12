@@ -2,10 +2,10 @@ package net.contextfw.web.application.component;
 
 import java.io.StringWriter;
 
-import net.contextfw.application.TstAttributeHandler;
 import net.contextfw.web.application.WebApplicationException;
-import net.contextfw.web.application.dom.AttributeHandler;
+import net.contextfw.web.application.converter.AttributeSerializer;
 import net.contextfw.web.application.dom.DOMBuilder;
+import net.contextfw.web.application.internal.ToStringSerializer;
 import net.contextfw.web.application.internal.component.ComponentBuilder;
 import net.contextfw.web.application.internal.component.ComponentBuilderImpl;
 import net.contextfw.web.application.internal.component.ComponentRegister;
@@ -30,7 +30,7 @@ public abstract class BaseComponentTest {
     
     protected DOMBuilder domBuilder;
     
-    protected AttributeHandler attributes = new TstAttributeHandler();
+    protected AttributeSerializer<Object> serializer = new ToStringSerializer();
     
     protected DomAssert assertDom(String xpath) {
         Node node = domBuilder.toDocument().getRootElement().selectSingleNode(xpath);
@@ -41,7 +41,7 @@ public abstract class BaseComponentTest {
     public void before() {
         componentRegister = new ComponentRegister();
         componentBuilder = new ComponentBuilderImpl();
-        domBuilder = new DOMBuilder("WebApplication", attributes, componentBuilder);
+        domBuilder = new DOMBuilder("WebApplication", serializer, componentBuilder);
         webApplicationComponent = new WebApplicationComponent(componentRegister);
     }
     
