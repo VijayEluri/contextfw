@@ -4,7 +4,9 @@ import java.util.HashSet;
 import java.util.Set;
 
 import net.contextfw.web.application.dom.DOMBuilder;
+import net.contextfw.web.application.dom.RemoteCallBuilder;
 import net.contextfw.web.application.internal.component.ComponentBuilder;
+import net.contextfw.web.application.internal.component.ComponentBuilderImpl;
 
 @Buildable
 public class Component {
@@ -15,14 +17,14 @@ public class Component {
     private Component parent = null;
     private Set<Component> children = null;
     private Set<Component> waitingToRegister = null;
-    
+
     private enum RefreshMode {
         NONE, PASS, UPDATE
     };
-    
+
     @Attribute
     private String id;
-    
+
     public void setId(String id) {
         this.id = id;
     }
@@ -30,7 +32,7 @@ public class Component {
     public String getId() {
         return id;
     }
-    
+
     public <T extends Component> T registerChild(T el) {
         if (children == null) {
             children = new HashSet<Component>();
@@ -94,10 +96,10 @@ public class Component {
             }
         }
     }
-    
+
     public final void buildComponentUpdate(DOMBuilder domBuilder, ComponentBuilder builder) {
         boolean isNormalUpdate = (partialUpdateName == null);
-        
+
         if (refreshMode == RefreshMode.UPDATE) {
             builder.buildUpdate(domBuilder, this, isNormalUpdate ? "update" : partialUpdateName, this.partialUpdates);
         }
@@ -121,7 +123,7 @@ public class Component {
         }
         refresh();
     }
-    
+
     public void clearCascadedUpdate() {
         if (refreshMode == RefreshMode.NONE)
             return;
@@ -132,8 +134,17 @@ public class Component {
                 child.clearCascadedUpdate();
             }
         }
-        
+
         partialUpdates.clear();
         partialUpdateName = null;
+    }
+
+    public void jsCall(DOMBuilder b, Component component, String method, Object... args) {
+        RemoteCallBuilder.buildCall(b, ComponentBuilderImpl.getActualClass(component).getSimpleName(), 
+                component.getId(), method, args);
+    }
+
+    public void jsCall(DOMBuilder b, String method, Object... args) {
+        jsCall(b, this, method, args);
     }
 }
