@@ -11,8 +11,9 @@ import java.lang.annotation.Target;
 @Retention(RUNTIME)
 public @interface Buildable {
     /**
-     * If true the wrapping class is not appended as element
+     * If falsee the wrapping class is not appended as element
      * @return
      */
-    boolean noWrapping() default false;
+    boolean wrap() default true;
+    String name() default "";
 }

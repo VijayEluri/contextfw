@@ -14,4 +14,5 @@ public @interface Element {
     boolean autoRegister() default true;
     boolean onCreate() default true;
     boolean onUpdate() default true;
+    boolean onPartialUpdate() default true;
 }

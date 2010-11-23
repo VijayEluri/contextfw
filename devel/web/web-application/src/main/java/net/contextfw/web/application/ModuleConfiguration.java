@@ -211,17 +211,21 @@ public class ModuleConfiguration {
             Class<? extends AttributeJsonSerializer<S>> serializer) {
         addJsonSerializerClass(type, serializer);
         addJsonDeserializerClass(type, serializer);
-        addAttributeJsonSerializer(type, serializer);
+        addAttributeSerializerClass(type, serializer);
         return this;
     }
     
-    public ModuleConfiguration addJsonSerializerClass(Class<?> cl, Class<? extends JsonSerializer<?>> serializerClass) {
+    public <S> ModuleConfiguration addAttributeSerializerClass(Class<S> cl, Class<? extends AttributeSerializer<S>> serializerClass) {
+        attributeSerializerClasses.put(cl, serializerClass);
+        return this;
+    }
+    public <S> ModuleConfiguration addJsonSerializerClass(Class<S> cl, Class<? extends JsonSerializer<S>> serializerClass) {
         jsonSerializerClasses.put(cl, serializerClass);
         return this;
     }
 
-    public ModuleConfiguration addJsonDeserializerClass(Class<?> cl, 
-                Class<? extends JsonDeserializer<?>> serializerClass) {
+    public <S> ModuleConfiguration addJsonDeserializerClass(Class<S> cl, 
+                Class<? extends JsonDeserializer<S>> serializerClass) {
         jsonDeserializerClasses.put(cl, serializerClass);
         return this;
     }

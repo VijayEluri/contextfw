@@ -1,4 +1,4 @@
-package net.contextfw.web.application.initializer;
+package net.contextfw.web.application.view;
 
 import static java.lang.annotation.ElementType.TYPE;
 import static java.lang.annotation.RetentionPolicy.RUNTIME;
@@ -10,8 +10,8 @@ import net.contextfw.web.application.component.Component;
 
 @Target( { TYPE })
 @Retention(RUNTIME)
-public @interface Initializer {
-    String url() default "";
-    String urlMatcher() default ""; 
+public @interface View {
+    String[] url() default "";
+    String[] property() default "";
     Class<? extends Component> parent() default Component.class;
 }

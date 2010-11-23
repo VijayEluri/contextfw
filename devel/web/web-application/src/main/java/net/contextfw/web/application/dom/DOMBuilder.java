@@ -1,11 +1,16 @@
 package net.contextfw.web.application.dom;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.converter.AttributeSerializer;
 import net.contextfw.web.application.internal.component.ComponentBuilder;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentHelper;
 import org.dom4j.Element;
+import org.dom4j.Node;
 
 public final class DOMBuilder {
 
@@ -40,7 +45,7 @@ public final class DOMBuilder {
         return this;
     }
     
-    public DOMBuilder child(Element element) {
+    public DOMBuilder child(Node element) {
         root.add(element);
         return this;
     }
@@ -54,6 +59,33 @@ public final class DOMBuilder {
         return root;
     }
 
+    public DOMBuilder findByXPath(String xpath) {
+        Element element = (Element) root.selectSingleNode(xpath);
+        if (element != null) {
+            return new DOMBuilder(document, element, serializer, componentBuilder);    
+        } else {
+            return null;
+        }
+    }
+    
+    public DOMBuilder getByXPath(String xpath) {
+        DOMBuilder b = findByXPath(xpath);
+        if (b == null) {
+            throw new WebApplicationException("Element for xpath '"+xpath+"' was not found");
+        } 
+        return b;
+    }
+    
+    public List<DOMBuilder> listByXPath(String xpath) {
+        List<DOMBuilder> rv = new ArrayList<DOMBuilder>();
+        @SuppressWarnings("unchecked")
+        List<Element> elements = (List<Element>) root.selectNodes(xpath);
+        for (Element element : elements) {
+            rv.add(new DOMBuilder(document, element, serializer, componentBuilder));
+        }
+        return rv;
+    }
+    
     public Document toDocument() {
          return document;
     }

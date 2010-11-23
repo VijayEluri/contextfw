@@ -3,12 +3,12 @@ package net.contextfw.web.application;
 import java.util.List;
 import java.util.TreeSet;
 
-import net.contextfw.web.application.initializer.Initializer;
 import net.contextfw.web.application.internal.util.ClassScanner;
 import net.contextfw.web.application.servlet.CSSServlet;
 import net.contextfw.web.application.servlet.InitServlet;
 import net.contextfw.web.application.servlet.ScriptServlet;
 import net.contextfw.web.application.servlet.UpdateServlet;
+import net.contextfw.web.application.view.View;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -51,13 +51,20 @@ public class WebApplicationServletModule extends ServletModule {
         List<Class<?>> classes = ClassScanner.getClasses(configuration.getInitializerRootPackages());
 
         for (Class<?> cl : classes) {
-            Initializer initializer = cl
-                            .getAnnotation(Initializer.class);
-            if (initializer != null) {
-                if (!"".equals(initializer.urlMatcher())) {
-                    urls.add(contextPath + initializer.urlMatcher());
-                } else if (!"".equals(initializer.url())) {
-                    urls.add(contextPath + initializer.url());
+            View annotation = cl.getAnnotation(View.class);
+            if (annotation != null) {
+                for (String url : annotation.url()) {
+                    if (!"".equals(url)) {
+                        urls.add(contextPath + url);
+                    }
+                }
+                for (String property : annotation.property()) {
+                    if (!"".equals(property)) {
+                        String url = System.getProperty(property);
+                        if (url != null && !"".equals(url)) {
+                            urls.add(contextPath + url);
+                        }
+                    }
                 }
             }
         }

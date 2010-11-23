@@ -5,12 +5,12 @@ import java.util.Locale;
 
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.component.Component;
-import net.contextfw.web.application.initializer.InitializerContext;
-import net.contextfw.web.application.initializer.InitializerElement;
+import net.contextfw.web.application.view.ViewContext;
+import net.contextfw.web.application.view.ViewComponent;
 
 import com.google.inject.Injector;
 
-public class InitializerContextImpl implements InitializerContext {
+public class InitializerContextImpl implements ViewContext {
 
     private final List<Class<? extends Component>> chain;
     private final Injector injector;
@@ -45,9 +45,9 @@ public class InitializerContextImpl implements InitializerContext {
 
         Component child = injector.getInstance(cl);
         
-        if (InitializerElement.class.isAssignableFrom(cl)) {
+        if (ViewComponent.class.isAssignableFrom(cl)) {
             currentIndex++;
-            ((InitializerElement) child).initialize(this);
+            ((ViewComponent) child).initialize(this);
         }
         
         return child;

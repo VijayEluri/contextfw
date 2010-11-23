@@ -11,7 +11,9 @@ import java.util.Map;
 import java.util.Set;
 
 import net.contextfw.web.application.WebApplicationException;
+import net.contextfw.web.application.component.AfterBuild;
 import net.contextfw.web.application.component.Attribute;
+import net.contextfw.web.application.component.BeforeBuild;
 import net.contextfw.web.application.component.Buildable;
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.component.CustomBuild;
@@ -23,8 +25,12 @@ import com.google.inject.Singleton;
 @Singleton
 public class ComponentBuilderImpl implements ComponentBuilder {
 
+    private Map<Class<?>, List<Method>> beforeBuilds = new HashMap<Class<?>, List<Method>>();
+    private Map<Class<?>, List<Method>> afterBuilds = new HashMap<Class<?>, List<Method>>();
     private Map<Class<?>, List<Builder>> builders = new HashMap<Class<?>, List<Builder>>();
     private Map<Class<?>, List<Builder>> updateBuilders = new HashMap<Class<?>, List<Builder>>();
+    private Map<Class<?>, List<Builder>> partialBuilders = new HashMap<Class<?>, List<Builder>>();
+    
     private Map<Class<?>, Buildable> annotations = new HashMap<Class<?>, Buildable>();
 
     private synchronized List<Builder> getBuilder(Class<?> cl) {
@@ -38,6 +44,7 @@ public class ComponentBuilderImpl implements ComponentBuilder {
     private void createBuilders(Class<?> cl) {
         builders.put(cl, new ArrayList<Builder>());
         updateBuilders.put(cl, new ArrayList<Builder>());
+        partialBuilders.put(cl, new ArrayList<Builder>());
 
         try {
             addEmbeddeds(cl);
@@ -73,13 +80,13 @@ public class ComponentBuilderImpl implements ComponentBuilder {
                     Element element = field.getAnnotation(Element.class);
                     name = "".equals(element.name()) ? field.getName() : element.name();
                     builder = new ElementBuilder(this, propertyAccess, name, field.getName());
-                    addToBuilders(cl, element.onCreate(), element.onUpdate(), builder);
+                    addToBuilders(cl, element.onCreate(), element.onUpdate(), element.onPartialUpdate(), builder);
                 }
                 else if (field.getAnnotation(Attribute.class) != null) {
                     Attribute attribute = field.getAnnotation(Attribute.class);
                     name = "".equals(attribute.name()) ? field.getName() : attribute.name();
                     builder = new AttributeBuilder(propertyAccess, name, field.getName());
-                    addToBuilders(cl, attribute.onCreate(), attribute.onUpdate(), builder);
+                    addToBuilders(cl, attribute.onCreate(), attribute.onUpdate(), attribute.onPartialUpdate(), builder);
                 }
             }
 
@@ -93,29 +100,50 @@ public class ComponentBuilderImpl implements ComponentBuilder {
                     Element annotation = method.getAnnotation(Element.class);
                     name = "".equals(annotation.name()) ? method.getName() : annotation.name();
                     builder = new ElementBuilder(this, propertyAccess, name, method.getName());
-                    addToBuilders(cl, annotation.onCreate(), annotation.onUpdate(), builder);
-                }
-                else if(method.getAnnotation(Attribute.class) != null) {
+                    addToBuilders(cl, annotation.onCreate(), annotation.onUpdate(), annotation.onPartialUpdate(), builder);
+                } else if(method.getAnnotation(Attribute.class) != null) {
                     Attribute annotation = method.getAnnotation(Attribute.class);
                     name = "".equals(annotation.name()) ? method.getName() : annotation.name();
                     builder = new AttributeBuilder(propertyAccess, name, method.getName());
-                    addToBuilders(cl, annotation.onCreate(), annotation.onUpdate(), builder); 
+                    addToBuilders(cl, annotation.onCreate(), annotation.onUpdate(), annotation.onPartialUpdate(), builder); 
                 } else if (method.getAnnotation(CustomBuild.class) != null) {
                     CustomBuild annotation = method.getAnnotation(CustomBuild.class);
-                    builder = new MethodCustomBuilder(method);
-                    addToBuilders(cl, annotation.onCreate(), annotation.onUpdate(), builder);
+                    name = "".equals(annotation.name()) ? method.getName() : annotation.name();
+                    builder = new MethodCustomBuilder(method, annotation.wrap() ? name : null);
+                    addToBuilders(cl, annotation.onCreate(), annotation.onUpdate(), annotation.onPartialUpdate(), builder);
+                } else if (method.getAnnotation(AfterBuild.class) != null) {
+                    addAfterBuild(cl, method);
+                } else if (method.getAnnotation(BeforeBuild.class) != null) {
+                    addBeforeBuild(cl, method);
                 }
             }
             currentClass = currentClass.getSuperclass();
         }
     }
 
-    private void addToBuilders(Class<?> cl, boolean onCreate, boolean onUpdate, Builder builder) {
+    private void addAfterBuild(Class<?> cl, Method method) {
+        if (afterBuilds.get(cl) == null) {
+            afterBuilds.put(cl, new ArrayList<Method>());
+        }
+        afterBuilds.get(cl).add(method);
+    }
+    
+    private void addBeforeBuild(Class<?> cl, Method method) {
+        if (beforeBuilds.get(cl) == null) {
+            beforeBuilds.put(cl, new ArrayList<Method>());
+        }
+        beforeBuilds.get(cl).add(method);
+    }
+    
+    private void addToBuilders(Class<?> cl, boolean onCreate, boolean onUpdate, boolean onPartialUpdate, Builder builder) {
         if (onCreate) {
             builders.get(cl).add(builder);
         }
         if (onUpdate) {
             updateBuilders.get(cl).add(builder);
+        }
+        if (onPartialUpdate) {
+            partialBuilders.get(cl).add(builder);
         }
     }
 
@@ -127,6 +155,14 @@ public class ComponentBuilderImpl implements ComponentBuilder {
         return updateBuilders.get(cl);
     }
 
+    private synchronized List<Builder> getPartialUpdateBuilder(Class<?> cl) {
+        if (partialBuilders.containsKey(cl)) {
+            return partialBuilders.get(cl);
+        }
+        createBuilders(cl);
+        return partialBuilders.get(cl);
+    }
+    
     public static Class<?> getActualClass(Object element) {
         Class<?> cl = element.getClass();
         while (cl.getSimpleName().contains("EnhancerByGuice")) {
@@ -139,14 +175,41 @@ public class ComponentBuilderImpl implements ComponentBuilder {
     public void build(DOMBuilder sb, Object component) {
         Class<?> cl = getActualClass(component);
         if (isBuildable(cl)) {
+            if (beforeBuilds.containsKey(cl)) {
+                for (Method method : beforeBuilds.get(cl)) {
+                    try {
+                        method.invoke(component);
+                    } catch (IllegalArgumentException e) {
+                        throw new WebApplicationException(e);
+                    } catch (IllegalAccessException e) {
+                        throw new WebApplicationException(e);
+                    } catch (InvocationTargetException e) {
+                        throw new WebApplicationException(e);
+                    }
+                }
+            }
             DOMBuilder b;
-            if (annotations.get(cl).noWrapping()) {
-                b = sb;
+            Buildable bd = annotations.get(cl);
+            if (bd.wrap()) {
+                b = sb.descend("".equals(bd.name()) ? cl.getSimpleName() : bd.name());
             } else {
-                b = sb.descend(cl.getSimpleName());
+                b = sb;
             }
             for (Builder builder : getBuilder(cl)) {
                 builder.build(b, component);
+            }
+            if (afterBuilds.containsKey(cl)) {
+                for (Method method : afterBuilds.get(cl)) {
+                    try {
+                        method.invoke(component);
+                    } catch (IllegalArgumentException e) {
+                        throw new WebApplicationException(e);
+                    } catch (IllegalAccessException e) {
+                        throw new WebApplicationException(e);
+                    } catch (InvocationTargetException e) {
+                        throw new WebApplicationException(e);
+                    }
+                }
             }
         } else {
             throw new WebApplicationException("Object must be annotated with @Buildable in order to be built");
@@ -154,13 +217,28 @@ public class ComponentBuilderImpl implements ComponentBuilder {
     }
 
     @Override
-    public void buildUpdate(DOMBuilder sb, Component component, String updateName, Set<String> updates) {
+    public void buildUpdate(DOMBuilder sb, Component component, String updateName) {
+        Class<?> cl = getActualClass(component);
+        if (isBuildable(cl)) {
+            Buildable bd = annotations.get(cl);
+            DOMBuilder b = sb.descend(("".equals(bd.name()) ? cl.getSimpleName() : bd.name()) + "." + updateName);
+            
+            List<Builder> builders = getUpdateBuilder(cl);
+            
+            for (Builder builder : builders) {
+                builder.build(b, component);
+            }        
+        }
+    }
+
+    @Override
+    public void buildPartialUpdate(DOMBuilder sb, Component component, String updateName, Set<String> updates) {
         
         Class<?> cl = getActualClass(component);
         
         DOMBuilder b = sb.descend(cl.getSimpleName() + "." + updateName);
         
-        List<Builder> builders = getUpdateBuilder(cl);
+        List<Builder> builders = getPartialUpdateBuilder(cl);
         
         for (Builder builder : builders) {
             if (builder.isUpdateBuildable(updates)) {
@@ -168,7 +246,7 @@ public class ComponentBuilderImpl implements ComponentBuilder {
             }
         }        
     }
-
+    
     @Override
     public boolean isBuildable(Class<?> cl) {
         if (builders.containsKey(cl)) {

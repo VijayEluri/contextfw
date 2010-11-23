@@ -11,7 +11,7 @@ import java.util.regex.PatternSyntaxException;
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.annotations.WebApplicationScoped;
 import net.contextfw.web.application.component.Component;
-import net.contextfw.web.application.initializer.Initializer;
+import net.contextfw.web.application.view.View;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,16 +37,25 @@ public class InitializerProvider {
             throw new WebApplicationException("Initializer was null");
         }
 
-        Initializer annotation = processClass(cl);
+        View annotation = processClass(cl);
 
         if ("".equals(annotation.url())) {
             return;
         }
         try {
-            String url = "".equals(annotation.urlMatcher()) ? annotation.url() : annotation.urlMatcher(); 
-            
-            initializers.put(Pattern.compile(url, Pattern.CASE_INSENSITIVE), cl);
-            
+            for (String url : annotation.url()) {
+                if (!"".equals(url)) {
+                    initializers.put(Pattern.compile(url, Pattern.CASE_INSENSITIVE), cl);
+                }
+            }
+            for (String property : annotation.property()) {
+                if (!"".equals(property)) {
+                    String url = System.getProperty(property);
+                    if (url != null && !"".equals(url)) {
+                        initializers.put(Pattern.compile(url, Pattern.CASE_INSENSITIVE), cl);
+                    }
+                }
+            }
             List<Class<? extends Component>> classes = new ArrayList<Class<? extends Component>>();
             
             Class<? extends Component> currentClass = annotation.parent();
@@ -54,7 +63,7 @@ public class InitializerProvider {
             logger.info("Registered initializer: {}", cl.getName());
             classes.add(cl);
             while (!currentClass.equals(Component.class)) {
-                Initializer anno = processClass(currentClass);
+                View anno = processClass(currentClass);
                 classes.add(0, currentClass);
                 currentClass = anno.parent();
             }
@@ -73,16 +82,16 @@ public class InitializerProvider {
         return null;
     }
     
-    private Initializer processClass(Class<?> cl) {
+    private View processClass(Class<?> cl) {
         
         if (cl.getAnnotation(WebApplicationScoped.class) == null) {
             throw new WebApplicationException("Initializer '"+cl.getName()+"' is missing @WebApplicationScoped-annotation");
         }
         
-        Initializer annotation = cl.getAnnotation(Initializer.class);
+        View annotation = cl.getAnnotation(View.class);
         
         if (annotation == null) {
-            throw new WebApplicationException("Initializer '"+cl.getName()+"' is missing @Initializer-annotation");
+            throw new WebApplicationException("Initializer '"+cl.getName()+"' is missing @View-annotation");
         }
         return annotation;
     }

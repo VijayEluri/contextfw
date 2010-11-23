@@ -2,11 +2,6 @@ package net.contextfw.web.application.component;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import net.contextfw.web.application.component.Attribute;
-import net.contextfw.web.application.component.Buildable;
-import net.contextfw.web.application.component.Component;
-import net.contextfw.web.application.component.CustomBuild;
-import net.contextfw.web.application.component.Element;
 import net.contextfw.web.application.dom.DOMBuilder;
 
 import org.junit.Test;
@@ -15,6 +10,8 @@ public class ComponentBuilderTest extends BaseComponentTest {
 
     public static class Aa extends Component {
 
+        public String order = "";
+        
         @Attribute
         public String foo = "bar";
         
@@ -23,7 +20,23 @@ public class ComponentBuilderTest extends BaseComponentTest {
         
         @CustomBuild
         public void custom(DOMBuilder b) {
+            order = order + ".custom";
             b.descend("barFoo").attr("fooBar", true);
+        }
+        
+        @CustomBuild(wrap=false)
+        public void custom2(DOMBuilder b) {
+            b.descend("barFoo1").attr("fooBar1", true);
+        }
+        
+        @BeforeBuild
+        public void before() {
+            order = order + "before";
+        }
+        
+        @AfterBuild
+        public void after() {
+            order = order + ".after";
         }
     }
     
@@ -74,7 +87,7 @@ public class ComponentBuilderTest extends BaseComponentTest {
         }
     }
     
-    @Buildable(noWrapping=true)
+    @Buildable(wrap=false)
     public static class Faa {
         @Attribute
         public String foo = "bar";
@@ -89,7 +102,9 @@ public class ComponentBuilderTest extends BaseComponentTest {
         webApplicationComponent.buildChild(domBuilder);
         logXML(domBuilder);
         assertDom("//WebApplication/Aa").hasAttribute("id", "el1");
-        assertDom("//WebApplication/Aa/barFoo").hasAttribute("fooBar", "true");
+        assertDom("//WebApplication/Aa/custom/barFoo").hasAttribute("fooBar", "true");
+        assertDom("//WebApplication/Aa/barFoo1").hasAttribute("fooBar1", "true");
+        assertEquals("before.custom.after", comp.order);
     }
     
     @Test

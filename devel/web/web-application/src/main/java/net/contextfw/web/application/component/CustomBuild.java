@@ -9,6 +9,9 @@ import java.lang.annotation.Target;
 @Target(METHOD)
 @Retention(RUNTIME)
 public @interface CustomBuild {
+    String name() default "";
     boolean onCreate() default true;
     boolean onUpdate() default true;
+    boolean onPartialUpdate() default true;
+    boolean wrap() default true;
 }

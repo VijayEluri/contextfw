@@ -12,7 +12,9 @@ public interface ComponentBuilder {
     
     void build(DOMBuilder b, Object object);
     
-    void buildUpdate(DOMBuilder b, Component component, String updateName, Set<String> updates);
+    void buildUpdate(DOMBuilder b, Component component, String updateName);
+    
+    void buildPartialUpdate(DOMBuilder b, Component component, String updateName, Set<String> updates);
     
     boolean isBuildable(Class<?> cl);
     

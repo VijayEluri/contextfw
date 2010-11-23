@@ -4,7 +4,6 @@ import java.util.List;
 
 import net.contextfw.web.application.annotations.WebApplicationScoped;
 import net.contextfw.web.application.component.Component;
-import net.contextfw.web.application.initializer.Initializer;
 import net.contextfw.web.application.internal.component.AutoRegisterListener;
 import net.contextfw.web.application.internal.initializer.InitializerProvider;
 import net.contextfw.web.application.internal.providers.HttpContextProvider;
@@ -13,6 +12,7 @@ import net.contextfw.web.application.internal.providers.WebApplicationHandleProv
 import net.contextfw.web.application.internal.scope.WebApplicationScope;
 import net.contextfw.web.application.internal.util.ClassScanner;
 import net.contextfw.web.application.request.Request;
+import net.contextfw.web.application.view.View;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.TypeLiteral;
@@ -69,7 +69,7 @@ public class WebApplicationModule extends AbstractModule {
 
         for (Class<?> cl : classes) {
             if (Component.class.isAssignableFrom(cl)
-                    && cl.getAnnotation(Initializer.class) != null) {
+                    && cl.getAnnotation(View.class) != null) {
                 provider.addInitializer((Class<? extends Component>) cl);
             }
         }

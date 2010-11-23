@@ -101,7 +101,11 @@ public class Component {
         boolean isNormalUpdate = (partialUpdateName == null);
 
         if (refreshMode == RefreshMode.UPDATE) {
-            builder.buildUpdate(domBuilder, this, isNormalUpdate ? "update" : partialUpdateName, this.partialUpdates);
+            if (isNormalUpdate) {
+                builder.buildUpdate(domBuilder, this, isNormalUpdate ? "update" : partialUpdateName);
+            } else {
+                builder.buildPartialUpdate(domBuilder, this, isNormalUpdate ? "update" : partialUpdateName, partialUpdates);
+            }
         }
         if (refreshMode == RefreshMode.PASS || !isNormalUpdate) {
             if (children != null) {
