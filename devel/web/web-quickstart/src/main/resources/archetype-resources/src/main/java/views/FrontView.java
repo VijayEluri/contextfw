@@ -4,10 +4,10 @@
 package ${package}.views;
 
 import net.contextfw.web.application.annotations.WebApplicationScoped;
-import net.contextfw.web.application.elements.enhanced.EnhancedElement;
-import net.contextfw.web.application.initializer.Initializer;
+import net.contextfw.web.application.component.Component;
+import net.contextfw.web.application.view.View;
 
-@Initializer(url="/", parent=RootView.class)
+@View(url="/", parent=RootView.class)
 @WebApplicationScoped
-public class FrontView extends EnhancedElement {
+public class FrontView extends Component {
 }

@@ -12,7 +12,6 @@ import net.contextfw.web.application.WebApplicationServletModule;
 import org.guiceyfruit.jsr250.Jsr250Module;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.name.Names;
 
 public class MyApplicationModule extends AbstractModule {
 
@@ -22,7 +21,6 @@ public class MyApplicationModule extends AbstractModule {
     protected void configure() {
 
         ModuleConfiguration config = new ModuleConfiguration()
-            .attributeHandlerClass(MyAttributeHandler.class)
             .addResourcePaths("${package}")
             .initializerRootPackages("${package}.views")
             .debugMode(true);

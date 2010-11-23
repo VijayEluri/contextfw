@@ -4,22 +4,21 @@
 package ${package}.views;
 
 import net.contextfw.web.application.annotations.WebApplicationScoped;
-import net.contextfw.web.application.elements.CElement;
-import net.contextfw.web.application.elements.enhanced.EmbeddedElement;
-import net.contextfw.web.application.elements.enhanced.EnhancedElement;
-import net.contextfw.web.application.initializer.Initializer;
-import net.contextfw.web.application.initializer.InitializerContext;
-import net.contextfw.web.application.initializer.InitializerElement;
+import net.contextfw.web.application.component.Component;
+import net.contextfw.web.application.component.Element;
+import net.contextfw.web.application.view.View;
+import net.contextfw.web.application.view.ViewComponent;
+import net.contextfw.web.application.view.ViewContext;
 
-@Initializer
+@View
 @WebApplicationScoped
-public class RootView extends EnhancedElement implements InitializerElement {
+public class RootView extends Component implements ViewComponent {
 
-    @EmbeddedElement
-    private CElement child;
+    @Element
+    private Component child;
     
     @Override
-    public void initialize(InitializerContext context) {
+    public void initialize(ViewContext context) {
         if (context.getChildClass() != null) {
             child = context.initChild();
             registerChild(child);

@@ -71,7 +71,7 @@ public class WebApplicationServletModule extends ServletModule {
 
         for (String url : urls.descendingSet()) {
             logger.info("  Serving url: {}", url);
-            serveRegex(contextPath + url).by(InitServlet.class);
+            serveRegex(contextPath + url).with(InitServlet.class);
         }
     }
 }
