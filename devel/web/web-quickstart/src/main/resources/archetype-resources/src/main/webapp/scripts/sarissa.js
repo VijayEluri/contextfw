@@ -1,4 +1,3 @@
-
 /* * ====================================================================
  * About: This a a compressed JS file from the Sarissa library. 
  * see http://dev.abiss.gr/sarissa
@@ -28,7 +27,7 @@ if(Sarissa._SARISSA_IS_SAFARI_OLD){HTMLHtmlElement=document.createElement("html"
 if(typeof XMLDocument=="undefined"&&typeof Document!="undefined"){XMLDocument=Document;}
 if(Sarissa._SARISSA_IS_IE){Sarissa._SARISSA_IEPREFIX4XSLPARAM="xsl:";var _SARISSA_DOM_PROGID="";var _SARISSA_XMLHTTP_PROGID="";var _SARISSA_DOM_XMLWRITER="";Sarissa.pickRecentProgID=function(idList){var bFound=false,e;var o2Store;for(var i=0;i<idList.length&&!bFound;i++){try{var oDoc=new ActiveXObject(idList[i]);o2Store=idList[i];bFound=true;}catch(objException){e=objException;}}
 if(!bFound){throw"Could not retrieve a valid progID of Class: "+idList[idList.length-1]+". (original exception: "+e+")";}
-idList=null;return o2Store;};_SARISSA_DOM_PROGID=null;_SARISSA_THREADEDDOM_PROGID=null;_SARISSA_XSLTEMPLATE_PROGID=null;_SARISSA_XMLHTTP_PROGID=null;XMLHttpRequest=function(){if(!_SARISSA_XMLHTTP_PROGID){_SARISSA_XMLHTTP_PROGID=Sarissa.pickRecentProgID(["Msxml2.XMLHTTP.6.0","MSXML2.XMLHTTP.3.0","MSXML2.XMLHTTP","Microsoft.XMLHTTP"]);}
+idList=null;return o2Store;};_SARISSA_DOM_PROGID=null;_SARISSA_THREADEDDOM_PROGID=null;_SARISSA_XSLTEMPLATE_PROGID=null;_SARISSA_XMLHTTP_PROGID=null;XMLHttpRequest=function(){if(!_SARISSA_XMLHTTP_PROGID){_SARISSA_XMLHTTP_PROGID=Sarissa.pickRecentProgID(["MSXML2.XMLHTTP", "Microsoft.XMLHTTP"]);}
 return new ActiveXObject(_SARISSA_XMLHTTP_PROGID);};Sarissa.getDomDocument=function(sUri,sName){if(!_SARISSA_DOM_PROGID){_SARISSA_DOM_PROGID=Sarissa.pickRecentProgID(["Msxml2.DOMDocument.6.0","Msxml2.DOMDocument.3.0","MSXML2.DOMDocument","MSXML.DOMDocument","Microsoft.XMLDOM"]);}
 var oDoc=new ActiveXObject(_SARISSA_DOM_PROGID);if(sName){var prefix="";if(sUri){if(sName.indexOf(":")>1){prefix=sName.substring(0,sName.indexOf(":"));sName=sName.substring(sName.indexOf(":")+1);}else{prefix="a"+Sarissa._getUniqueSuffix();}}
 if(sUri){oDoc.loadXML('<'+prefix+':'+sName+" xmlns:"+prefix+"=\""+sUri+"\""+" />");}else{oDoc.loadXML('<'+sName+" />");}}
@@ -108,3 +107,36 @@ return name;};Sarissa.setRemoteJsonCallback=function(url,callback,callbackParam)
 var callbackFunctionName=Sarissa.getFunctionName(callback,true);var id="sarissa_json_script_id_"+Sarissa._getUniqueSuffix();var oHead=document.getElementsByTagName("head")[0];var scriptTag=document.createElement('script');scriptTag.type='text/javascript';scriptTag.id=id;scriptTag.onload=function(){};if(url.indexOf("?")!=-1){url+=("&"+callbackParam+"="+callbackFunctionName);}
 else{url+=("?"+callbackParam+"="+callbackFunctionName);}
 scriptTag.src=url;oHead.appendChild(scriptTag);return id;};
+/* * ====================================================================
+ * About: This a a compressed JS file from the Sarissa library. 
+ * see http://dev.abiss.gr/sarissa
+ * 
+ * Copyright: Manos Batsis, http://dev.abiss.gr
+ * 
+ * Licence:
+ * Sarissa is free software distributed under the GNU GPL version 2 
+ * or higher, GNU LGPL version 2.1 or higher and Apache Software 
+ * License 2.0 or higher. The licenses are available online see: 
+ * http://www.gnu.org  
+ * http://www.apache.org
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY 
+ * KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE 
+ * WARRANTIES OF MERCHANTABILITY,FITNESS FOR A PARTICULAR PURPOSE 
+ * AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR 
+ * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR 
+ * OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE 
+ * SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * ====================================================================*/
+
+if(Sarissa._SARISSA_HAS_DOM_FEATURE&&document.implementation.hasFeature("XPath","3.0")){SarissaNodeList=function(i){this.length=i;};SarissaNodeList.prototype=[];SarissaNodeList.prototype.constructor=Array;SarissaNodeList.prototype.item=function(i){return(i<0||i>=this.length)?null:this[i];};SarissaNodeList.prototype.expr="";if(window.XMLDocument&&(!XMLDocument.prototype.setProperty)){XMLDocument.prototype.setProperty=function(x,y){};}
+Sarissa.setXpathNamespaces=function(oDoc,sNsSet){oDoc._sarissa_useCustomResolver=true;var namespaces=sNsSet.indexOf(" ")>-1?sNsSet.split(" "):[sNsSet];oDoc._sarissa_xpathNamespaces=[];for(var i=0;i<namespaces.length;i++){var ns=namespaces[i];var colonPos=ns.indexOf(":");var assignPos=ns.indexOf("=");if(colonPos>0&&assignPos>colonPos+1){var prefix=ns.substring(colonPos+1,assignPos);var uri=ns.substring(assignPos+2,ns.length-1);oDoc._sarissa_xpathNamespaces[prefix]=uri;}else{throw"Bad format on namespace declaration(s) given";}}};XMLDocument.prototype._sarissa_useCustomResolver=false;XMLDocument.prototype._sarissa_xpathNamespaces=[];XMLDocument.prototype.selectNodes=function(sExpr,contextNode,returnSingle){var nsDoc=this;var nsresolver;if(this._sarissa_useCustomResolver){nsresolver=function(prefix){var s=nsDoc._sarissa_xpathNamespaces[prefix];if(s){return s;}
+else{throw"No namespace URI found for prefix: '"+prefix+"'";}};}
+else{nsresolver=this.createNSResolver(this.documentElement);}
+var result=null;if(!returnSingle){var oResult=this.evaluate(sExpr,(contextNode?contextNode:this),nsresolver,XPathResult.ORDERED_NODE_SNAPSHOT_TYPE,null);var nodeList=new SarissaNodeList(oResult.snapshotLength);nodeList.expr=sExpr;for(var i=0;i<nodeList.length;i++){nodeList[i]=oResult.snapshotItem(i);}
+result=nodeList;}
+else{result=this.evaluate(sExpr,(contextNode?contextNode:this),nsresolver,XPathResult.FIRST_ORDERED_NODE_TYPE,null).singleNodeValue;}
+return result;};Element.prototype.selectNodes=function(sExpr){var doc=this.ownerDocument;if(doc.selectNodes){return doc.selectNodes(sExpr,this);}
+else{throw"Method selectNodes is only supported by XML Elements";}};XMLDocument.prototype.selectSingleNode=function(sExpr,contextNode){var ctx=contextNode?contextNode:null;return this.selectNodes(sExpr,ctx,true);};Element.prototype.selectSingleNode=function(sExpr){var doc=this.ownerDocument;if(doc.selectSingleNode){return doc.selectSingleNode(sExpr,this);}
+else{throw"Method selectNodes is only supported by XML Elements";}};Sarissa.IS_ENABLED_SELECT_NODES=true;}

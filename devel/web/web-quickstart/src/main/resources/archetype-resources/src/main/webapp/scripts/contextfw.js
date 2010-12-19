@@ -14,13 +14,13 @@ contextfw = {
 		this.refreshUrl = context + "/contextfw-refresh/"+handle+"?";
 		this.removeUrl = context + "/contextfw-remove/"+handle+"?";
 		
-		if ($.isFunction(defaultBeforeCall)) {
+		if (jQuery.isFunction(defaultBeforeCall)) {
 			this.defaultBeforeCall = defaultBeforeCall;
 		} else {
 			this.defaultBeforeCall = function(){};
 		}
 		
-		if ($.isFunction(defaultAfterCall)) {
+		if (jQuery.isFunction(defaultAfterCall)) {
 			this.defaultAfterCall = defaultAfterCall;
 		} else {
 			this.defaultAfterCall = function(){};
@@ -30,7 +30,7 @@ contextfw = {
 	},
 	
 	refresh: function() {
-		$.get(this.refreshUrl, null, function() {
+		jQuery.get(this.refreshUrl, null, function() {
 			contextfw.setRefresh();
 		}); 
 	},
@@ -40,12 +40,12 @@ contextfw = {
 	},
 	
 	unload: function() {
-		$.get(this.removeUrl);
+		jQuery.get(this.removeUrl);
 	},
 	
 	call: function(elId, method, beforeCall, afterCall) {
 		
-		if ($.isFunction(beforeCall)) {
+		if (jQuery.isFunction(beforeCall)) {
 			beforeCall();
 		} else {
 			this.defaultBeforeCall();
@@ -67,10 +67,10 @@ contextfw = {
 		params.el = elId;
 		params.method = method;
 		
-		$("#body").addClass("updating");
+		jQuery("#body").addClass("updating");
 		jQuery.post(this.updateUrl, params, function(data, textStatus) {
 			contextfw._handleResponse(data);
-			$("#body").removeClass("updating");
+			jQuery("#body").removeClass("updating");
 	    });
 	},
 	
@@ -99,13 +99,6 @@ contextfw = {
 	
 	_handleResponse: function(domDocument) {
 	
-		if ($.isFunction(this.afterCall)) {
-			this.afterCall();
-			this.afterCall = null;
-		} else {
-			this.defaultAfterCall();
-		}
-		
 	    nodes = domDocument.selectNodes("/updates/replace");
 	    
 	    if (nodes.length > 0) {
@@ -115,7 +108,7 @@ contextfw = {
 	    		html = this._toHtml(node);
 	    		
 				try {
-					$j("#"+ node.getAttribute("id")).html(html);
+					jQueryj("#"+ node.getAttribute("id")).html(html);
 				}
 				catch(err) {
 					// Just ignore
@@ -138,18 +131,25 @@ contextfw = {
 	    }
 	    
 	    this._handleScripts(domDocument);
+	    
+	    if (jQuery.isFunction(this.afterCall)) {
+			this.afterCall();
+			this.afterCall = null;
+		} else {
+			this.defaultAfterCall();
+		}
 	},
 	
 	_replaceInner: function replaceInner(id, html, mode) {
 		try {
 			if (mode == "fade") {
-				$(id).fadeOut("fast", function() {
-					$(id).html(html);
-					$(id).fadeIn("fast");
+				jQuery(id).fadeOut("fast", function() {
+					jQuery(id).html(html);
+					jQuery(id).fadeIn("fast");
 				});
 			}
 			else {
-				$(id).html(html);
+				jQuery(id).html(html);
 			}
 		}
 		catch(err) {
