@@ -4,7 +4,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.contextfw.web.application.annotations.WebApplicationScoped;
+import net.contextfw.web.application.annotations.PageScoped;
 
 /**
  * Marks class to be bound to web application 
@@ -15,15 +15,15 @@ import net.contextfw.web.application.annotations.WebApplicationScoped;
  * </p>
  *   
  */
-@WebApplicationScoped
+@PageScoped
 public class HttpContext {
 
     private HttpServlet servlet;
     private HttpServletRequest request;
     private HttpServletResponse response;
 
-    private String requestUrl;
-    private String queryString;
+    private final String requestUrl;
+    private final String queryString;
     private String redirectUrl;
     private String errorMsg;
     private Integer errorCode;
@@ -78,14 +78,7 @@ public class HttpContext {
         queryString = request.getQueryString();
     }
 
-    public String getCurrentUrl() {
 
-        if (queryString != null) {
-            return requestUrl + "?" + queryString;
-        }
-
-        return requestUrl;
-    }
     public String getRedirectUrl() {
         return redirectUrl;
     }
@@ -98,5 +91,21 @@ public class HttpContext {
 
     public boolean isReload() {
         return reload;
+    }
+
+    public String getRequestUrl() {
+        return requestUrl;
+    }
+
+    public String getQueryString() {
+        return queryString;
+    }
+    
+    public String getFullUrl() {
+        if (queryString == null) {
+            return requestUrl;
+        } else {
+            return requestUrl + "?" + queryString;
+        }
     }
 }

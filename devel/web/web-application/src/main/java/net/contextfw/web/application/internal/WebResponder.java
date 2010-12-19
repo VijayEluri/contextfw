@@ -1,14 +1,14 @@
 package net.contextfw.web.application.internal;
 
-import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.concurrent.Semaphore;
+import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 import javax.servlet.ServletException;
@@ -19,9 +19,9 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamSource;
 
-import net.contextfw.web.application.HttpContext;
 import net.contextfw.web.application.ModuleConfiguration;
 import net.contextfw.web.application.WebApplicationException;
+import net.contextfw.web.application.internal.util.ResourceEntry;
 import net.contextfw.web.application.internal.util.ResourceScanner;
 
 import org.dom4j.Document;
@@ -38,13 +38,16 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 @Singleton
 public class WebResponder {
 
+    private static final Pattern XSL_ACCEPTOR = Pattern.compile(".*\\.xsl", Pattern.CASE_INSENSITIVE);
+
     private Logger logger = LoggerFactory.getLogger(WebResponder.class);
+    
+    private List<String> rootResourcePaths = new ArrayList<String>();
     
     private int currentTransformer = 0;
     private List<Transformer> transformers;
@@ -69,11 +72,9 @@ public class WebResponder {
     private final ModuleConfiguration configuration;
     
     @Inject
-    private Provider<HttpContext> httpContext;
-    
-    @Inject
     public WebResponder(ModuleConfiguration configuration) {
         this.configuration = configuration;
+        rootResourcePaths.add("net.contextfw.web.application");
     }
     
     private final static TransformerFactory factory = TransformerFactory
@@ -119,36 +120,48 @@ public class WebResponder {
     }
 
     protected String getXSLDocumentContent() {
-        List<File> resources = ResourceScanner
-            .findResources(configuration.getResourcePaths(), 
-                    Pattern.compile(".*\\.xsl", Pattern.CASE_INSENSITIVE));
 
-        File root = null;
+        List<ResourceEntry> rootResources = ResourceScanner.findResources(rootResourcePaths, XSL_ACCEPTOR);
+        
+        ResourceEntry root = null;
 
-        Iterator<File> iter = resources.iterator();
+        Iterator<ResourceEntry> iter = rootResources.iterator();
 
         while (iter.hasNext()) {
-            File next = iter.next();
-            if (next.getName().endsWith("root.xsl")) {
+            ResourceEntry next = iter.next();
+            if (next.getPath().endsWith("root.xsl")) {
                 iter.remove();
                 root = next;
                 break;
             }
         }
 
+        List<ResourceEntry> resources = ResourceScanner
+        .findResources(configuration.getResourcePaths(), 
+                XSL_ACCEPTOR);
+
+        InputStream stream;
         SAXReader reader = new SAXReader();
         try {
-            Document document = reader.read(root);
+            stream = root.getInputStream();
+            Document document = reader.read(stream);
+            stream.close();
+            for (Entry<String, String> entry : configuration.getXMLNamespaces().entrySet()) {
+                document.getRootElement().addNamespace(entry.getKey(), entry.getValue());                
+            }
+            
 
             Element stylesheet = (Element) document
                     .selectSingleNode("//stylesheet");
 
             // Adding other stylesheets
 
-            for (File file : resources) {
-                if (file.getName().endsWith(".xsl")) {
+            for (ResourceEntry file : resources) {
+                if (file.getPath().endsWith(".xsl")) {
                     reader = new SAXReader();
-                    Document child = reader.read(file);
+                    stream = file.getInputStream();
+                    Document child = reader.read(stream);
+                    stream.close();
 
                     for (Object el : child.getRootElement().elements()) {
                         if (el instanceof Node) {

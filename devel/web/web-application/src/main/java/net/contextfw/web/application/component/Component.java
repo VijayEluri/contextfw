@@ -4,9 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import net.contextfw.web.application.dom.DOMBuilder;
-import net.contextfw.web.application.dom.RemoteCallBuilder;
 import net.contextfw.web.application.internal.component.ComponentBuilder;
-import net.contextfw.web.application.internal.component.ComponentBuilderImpl;
 
 @Buildable
 public class Component {
@@ -141,14 +139,5 @@ public class Component {
 
         partialUpdates.clear();
         partialUpdateName = null;
-    }
-
-    public void jsCall(DOMBuilder b, Component component, String method, Object... args) {
-        RemoteCallBuilder.buildCall(b, ComponentBuilderImpl.getActualClass(component).getSimpleName(), 
-                component.getId(), method, args);
-    }
-
-    public void jsCall(DOMBuilder b, String method, Object... args) {
-        jsCall(b, this, method, args);
     }
 }

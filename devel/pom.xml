@@ -33,7 +33,6 @@ limitations under the License.
 
 	<modules>
 		<module>web</module>
-		<module>remoting</module>
 	</modules>
 
 	<url>http://www.contextfw.net</url>

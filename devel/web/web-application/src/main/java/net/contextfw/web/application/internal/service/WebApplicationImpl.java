@@ -9,7 +9,7 @@ import net.contextfw.web.application.HttpContext;
 import net.contextfw.web.application.ModuleConfiguration;
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.WebApplicationHandle;
-import net.contextfw.web.application.annotations.WebApplicationScoped;
+import net.contextfw.web.application.annotations.PageScoped;
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.dom.DOMBuilder;
 import net.contextfw.web.application.internal.ComponentUpdateHandler;
@@ -26,7 +26,7 @@ import net.contextfw.web.application.request.Request;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 
-@WebApplicationScoped
+@PageScoped
 public class WebApplicationImpl implements WebApplication {
 
     @Inject
@@ -87,7 +87,7 @@ public class WebApplicationImpl implements WebApplication {
                     httpContext.getResponse().sendError(httpContext.getErrorCode(), httpContext.getErrorMsg());
                     return true;
                 } else if (httpContext.isReload()) {
-                    httpContext.getResponse().sendRedirect(httpContext.getCurrentUrl());
+                    httpContext.getResponse().sendRedirect(httpContext.getFullUrl());
                 }
             }
 

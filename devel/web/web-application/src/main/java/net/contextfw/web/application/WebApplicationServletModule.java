@@ -38,17 +38,17 @@ public class WebApplicationServletModule extends ServletModule {
         serveRegex(".*/contextfw-update/.*").with(UpdateServlet.class);
         serveRegex(".*/contextfw-refresh/.*").with(UpdateServlet.class);
         serveRegex(".*/contextfw-remove/.*").with(UpdateServlet.class);
-        serveInitializers();
+        serveViewComponents();
     }
 
-    private void serveInitializers() {
+    private void serveViewComponents() {
         
         String contextPath = ""; //+ configuration.getContextPath();
         
-        logger.info("Configuring initializer-servlets:");
+        logger.info("Configuring view components");
         TreeSet<String> urls = new TreeSet<String>();
 
-        List<Class<?>> classes = ClassScanner.getClasses(configuration.getInitializerRootPackages());
+        List<Class<?>> classes = ClassScanner.getClasses(configuration.getViewComponentRootPackages());
 
         for (Class<?> cl : classes) {
             View annotation = cl.getAnnotation(View.class);
@@ -61,8 +61,12 @@ public class WebApplicationServletModule extends ServletModule {
                 for (String property : annotation.property()) {
                     if (!"".equals(property)) {
                         String url = System.getProperty(property);
+                        
                         if (url != null && !"".equals(url)) {
                             urls.add(contextPath + url);
+                        } else {
+                            throw new WebApplicationException("No url bound to view component. (class="
+                                        +cl.getSimpleName()+", property="+property+")");
                         }
                     }
                 }

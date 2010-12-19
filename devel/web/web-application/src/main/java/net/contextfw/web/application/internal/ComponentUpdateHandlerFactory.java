@@ -1,16 +1,11 @@
 package net.contextfw.web.application.internal;
 
 import java.lang.reflect.Method;
-import java.util.Map.Entry;
 
-import net.contextfw.web.application.ModuleConfiguration;
 import net.contextfw.web.application.annotations.RemoteMethod;
 import net.contextfw.web.application.component.Component;
 
 import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonSerializer;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
@@ -21,19 +16,8 @@ public class ComponentUpdateHandlerFactory {
     private Gson gson;
     
     @Inject
-    public ComponentUpdateHandlerFactory(Injector injector, ModuleConfiguration configuration) {
-        
-        GsonBuilder builder = new GsonBuilder();
-        
-        for (Entry<Class<?>, Class<? extends JsonSerializer<?>>> entry: configuration.getJsonSerializerClasses()) {
-            builder.registerTypeAdapter(entry.getKey(), injector.getInstance(entry.getValue()));
-        }
-
-        for (Entry<Class<?>, Class<? extends JsonDeserializer<?>>> entry: configuration.getJsonDeserializerClasses()) {
-            builder.registerTypeAdapter(entry.getKey(), injector.getInstance(entry.getValue()));
-        }        
-        
-        gson = builder.create();
+    public ComponentUpdateHandlerFactory(Injector injector, Gson gson) {
+        this.gson = gson;
     }
     
     public ComponentUpdateHandler createHandler(Class<? extends Component> elClass, String methodName) {

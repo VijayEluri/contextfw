@@ -21,7 +21,7 @@ import com.google.inject.Singleton;
 @Singleton
 public class ModuleConfiguration {
 
-    private final List<String> initializerRootPackages = new ArrayList<String>();
+    private final List<String> viewComponentRootPackages = new ArrayList<String>();
     private final List<String> resourcePaths = new ArrayList<String>();
     
     private final Map<Class<?>, Class<? extends AttributeSerializer<?>>> attributeSerializerClasses 
@@ -32,6 +32,8 @@ public class ModuleConfiguration {
     
     private final Map<Class<?>, Class<? extends JsonDeserializer<?>>> jsonDeserializerClasses 
         = new HashMap<Class<?>, Class<? extends JsonDeserializer<?>>>();
+    
+    private final Map<String, String> namespaces = new HashMap<String, String>();
     
     private boolean debugMode = false;
     private boolean logXML = false;
@@ -45,8 +47,13 @@ public class ModuleConfiguration {
     private String xmlParamName = null;
     private Class<? extends LifecycleListener> lifecycleListener;
     
-    public ModuleConfiguration attributeHandlerClass() {
+    public ModuleConfiguration addXMLNamespace(String prefix, String path) {
+        namespaces.put(prefix, path);
         return this;
+    }
+    
+    public Map<String, String> getXMLNamespaces() {
+        return Collections.unmodifiableMap(namespaces);
     }
     
     public ModuleConfiguration debugMode(boolean debugMode) {
@@ -54,11 +61,11 @@ public class ModuleConfiguration {
         return this;
     }
     
-    public ModuleConfiguration initializerRootPackages(String... packages) {
+    public ModuleConfiguration setViewComponentRootPackages(String... packages) {
         if (packages != null) {
             for (String pck : packages) {
                 if (pck != null && pck.trim().length() != 0) {
-                    initializerRootPackages.add(pck);
+                    viewComponentRootPackages.add(pck);
                 }
             }
         }
@@ -89,8 +96,8 @@ public class ModuleConfiguration {
         return this;
     }
 
-    public List<String> getInitializerRootPackages() {
-        return initializerRootPackages;
+    public List<String> getViewComponentRootPackages() {
+        return viewComponentRootPackages;
     }
 
     public List<String> getResourcePaths() {

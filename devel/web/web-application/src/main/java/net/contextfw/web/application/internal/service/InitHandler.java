@@ -1,6 +1,7 @@
 package net.contextfw.web.application.internal.service;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -52,6 +53,13 @@ public class InitHandler {
             HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         try {
+            
+            response.addHeader("Expires", "Sun, 19 Nov 1978 05:00:00 GMT");
+            response.addHeader("Last-Modified", new Date().toString());
+            response.addHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+            response.addHeader("Cache-Control","post-check=0, pre-check=0");
+            response.addHeader("Pragma", "no-cache");
+            
             List<Class<? extends Component>> chain = initializers.findChain(request.getRequestURI());
             
             if (chain == null) {

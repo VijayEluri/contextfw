@@ -3,10 +3,10 @@ package net.contextfw.web.application.internal.component;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.contextfw.web.application.annotations.WebApplicationScoped;
+import net.contextfw.web.application.annotations.PageScoped;
 import net.contextfw.web.application.component.Component;
 
-@WebApplicationScoped
+@PageScoped
 public class ComponentRegister {
 
     private int idCounter = 0;

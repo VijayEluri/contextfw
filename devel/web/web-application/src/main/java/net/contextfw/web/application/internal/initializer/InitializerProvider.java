@@ -9,7 +9,7 @@ import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
 import net.contextfw.web.application.WebApplicationException;
-import net.contextfw.web.application.annotations.WebApplicationScoped;
+import net.contextfw.web.application.annotations.PageScoped;
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.view.View;
 
@@ -84,8 +84,8 @@ public class InitializerProvider {
     
     private View processClass(Class<?> cl) {
         
-        if (cl.getAnnotation(WebApplicationScoped.class) == null) {
-            throw new WebApplicationException("Initializer '"+cl.getName()+"' is missing @WebApplicationScoped-annotation");
+        if (cl.getAnnotation(PageScoped.class) == null) {
+            throw new WebApplicationException("Initializer '"+cl.getName()+"' is missing @PageScoped-annotation");
         }
         
         View annotation = cl.getAnnotation(View.class);

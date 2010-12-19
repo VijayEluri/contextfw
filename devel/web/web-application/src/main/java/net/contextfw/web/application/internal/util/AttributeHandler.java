@@ -6,6 +6,7 @@ import java.util.Map.Entry;
 
 import net.contextfw.web.application.ModuleConfiguration;
 import net.contextfw.web.application.converter.AttributeSerializer;
+import net.contextfw.web.application.converter.ObjectAttributeSerializer;
 import net.contextfw.web.application.internal.ToStringSerializer;
 
 import com.google.inject.Inject;
@@ -13,7 +14,7 @@ import com.google.inject.Injector;
 import com.google.inject.Singleton;
 
 @Singleton
-public class AttributeHandler implements AttributeSerializer<Object> {
+public class AttributeHandler implements ObjectAttributeSerializer {
     
     private final Map<Class<?>,  AttributeSerializer<Object>> serializers = 
         new HashMap<Class<?>,  AttributeSerializer<Object>>();
