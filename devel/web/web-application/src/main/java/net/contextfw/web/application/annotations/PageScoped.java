@@ -11,5 +11,5 @@ import com.google.inject.ScopeAnnotation;
 @Target( { TYPE })
 @Retention(RUNTIME)
 @ScopeAnnotation
-public @interface WebApplicationScoped {
+public @interface PageScoped {
 }
