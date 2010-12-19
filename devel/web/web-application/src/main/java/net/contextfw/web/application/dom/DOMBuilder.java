@@ -50,8 +50,8 @@ public final class DOMBuilder {
         return this;
     }
     
-    public DOMBuilder child(Object object) {
-        componentBuilder.build(this, object);
+    public DOMBuilder child(Object object, Object... buildins) {
+        componentBuilder.build(this, object, buildins);
         return this;
     }
 
