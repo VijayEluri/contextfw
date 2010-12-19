@@ -3,7 +3,7 @@
 #set( $symbol_escape = '\' )
 package ${package}.views;
 
-import net.contextfw.web.application.annotations.WebApplicationScoped;
+import net.contextfw.web.application.annotations.PageScoped;
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.component.Element;
 import net.contextfw.web.application.view.View;
@@ -11,7 +11,7 @@ import net.contextfw.web.application.view.ViewComponent;
 import net.contextfw.web.application.view.ViewContext;
 
 @View
-@WebApplicationScoped
+@PageScoped
 public class RootView extends Component implements ViewComponent {
 
     @Element

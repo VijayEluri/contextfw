@@ -3,8 +3,6 @@
 #set( $symbol_escape = '\' )
 package ${package};
 
-import ${package}.providers.WebApplicationLocaleProvider;
-import ${package}.util.WebApplicationLocale;
 import net.contextfw.web.application.ModuleConfiguration;
 import net.contextfw.web.application.WebApplicationModule;
 import net.contextfw.web.application.WebApplicationServletModule;
@@ -22,13 +20,11 @@ public class MyApplicationModule extends AbstractModule {
 
         ModuleConfiguration config = new ModuleConfiguration()
             .addResourcePaths("${package}")
-            .initializerRootPackages("${package}.views")
+            .setViewComponentRootPackages("${package}.views")
             .debugMode(true);
         
         config.setXmlParamName("xml");
         config.setLogXML(true);
-        
-        bind(WebApplicationLocale.class).toProvider(WebApplicationLocaleProvider.class);
         
         install(new WebApplicationModule(config));
         install(new Jsr250Module());

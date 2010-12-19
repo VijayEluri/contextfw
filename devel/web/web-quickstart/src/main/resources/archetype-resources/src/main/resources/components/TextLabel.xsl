@@ -3,11 +3,11 @@
 xmlns:txt="http://contextfw.net/ns/txt">
 
 <xsl:template match="TextLabel">
-  <span id="{@id}"><xsl:apply-templates/></span>
+  <span id="{@id}"><xsl:value-of select="@value" /></span>
 </xsl:template>
 
 <xsl:template match="TextLabel.update">
-  <replaceInner id="{@id}"><xsl:apply-templates/></replaceInner>
+  <replaceInner id="{@id}"><xsl:value-of select="@value" /></replaceInner>
 </xsl:template>
 
 </xsl:stylesheet>
