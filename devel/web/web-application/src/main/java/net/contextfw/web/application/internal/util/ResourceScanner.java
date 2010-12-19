@@ -1,6 +1,5 @@
 package net.contextfw.web.application.internal.util;
 
-import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
@@ -13,24 +12,19 @@ import java.util.regex.Pattern;
  */
 public class ResourceScanner extends AbstractScanner {
 
-    public static List<File> findResources(List<String> resourcePaths,
+    public static List<ResourceEntry> findResources(List<String> resourcePaths,
             Pattern acceptor) {
         
-        List<File> files = new ArrayList<File>();
+        List<ResourceEntry> entries = findResourceEntries(resourcePaths);
 
-        List<File> directories = getRootFiles(resourcePaths);
-
-        while (!directories.isEmpty()) {
-            File dir = directories.remove(0);
-            for (File child : dir.listFiles()) {
-                if (child.isDirectory()) {
-                    directories.add(child);
-                } else if (acceptor.matcher(child.getName()).matches()) {
-                    files.add(child);
-                }
-            }
-        }
+        List<ResourceEntry> rv = new ArrayList<ResourceEntry>();
         
-        return files;
+        for (ResourceEntry entry : entries) {
+            if (acceptor.matcher(entry.getPath()).matches()) {
+                rv.add(entry);
+            }
+        }        
+        
+        return rv;
     }
 }

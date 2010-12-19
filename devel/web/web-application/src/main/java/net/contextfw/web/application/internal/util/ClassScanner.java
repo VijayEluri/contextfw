@@ -32,11 +32,28 @@ public class ClassScanner extends AbstractScanner {
             for (String packageName : packageNames) {
                 List<String> resourcePaths = new ArrayList<String>();
                 resourcePaths.add(packageName);
-                List<File> rootDirectories = getRootFiles(resourcePaths);
-                
-                for (File directory : rootDirectories) {
-                    classes.addAll(findClasses("", directory, packageName));
+                List<ResourceEntry> entries = findResourceEntries(resourcePaths);
+
+                for (ResourceEntry entry: entries) {
+                    
+                    String fileName = entry.getPath();
+                    if (fileName.endsWith(".class") && !fileName.contains("$")) {
+                        Class<?> _class;
+                        String className = toClassName(fileName);
+                        try {
+                            _class = Class.forName(className);
+                        } catch (ExceptionInInitializerError e) {
+                            // happen, for example, in classes, which depend on 
+                            // Spring to inject some beans, and which fail, 
+                            // if dependency is not fulfilled
+                            _class = Class.forName(className,
+                                    false, Thread.currentThread().getContextClassLoader());
+                        }
+                        classes.add(_class);
+                    }
                 }
+                return classes;
+                
             }
         } catch (ClassNotFoundException e) {
             throw new WebApplicationException(e);
@@ -45,6 +62,10 @@ public class ClassScanner extends AbstractScanner {
         return classes;
     }
 
+    private static String toClassName(String fileName) {
+        return fileName.substring(0, fileName.length() - 6).replaceAll("/", "\\.");
+    }
+    
     /**
      * Recursive method used to find all classes in a given directory and subdirs.
      *

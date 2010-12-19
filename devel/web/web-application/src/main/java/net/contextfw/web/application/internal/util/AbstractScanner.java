@@ -1,6 +1,7 @@
 package net.contextfw.web.application.internal.util;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.net.URI;
@@ -8,10 +9,12 @@ import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Enumeration;
-import java.util.LinkedHashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.jar.JarEntry;
+import java.util.jar.JarFile;
 
 import net.contextfw.web.application.WebApplicationException;
 
@@ -26,47 +29,99 @@ public class AbstractScanner {
     private static final String FILE = "file";
     private static final String CLASSPATH = "classpath";
     
-    static List<File> getRootFiles(List<String> resourcePaths) {
+    protected static List<ResourceEntry> findResourceEntries(List<String> resourcePaths) {
+        List<ResourceEntry> entries = new ArrayList<ResourceEntry>();
         List<URI> rootURIs = toURIs(resourcePaths);
-        Set<File> rootFiles = new LinkedHashSet<File>(rootURIs.size());
-        
         try {
-            for (URI rootURI : rootURIs) {
-                if (FILE.equals(rootURI.getScheme())) {
-                    
-                    File file = new File(rootURI.getSchemeSpecificPart());
-                    if (file.isDirectory()) {
-                        rootFiles.add(file);
-                    } else {
-                        throw new WebApplicationException("URI " + rootURI.toString() + " is not a directory");
-                    }
-                    
-                } else if (CLASSPATH.equals(rootURI.getScheme())) {
-                    
-                    Enumeration<URL> resources = AbstractScanner.class.getClassLoader()
-                        .getResources(rootURI.getSchemeSpecificPart());
-                    
+        for (URI rootURI : rootURIs) {
+            if (FILE.equals(rootURI.getScheme())) {
+                entries.addAll(findResourcesFromFilesystem(rootURI));
+            } else if (CLASSPATH.equals(rootURI.getScheme())) {
+                Enumeration<URL> resources = Thread.currentThread().getContextClassLoader()
+                    .getResources(rootURI.getSchemeSpecificPart());
                     while (resources.hasMoreElements()) {
                         URL resource = resources.nextElement();
-                        File file = new File(URLDecoder.decode(resource.getFile(), "UTF-8"));
-                        if (file.isDirectory()) {
-                            rootFiles.add(file);
+                        if ("file".equals(resource.getProtocol())) {
+                            entries.addAll(findResourcesFromFilesystem(rootURI.getSchemeSpecificPart(), resource));
+                        } else if ("jar".equals(resource.getProtocol())) {
+                            entries.addAll(findResourcesFromJar(resource));
                         } else {
-                            throw new WebApplicationException("URI " + rootURI.toString() + " is not a directory");
+                            throw new WebApplicationException("Protocol " + resource.getProtocol() + " is not supported");
                         }
                     }
-                }
             }
-        } catch (UnsupportedEncodingException e) {
-            throw new WebApplicationException(e);
-        } catch (IOException e) {
-            throw new WebApplicationException(e);
+        }
+            } catch (IOException e) {
+                throw new WebApplicationException(e);
+            } catch (URISyntaxException e) {
+                throw new WebApplicationException(e);
+            }
+        
+        return entries;
+    }
+    
+    private static Collection<? extends ResourceEntry> findResourcesFromJar(URL directory) throws UnsupportedEncodingException, IOException {
+        
+        List<ResourceEntry> resources = new ArrayList<ResourceEntry>();
+        
+        String jarPath = directory.getPath().substring(5, directory.getPath().indexOf("!"));
+        String path = directory.getPath().substring(directory.getPath().indexOf("!") + 2);
+        
+        JarFile jar = new JarFile(URLDecoder.decode(jarPath, "UTF-8"));
+        
+        Enumeration<JarEntry> entries = jar.entries();
+        
+        while(entries.hasMoreElements()) {
+            JarEntry entry = entries.nextElement();
+            if (entry.getName().startsWith(path) && !entry.isDirectory()) {
+                resources.add(new JarResourceEntry(jar, entry));
+            }
         }
         
-        List<File> rv = new ArrayList<File>();
-        rv.addAll(rootFiles);
+        return resources;
+    }
+
+    private static Collection<? extends ResourceEntry> findResourcesFromFilesystem(String pathPrefix, URL rootUrl) throws URISyntaxException, FileNotFoundException, UnsupportedEncodingException {
+        File rootDirectory = new File(URLDecoder.decode(rootUrl.getFile(), "UTF-8"));
+        if (rootDirectory.isDirectory()) {
+            return findResourcesFromFilesystem(pathPrefix+"/", rootDirectory);
+        } else {
+            return Collections.emptyList();
+        }
+    }
         
-        return rv;
+    private static Collection<? extends ResourceEntry> findResourcesFromFilesystem(URI rootURI) throws FileNotFoundException {
+        File rootDirectory = new File(rootURI.getSchemeSpecificPart());
+        if (!rootDirectory.isDirectory()) {
+            throw new WebApplicationException("File " + rootDirectory.getAbsolutePath() + " is not a directory");
+        } else {
+            return findResourcesFromFilesystem(rootURI.getSchemeSpecificPart()+"/", rootDirectory);
+        }
+
+    }
+    
+    private static Collection<? extends ResourceEntry> findResourcesFromFilesystem(String pathPrefix, File rootDirectory) throws FileNotFoundException {
+        List<ResourceEntry> entries = new ArrayList<ResourceEntry>();
+        if (!rootDirectory.exists()) {
+            throw new WebApplicationException("Directory " + rootDirectory.getAbsolutePath() + " does not exist");
+        }
+        
+        int length = rootDirectory.getPath().length() + 1;
+        
+        List<File> directories = new ArrayList<File>();
+        directories.add(rootDirectory);
+        while (!directories.isEmpty()) {
+            File dir = directories.remove(0);
+            for (File child : dir.listFiles()) {
+                if (child.isDirectory()) {
+                    directories.add(child);
+                } else {
+                    entries.add(new FileResourceEntry(pathPrefix+child.getPath().substring(length), child));
+                }
+            }
+        }
+        
+        return entries;
     }
 
     public static List<URI> toURIs(List<String> resourcePaths) {

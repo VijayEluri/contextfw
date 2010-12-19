@@ -43,24 +43,19 @@ public class ResourceScannerTest {
         List<String> paths = new ArrayList<String>();
         
         paths.add("net.contextfw.web");
+        paths.add("javax.servlet");
+        
         paths.add("file:src/main/resources");
         
         // This is a duplicate of the first package and should get ignored
         paths.add("classpath:net/contextfw/web");
         
-        List<File> rootFiles = ResourceScanner.getRootFiles(paths);
+        List<ResourceEntry> rootFiles = AbstractScanner.findResourceEntries(paths);
+        assertEquals(255, rootFiles.size());
         
-        assertEquals(3, rootFiles.size());
-        assertTrue(rootFiles.get(0).getAbsolutePath().endsWith("/target/test-classes/net/contextfw/web"));
-        assertTrue(rootFiles.get(1).getAbsolutePath().endsWith("/target/classes/net/contextfw/web"));
-        assertTrue(rootFiles.get(2).getAbsolutePath().endsWith("/src/main/resources"));
-    }
-    
-    @Test(expected=WebApplicationException.class)
-    public void testInvalidRootFile() {
-        List<String> paths = new ArrayList<String>();
-        paths.add("file:src/foo/bar");
-        ResourceScanner.getRootFiles(paths);
+//        assertTrue(rootFiles.get(0).getAbsolutePath().endsWith("/target/test-classes/net/contextfw/web"));
+//        assertTrue(rootFiles.get(1).getAbsolutePath().endsWith("/target/classes/net/contextfw/web"));
+//        assertTrue(rootFiles.get(2).getAbsolutePath().endsWith("/src/main/resources"));
     }
     
     @Test
@@ -68,9 +63,9 @@ public class ResourceScannerTest {
         List<String> paths = new ArrayList<String>();
         paths.add("net.contextfw.web.application.internal.util");
         
-        List<File> files = ResourceScanner.findResources(paths, 
-                Pattern.compile(".*\\.class"));
-        
+//        List<File> files = ResourceScanner.findResources(paths, 
+//                Pattern.compile(".*\\.class"));
+//        
 //        for (File file : files) {
 //            System.out.println(file.getName());
 //        }

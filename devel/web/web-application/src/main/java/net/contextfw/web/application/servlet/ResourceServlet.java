@@ -1,10 +1,8 @@
 package net.contextfw.web.application.servlet;
 
-import java.io.BufferedReader;
-import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.regex.Pattern;
 
@@ -14,7 +12,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import net.contextfw.web.application.WebApplicationException;
+import net.contextfw.web.application.internal.util.ResourceEntry;
 import net.contextfw.web.application.internal.util.ResourceScanner;
+
+import org.apache.commons.io.IOUtils;
 
 public abstract class ResourceServlet extends HttpServlet {
 
@@ -40,8 +41,8 @@ public abstract class ResourceServlet extends HttpServlet {
             synchronized (this) {
                 if (content == null) {
                     StringBuilder contentBuilder = new StringBuilder();
-                    List<File> files = ResourceScanner.findResources(getRootPaths(), getAcceptor());
-                    for (File file : files) {
+                    List<ResourceEntry> files = ResourceScanner.findResources(getRootPaths(), getAcceptor());
+                    for (ResourceEntry file : files) {
                         addContent(contentBuilder, file);
                     }
                     content = contentBuilder.toString();
@@ -53,19 +54,11 @@ public abstract class ResourceServlet extends HttpServlet {
         resp.getWriter().close();
     }
 
-    private void addContent(StringBuilder contentBuilder, File file) {
-        String line = null;
+    private void addContent(StringBuilder contentBuilder, ResourceEntry file) {
         try {
-            BufferedReader r = new BufferedReader(new FileReader(file));
-
-            capacity = capacity + file.length();
-            contentBuilder.ensureCapacity((int) capacity);
-
-            while ((line = r.readLine()) != null) {
-                contentBuilder.append(line);
-                contentBuilder.append("\n");
-            }
-            r.close();
+            InputStream stream = file.getInputStream();
+            contentBuilder.append(IOUtils.toString(stream));
+            stream.close();
         } catch (FileNotFoundException e) {
             throw new WebApplicationException(e);
         } catch (IOException e) {
