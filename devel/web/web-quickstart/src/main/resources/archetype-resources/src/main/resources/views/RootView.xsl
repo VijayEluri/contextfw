@@ -11,8 +11,6 @@
 		<meta http-equiv="cache-control" content="no-cache" />  
 		<meta http-equiv="pragma" content="no-cache, no-store" />  
 
-		<!-- Sarissa must be loaded before jQuery! -->
-		<script type="text/javascript" src="{$contextPath}/scripts/sarissa.js"></script>
 		<script type="text/javascript" src="{$contextPath}/scripts/jquery.js"></script>
 		<script type="text/javascript" src="{$contextPath}/scripts/contextfw.js"></script>
 		<script type="text/javascript" src="{$contextPath}/scripts/json.js"></script>
