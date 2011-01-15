@@ -6,15 +6,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import net.contextfw.web.application.annotations.PageScoped;
 
-/**
- * Marks class to be bound to web application 
- * 
- * <p>
- *  When class is annotated with this then there exists only on instance of the class
- *  in the page.
- * </p>
- *   
- */
 @PageScoped
 public class HttpContext {
 
