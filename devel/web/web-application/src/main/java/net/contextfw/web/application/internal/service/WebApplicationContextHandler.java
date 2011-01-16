@@ -11,16 +11,15 @@ import net.contextfw.web.application.WebApplicationHandle;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Inject;
-import com.google.inject.Singleton;
-
-@Singleton
 public class WebApplicationContextHandler {
 
     private Logger logger = LoggerFactory.getLogger(WebApplicationContextHandler.class);
     
-    @Inject
-    private ModuleConfiguration configuration;
+    public WebApplicationContextHandler(ModuleConfiguration configuration) {
+        this.configuration = configuration;
+    }
+
+    private final ModuleConfiguration configuration;
     
     private volatile static Map<String, WebApplicationContext> contexts = new HashMap<String, WebApplicationContext>();
 

@@ -2,6 +2,11 @@ package net.contextfw.web.application;
 
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Timer;
+import java.util.TimerTask;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.contextfw.web.application.annotations.PageScoped;
 import net.contextfw.web.application.component.Component;
@@ -12,6 +17,7 @@ import net.contextfw.web.application.internal.providers.HttpContextProvider;
 import net.contextfw.web.application.internal.providers.RequestProvider;
 import net.contextfw.web.application.internal.providers.WebApplicationHandleProvider;
 import net.contextfw.web.application.internal.scope.WebApplicationScope;
+import net.contextfw.web.application.internal.service.WebApplicationContextHandler;
 import net.contextfw.web.application.internal.util.AttributeHandler;
 import net.contextfw.web.application.internal.util.ClassScanner;
 import net.contextfw.web.application.request.Request;
@@ -34,6 +40,8 @@ import com.google.inject.spi.TypeListener;
 public final class WebApplicationModule extends AbstractModule {
 
     private final ModuleConfiguration configuration;
+    
+    private Logger logger = LoggerFactory.getLogger(WebApplicationModule.class);
 
     @SuppressWarnings("rawtypes")
     private AutoRegisterListener autoRegisterListener = new AutoRegisterListener();
@@ -86,6 +94,23 @@ public final class WebApplicationModule extends AbstractModule {
         }        
         
         return builder.create();
+    }
+    
+    @Singleton
+    @Provides
+    public WebApplicationContextHandler provideWebApplicationContextHandler(ModuleConfiguration configuration) {
+        final WebApplicationContextHandler handler = new WebApplicationContextHandler(configuration);
+        Timer timer = new Timer(true);
+        logger.info("Starting scheduled removal for expired web applications");
+        
+        timer.schedule(new TimerTask() {
+            public void run() {
+                handler.removeExpiredApplications();
+            }
+        }, configuration.getRemovalSchedulePeriod(), 
+        configuration.getRemovalSchedulePeriod()); 
+        
+        return handler;
     }
     
     @SuppressWarnings("unchecked")

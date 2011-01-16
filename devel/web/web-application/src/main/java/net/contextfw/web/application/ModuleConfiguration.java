@@ -40,6 +40,7 @@ public class ModuleConfiguration {
     private String resourcesPrefix = "/resources";
     private long pollTime = 1000*60*5; // 5 minutes
     private long maxInactivity = 1000*60*11; // 11 minutes
+    private long removalSchedulePeriod = 1000*60*5;
     private long errorTime = 2000;
     private String contextPath = "";
     private int transformerCount = 1;
@@ -256,5 +257,13 @@ public class ModuleConfiguration {
 
     public Class<? extends LifecycleListener> getLifecycleListener() {
         return lifecycleListener;
+    }
+
+    public void setRemovalSchedulePeriod(long removalSchedulePeriod) {
+        this.removalSchedulePeriod = removalSchedulePeriod;
+    }
+
+    public long getRemovalSchedulePeriod() {
+        return removalSchedulePeriod;
     }
 }
