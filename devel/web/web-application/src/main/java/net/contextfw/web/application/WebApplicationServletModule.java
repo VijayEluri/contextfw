@@ -24,16 +24,14 @@ public class WebApplicationServletModule extends ServletModule {
     public WebApplicationServletModule(ModuleConfiguration configuration) {
         this.configuration = configuration;
     }
-
+    
     @Override
     protected void configureServlets() {
         
-        String contextPath = configuration.getContextPath();
-        
         logger.info("Configuring default servlets");
-        serve(contextPath + configuration.getResourcesPrefix() + ".js").with(
+        serve(configuration.getResourcesPrefix() + ".js").with(
                 ScriptServlet.class);
-        serve(contextPath + configuration.getResourcesPrefix() + ".css").with(
+        serve(configuration.getResourcesPrefix() + ".css").with(
                 CSSServlet.class);
         serveRegex(".*/contextfw-update/.*").with(UpdateServlet.class);
         serveRegex(".*/contextfw-refresh/.*").with(UpdateServlet.class);
@@ -42,8 +40,6 @@ public class WebApplicationServletModule extends ServletModule {
     }
 
     private void serveViewComponents() {
-        
-        String contextPath = ""; //+ configuration.getContextPath();
         
         logger.info("Configuring view components");
         TreeSet<String> urls = new TreeSet<String>();
@@ -55,7 +51,7 @@ public class WebApplicationServletModule extends ServletModule {
             if (annotation != null) {
                 for (String url : annotation.url()) {
                     if (!"".equals(url)) {
-                        urls.add(contextPath + url);
+                        urls.add(url);
                     }
                 }
                 for (String property : annotation.property()) {
@@ -63,7 +59,7 @@ public class WebApplicationServletModule extends ServletModule {
                         String url = System.getProperty(property);
                         
                         if (url != null && !"".equals(url)) {
-                            urls.add(contextPath + url);
+                            urls.add(url);
                         } else {
                             throw new WebApplicationException("No url bound to view component. (class="
                                         +cl.getSimpleName()+", property="+property+")");
@@ -75,7 +71,7 @@ public class WebApplicationServletModule extends ServletModule {
 
         for (String url : urls.descendingSet()) {
             logger.info("  Serving url: {}", url);
-            serveRegex(contextPath + url).with(InitServlet.class);
+            serveRegex(url).with(InitServlet.class);
         }
     }
 }

@@ -8,6 +8,7 @@ import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
+import net.contextfw.web.application.ModuleConfiguration;
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.annotations.PageScoped;
 import net.contextfw.web.application.component.Component;
@@ -29,7 +30,11 @@ public class InitializerProvider {
     private final Map<Class<? extends Component>, List<Class<? extends Component>>> chain
          = new HashMap<Class<? extends Component>, List<Class<? extends Component>>>(); 
 
-    public InitializerProvider() {}
+    private final ModuleConfiguration configuration;
+    
+    public InitializerProvider(ModuleConfiguration configuration) {
+        this.configuration = configuration;
+    }
 
     public void addInitializer(Class<? extends Component> cl) {
 
@@ -45,14 +50,14 @@ public class InitializerProvider {
         try {
             for (String url : annotation.url()) {
                 if (!"".equals(url)) {
-                    initializers.put(Pattern.compile(url, Pattern.CASE_INSENSITIVE), cl);
+                    initializers.put(Pattern.compile(configuration.getContextPath() + url, Pattern.CASE_INSENSITIVE), cl);
                 }
             }
             for (String property : annotation.property()) {
                 if (!"".equals(property)) {
                     String url = System.getProperty(property);
                     if (url != null && !"".equals(url)) {
-                        initializers.put(Pattern.compile(url, Pattern.CASE_INSENSITIVE), cl);
+                        initializers.put(Pattern.compile(configuration.getContextPath() + url, Pattern.CASE_INSENSITIVE), cl);
                     }
                 }
             }

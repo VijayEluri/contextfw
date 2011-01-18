@@ -115,7 +115,7 @@ public final class WebApplicationModule extends AbstractModule {
     
     @SuppressWarnings("unchecked")
     private InitializerProvider configureInitializers() {
-        InitializerProvider provider = new InitializerProvider();
+        InitializerProvider provider = new InitializerProvider(configuration);
 
         List<Class<?>> classes = ClassScanner.getClasses(configuration.getViewComponentRootPackages());
 
