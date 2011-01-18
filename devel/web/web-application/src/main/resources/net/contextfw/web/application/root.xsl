@@ -2,7 +2,7 @@
 <xsl:stylesheet version="1.0" xmlns:xsl="http://www.w3.org/1999/XSL/Transform" xmlns:txt="http://contextfw.net/ns/txt">
 
 <xsl:variable name="lang"><xsl:value-of select="/WebApplication/@lang"/><xsl:value-of select="/WebApplicationUpdate/@lang"/></xsl:variable>
-<xsl:variable name="contextPath"><xsl:value-of select="/WebApplication/@contextPath"/></xsl:variable>
+<xsl:variable name="contextPath"><xsl:value-of select="/WebApplication/@contextPath"/><xsl:value-of select="/WebApplication.update/@contextPath"/></xsl:variable>
 <xsl:variable name="webApplicationHandle"><xsl:value-of select="/WebApplication/@handle"/></xsl:variable>
 
 <xsl:template match="/">
