@@ -91,7 +91,7 @@ public final class DOMBuilder {
     }
 
     public DOMBuilder text(Object value) {
-        root.setText(serializer.serialize(value));
+        root.addText(serializer.serialize(value));
         return this;
     }
 
