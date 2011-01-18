@@ -19,7 +19,9 @@ import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.component.CustomBuild;
 import net.contextfw.web.application.component.Element;
 import net.contextfw.web.application.dom.DOMBuilder;
+import net.contextfw.web.application.internal.util.AttributeHandler;
 
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 @Singleton
@@ -31,6 +33,9 @@ public class ComponentBuilderImpl implements ComponentBuilder {
     private Map<Class<?>, List<Builder>> updateBuilders = new HashMap<Class<?>, List<Builder>>();
     private Map<Class<?>, List<Builder>> partialBuilders = new HashMap<Class<?>, List<Builder>>();
 
+    @Inject
+    private AttributeHandler attributeHandler;
+    
     private Map<Class<?>, Buildable> annotations = new HashMap<Class<?>, Buildable>();
 
     private synchronized List<Builder> getBuilder(Class<?> cl) {
@@ -233,7 +238,7 @@ public class ComponentBuilderImpl implements ComponentBuilder {
                 }
             }
         } else {
-            throw new WebApplicationException("Object must be annotated with @Buildable in order to be built");
+            sb.text(attributeHandler.serialize(component));
         }
     }
 
