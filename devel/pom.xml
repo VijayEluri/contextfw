@@ -107,6 +107,9 @@ limitations under the License.
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
 				<version>2.7</version>
+				<configuration>
+				  <excludePackageNames>net.contextfw.web.application.internal.*</excludePackageNames>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
