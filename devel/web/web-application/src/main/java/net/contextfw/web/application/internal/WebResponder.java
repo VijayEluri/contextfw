@@ -245,7 +245,7 @@ public class WebResponder {
                     "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd");
                 new HTMLWriter(resp.getWriter(), format).write(rDocument);    
             } else {
-                new XMLWriter(resp.getWriter(), format).write(rDocument);
+                new HTMLWriter(resp.getWriter(), format).write(rDocument);
             }
         }
         catch (TransformerException e) {
