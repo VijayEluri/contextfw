@@ -3,7 +3,7 @@ package net.contextfw.web.application.servlet;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import net.contextfw.web.application.ModuleConfiguration;
+import net.contextfw.web.application.conf.WebConfiguration;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -18,7 +18,7 @@ public class ScriptServlet extends ResourceServlet {
     private final List<String> resourcePaths;
 
     @Inject
-    public ScriptServlet(ModuleConfiguration configuration) {
+    public ScriptServlet(WebConfiguration configuration) {
         this.debugMode = configuration.isDebugMode();
         this.resourcePaths = configuration.getResourcePaths();
     }

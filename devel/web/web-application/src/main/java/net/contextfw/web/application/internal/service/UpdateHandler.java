@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.contextfw.web.application.ModuleConfiguration;
+import net.contextfw.web.application.conf.WebConfiguration;
 import net.contextfw.web.application.internal.LifecycleListeners;
 
 import org.slf4j.Logger;
@@ -24,14 +24,14 @@ public class UpdateHandler {
     
     private final WebApplicationContextHandler handler;
 
-    private final ModuleConfiguration configuration;
+    private final WebConfiguration configuration;
 
     private final LifecycleListeners listeners;
     
     @Inject
     public UpdateHandler(
             WebApplicationContextHandler handler, 
-            ModuleConfiguration configuration, 
+            WebConfiguration configuration, 
             LifecycleListeners listeners) {
         this.handler = handler;
         this.configuration = configuration;

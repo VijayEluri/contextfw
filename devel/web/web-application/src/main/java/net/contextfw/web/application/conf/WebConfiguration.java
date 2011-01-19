@@ -1,4 +1,4 @@
-package net.contextfw.web.application;
+package net.contextfw.web.application.conf;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import net.contextfw.web.application.LifecycleListener;
 import net.contextfw.web.application.converter.AttributeJsonSerializer;
 import net.contextfw.web.application.converter.AttributeSerializer;
 
@@ -19,7 +20,7 @@ import com.google.inject.Singleton;
  * Configures the application during initialization
  */
 @Singleton
-public class ModuleConfiguration {
+public class WebConfiguration {
 
     private final List<String> viewComponentRootPackages = new ArrayList<String>();
     private final List<String> resourcePaths = new ArrayList<String>();
@@ -45,10 +46,12 @@ public class ModuleConfiguration {
     private String contextPath = "";
     private int transformerCount = 1;
     
+    private Class<? extends PropertyProvider> propertyProvider = SystemPropertyProvider.class;
+    
     private String xmlParamName = null;
     private Class<? extends LifecycleListener> lifecycleListener;
     
-    public ModuleConfiguration addXMLNamespace(String prefix, String path) {
+    public WebConfiguration addXMLNamespace(String prefix, String path) {
         namespaces.put(prefix, path);
         return this;
     }
@@ -57,12 +60,12 @@ public class ModuleConfiguration {
         return Collections.unmodifiableMap(namespaces);
     }
     
-    public ModuleConfiguration debugMode(boolean debugMode) {
+    public WebConfiguration debugMode(boolean debugMode) {
         this.debugMode = debugMode;
         return this;
     }
     
-    public ModuleConfiguration setViewComponentRootPackages(String... packages) {
+    public WebConfiguration setViewComponentRootPackages(String... packages) {
         if (packages != null) {
             for (String pck : packages) {
                 if (pck != null && pck.trim().length() != 0) {
@@ -86,7 +89,7 @@ public class ModuleConfiguration {
      * @param resources
      * @return
      */
-    public ModuleConfiguration addResourcePaths(String... resources) {
+    public WebConfiguration addResourcePaths(String... resources) {
         if (resources != null) {
             for (String pck : resources) {
                 if (pck != null && pck.trim().length() != 0) {
@@ -167,7 +170,7 @@ public class ModuleConfiguration {
         return contextPath;
     }
 
-    public ModuleConfiguration setContextPath(String contextPath) {
+    public WebConfiguration setContextPath(String contextPath) {
         this.contextPath = contextPath;
         return this;
     }
@@ -193,7 +196,7 @@ public class ModuleConfiguration {
      * @return
      *  The configuration
      */
-    public ModuleConfiguration setTransformerCount(int transformerCount) {
+    public WebConfiguration setTransformerCount(int transformerCount) {
         if (transformerCount < 1) {
             throw new IllegalArgumentException("At least 1 transformed must be specified");
         }
@@ -215,7 +218,7 @@ public class ModuleConfiguration {
      *      The class of serializer
      * @return
      */
-    public <S> ModuleConfiguration addAttributeJsonSerializer(Class<S> type, 
+    public <S> WebConfiguration addAttributeJsonSerializer(Class<S> type, 
             Class<? extends AttributeJsonSerializer<S>> serializer) {
         addJsonSerializerClass(type, serializer);
         addJsonDeserializerClass(type, serializer);
@@ -223,16 +226,16 @@ public class ModuleConfiguration {
         return this;
     }
     
-    public <S> ModuleConfiguration addAttributeSerializerClass(Class<S> cl, Class<? extends AttributeSerializer<S>> serializerClass) {
+    public <S> WebConfiguration addAttributeSerializerClass(Class<S> cl, Class<? extends AttributeSerializer<S>> serializerClass) {
         attributeSerializerClasses.put(cl, serializerClass);
         return this;
     }
-    public <S> ModuleConfiguration addJsonSerializerClass(Class<S> cl, Class<? extends JsonSerializer<S>> serializerClass) {
+    public <S> WebConfiguration addJsonSerializerClass(Class<S> cl, Class<? extends JsonSerializer<S>> serializerClass) {
         jsonSerializerClasses.put(cl, serializerClass);
         return this;
     }
 
-    public <S> ModuleConfiguration addJsonDeserializerClass(Class<S> cl, 
+    public <S> WebConfiguration addJsonDeserializerClass(Class<S> cl, 
                 Class<? extends JsonDeserializer<S>> serializerClass) {
         jsonDeserializerClasses.put(cl, serializerClass);
         return this;
@@ -250,7 +253,7 @@ public class ModuleConfiguration {
         return Collections.unmodifiableSet(attributeSerializerClasses.entrySet());
     }
 
-    public ModuleConfiguration setLifecycleListener(Class<? extends LifecycleListener> lifecycleListener) {
+    public WebConfiguration setLifecycleListener(Class<? extends LifecycleListener> lifecycleListener) {
         this.lifecycleListener = lifecycleListener;
         return this;
     }
@@ -265,5 +268,14 @@ public class ModuleConfiguration {
 
     public long getRemovalSchedulePeriod() {
         return removalSchedulePeriod;
+    }
+
+    public WebConfiguration setPropertyProvider(Class<? extends PropertyProvider> propertyProvider) {
+        this.propertyProvider = propertyProvider;
+        return this;
+    }
+
+    public Class<? extends PropertyProvider> getPropertyProvider() {
+        return propertyProvider;
     }
 }

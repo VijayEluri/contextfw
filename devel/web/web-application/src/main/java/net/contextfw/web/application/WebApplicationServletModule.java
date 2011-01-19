@@ -3,6 +3,8 @@ package net.contextfw.web.application;
 import java.util.List;
 import java.util.TreeSet;
 
+import net.contextfw.web.application.conf.PropertyProvider;
+import net.contextfw.web.application.conf.WebConfiguration;
 import net.contextfw.web.application.internal.util.ClassScanner;
 import net.contextfw.web.application.servlet.CSSServlet;
 import net.contextfw.web.application.servlet.InitServlet;
@@ -13,15 +15,19 @@ import net.contextfw.web.application.view.View;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.inject.Inject;
 import com.google.inject.servlet.ServletModule;
 
 public class WebApplicationServletModule extends ServletModule {
 
     private Logger logger = LoggerFactory.getLogger(WebApplicationServletModule.class);
 
-    private final ModuleConfiguration configuration;
+    private final WebConfiguration configuration;
 
-    public WebApplicationServletModule(ModuleConfiguration configuration) {
+    @Inject
+    private PropertyProvider properties;
+    
+    public WebApplicationServletModule(WebConfiguration configuration) {
         this.configuration = configuration;
     }
     
@@ -56,7 +62,7 @@ public class WebApplicationServletModule extends ServletModule {
                 }
                 for (String property : annotation.property()) {
                     if (!"".equals(property)) {
-                        String url = System.getProperty(property);
+                        String url = properties.get().getProperty(property);
                         
                         if (url != null && !"".equals(url)) {
                             urls.add(url);

@@ -3,9 +3,8 @@
 #set( $symbol_escape = '\' )
 package ${package};
 
-import net.contextfw.web.application.ModuleConfiguration;
+import net.contextfw.web.application.conf.WebConfiguration;
 import net.contextfw.web.application.WebApplicationModule;
-import net.contextfw.web.application.WebApplicationServletModule;
 
 import org.guiceyfruit.jsr250.Jsr250Module;
 
@@ -18,7 +17,7 @@ public class MyApplicationModule extends AbstractModule {
     @Override
     protected void configure() {
 
-        ModuleConfiguration config = new ModuleConfiguration()
+        WebConfiguration config = new WebConfiguration()
             .addResourcePaths("${package}")
             .setViewComponentRootPackages("${package}.views")
             .debugMode(true);
@@ -28,6 +27,5 @@ public class MyApplicationModule extends AbstractModule {
         
         install(new WebApplicationModule(config));
         install(new Jsr250Module());
-        install(new WebApplicationServletModule(config));
     }
 }

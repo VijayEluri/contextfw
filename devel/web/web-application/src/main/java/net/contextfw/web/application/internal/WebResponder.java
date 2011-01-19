@@ -19,8 +19,8 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamSource;
 
-import net.contextfw.web.application.ModuleConfiguration;
 import net.contextfw.web.application.WebApplicationException;
+import net.contextfw.web.application.conf.WebConfiguration;
 import net.contextfw.web.application.internal.util.ResourceEntry;
 import net.contextfw.web.application.internal.util.ResourceScanner;
 
@@ -69,10 +69,10 @@ public class WebResponder {
         }
     }
     
-    private final ModuleConfiguration configuration;
+    private final WebConfiguration configuration;
     
     @Inject
-    public WebResponder(ModuleConfiguration configuration) {
+    public WebResponder(WebConfiguration configuration) {
         this.configuration = configuration;
         rootResourcePaths.add("net.contextfw.web.application");
     }

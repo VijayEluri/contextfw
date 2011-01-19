@@ -8,15 +8,17 @@ import java.util.Map.Entry;
 import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import net.contextfw.web.application.ModuleConfiguration;
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.annotations.PageScoped;
 import net.contextfw.web.application.component.Component;
+import net.contextfw.web.application.conf.PropertyProvider;
+import net.contextfw.web.application.conf.WebConfiguration;
 import net.contextfw.web.application.view.View;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 @Singleton
@@ -24,15 +26,18 @@ public class InitializerProvider {
 
     private Logger logger = LoggerFactory.getLogger(InitializerProvider.class);
     
+    @Inject
+    private PropertyProvider properties;
+    
     private final Map<Pattern, Class<? extends Component>> initializers 
         = new HashMap<Pattern, Class<? extends Component>>();
     
     private final Map<Class<? extends Component>, List<Class<? extends Component>>> chain
          = new HashMap<Class<? extends Component>, List<Class<? extends Component>>>(); 
 
-    private final ModuleConfiguration configuration;
+    private final WebConfiguration configuration;
     
-    public InitializerProvider(ModuleConfiguration configuration) {
+    public InitializerProvider(WebConfiguration configuration) {
         this.configuration = configuration;
     }
 
@@ -55,7 +60,7 @@ public class InitializerProvider {
             }
             for (String property : annotation.property()) {
                 if (!"".equals(property)) {
-                    String url = System.getProperty(property);
+                    String url = properties.get().getProperty(property);
                     if (url != null && !"".equals(url)) {
                         initializers.put(Pattern.compile(configuration.getContextPath() + url, Pattern.CASE_INSENSITIVE), cl);
                     }

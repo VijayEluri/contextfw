@@ -6,11 +6,11 @@ import java.util.List;
 import java.util.Map;
 
 import net.contextfw.web.application.HttpContext;
-import net.contextfw.web.application.ModuleConfiguration;
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.annotations.PageScoped;
 import net.contextfw.web.application.component.Component;
+import net.contextfw.web.application.conf.WebConfiguration;
 import net.contextfw.web.application.dom.DOMBuilder;
 import net.contextfw.web.application.internal.ComponentUpdateHandler;
 import net.contextfw.web.application.internal.ComponentUpdateHandlerFactory;
@@ -64,7 +64,7 @@ public class WebApplicationImpl implements WebApplication {
     private WebApplicationHandle webApplicationHandle;
 
     @Inject
-    private ModuleConfiguration configuration;
+    private WebConfiguration configuration;
 
     public WebApplicationImpl() {
     }

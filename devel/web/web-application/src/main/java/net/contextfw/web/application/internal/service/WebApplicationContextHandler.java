@@ -5,8 +5,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 
-import net.contextfw.web.application.ModuleConfiguration;
 import net.contextfw.web.application.WebApplicationHandle;
+import net.contextfw.web.application.conf.WebConfiguration;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,11 +15,11 @@ public class WebApplicationContextHandler {
 
     private Logger logger = LoggerFactory.getLogger(WebApplicationContextHandler.class);
     
-    public WebApplicationContextHandler(ModuleConfiguration configuration) {
+    public WebApplicationContextHandler(WebConfiguration configuration) {
         this.configuration = configuration;
     }
 
-    private final ModuleConfiguration configuration;
+    private final WebConfiguration configuration;
     
     private volatile static Map<String, WebApplicationContext> contexts = new HashMap<String, WebApplicationContext>();
 

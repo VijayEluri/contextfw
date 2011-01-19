@@ -5,11 +5,10 @@ import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import net.contextfw.web.application.annotations.PageScoped;
 import net.contextfw.web.application.component.Component;
+import net.contextfw.web.application.conf.PropertyProvider;
+import net.contextfw.web.application.conf.WebConfiguration;
 import net.contextfw.web.application.converter.ObjectAttributeSerializer;
 import net.contextfw.web.application.internal.component.AutoRegisterListener;
 import net.contextfw.web.application.internal.initializer.InitializerProvider;
@@ -22,6 +21,9 @@ import net.contextfw.web.application.internal.util.AttributeHandler;
 import net.contextfw.web.application.internal.util.ClassScanner;
 import net.contextfw.web.application.request.Request;
 import net.contextfw.web.application.view.View;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -39,14 +41,14 @@ import com.google.inject.spi.TypeListener;
 
 public final class WebApplicationModule extends AbstractModule {
 
-    private final ModuleConfiguration configuration;
+    private final WebConfiguration configuration;
     
     private Logger logger = LoggerFactory.getLogger(WebApplicationModule.class);
 
     @SuppressWarnings("rawtypes")
     private AutoRegisterListener autoRegisterListener = new AutoRegisterListener();
 
-    public WebApplicationModule(ModuleConfiguration configuration) {
+    public WebApplicationModule(WebConfiguration configuration) {
         this.configuration = configuration;
     }
 
@@ -65,7 +67,8 @@ public final class WebApplicationModule extends AbstractModule {
                 WebApplicationHandleProvider.class);
         bind(Request.class).toProvider(RequestProvider.class);
         bind(InitializerProvider.class).toInstance(configureInitializers());
-        bind(ModuleConfiguration.class).toInstance(configuration);
+        bind(WebConfiguration.class).toInstance(configuration);
+        bind(PropertyProvider.class).to(configuration.getPropertyProvider());
         
         this.bindListener(Matchers.any(), new TypeListener() {
             @SuppressWarnings("unchecked")
@@ -78,6 +81,10 @@ public final class WebApplicationModule extends AbstractModule {
                 }
             }
         });
+        
+        WebApplicationServletModule servletModule = new WebApplicationServletModule(configuration);
+        requestInjection(servletModule);
+        install(servletModule);
     }
 
     @Singleton
@@ -98,7 +105,7 @@ public final class WebApplicationModule extends AbstractModule {
     
     @Singleton
     @Provides
-    public WebApplicationContextHandler provideWebApplicationContextHandler(ModuleConfiguration configuration) {
+    public WebApplicationContextHandler provideWebApplicationContextHandler(WebConfiguration configuration) {
         final WebApplicationContextHandler handler = new WebApplicationContextHandler(configuration);
         Timer timer = new Timer(true);
         logger.info("Starting scheduled removal for expired web applications");

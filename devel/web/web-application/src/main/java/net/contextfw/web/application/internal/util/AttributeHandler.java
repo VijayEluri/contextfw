@@ -4,7 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import net.contextfw.web.application.ModuleConfiguration;
+import net.contextfw.web.application.conf.WebConfiguration;
 import net.contextfw.web.application.converter.AttributeSerializer;
 import net.contextfw.web.application.converter.ObjectAttributeSerializer;
 import net.contextfw.web.application.internal.ToStringSerializer;
@@ -23,7 +23,7 @@ public class AttributeHandler implements ObjectAttributeSerializer {
     
     @SuppressWarnings("unchecked")
     @Inject
-    public AttributeHandler(Injector injector, ModuleConfiguration conf) {
+    public AttributeHandler(Injector injector, WebConfiguration conf) {
         for (Entry<Class<?>, Class<? extends AttributeSerializer<?>>> entry : conf.getAttributeSerializerClasses()) {
             serializers.put(entry.getKey(), (AttributeSerializer<Object>) injector.getInstance(entry.getValue()));
         }
