@@ -41,10 +41,13 @@ public class LifecycleListeners implements LifecycleListener {
     }
 
     @Override
-    public void beforeUpdate() {
+    public boolean beforeUpdate() {
         for (LifecycleListener listener : listeners) {
-            listener.beforeUpdate();
+            if (!listener.beforeUpdate()) {
+                return false;
+            }
         }
+        return true;
     }
 
     @Override

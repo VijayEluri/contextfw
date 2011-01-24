@@ -141,9 +141,11 @@ public class WebApplicationImpl implements WebApplication {
     }
 
     @Override
-    public void updateState() throws WebApplicationException {
+    public void updateState(boolean updateComponents) throws WebApplicationException {
         mode = Mode.UPDATE;
-        updateElements();
+        if (updateComponents) {
+            updateElements();
+        }
     }
 
     protected void updateElements() throws WebApplicationException {

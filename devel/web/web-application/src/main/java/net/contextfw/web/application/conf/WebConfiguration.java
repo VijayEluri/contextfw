@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import net.contextfw.web.application.DefaultLifecycleListener;
 import net.contextfw.web.application.LifecycleListener;
 import net.contextfw.web.application.converter.AttributeJsonSerializer;
 import net.contextfw.web.application.converter.AttributeSerializer;
@@ -49,7 +50,7 @@ public class WebConfiguration {
     private Class<? extends PropertyProvider> propertyProvider = SystemPropertyProvider.class;
     
     private String xmlParamName = null;
-    private Class<? extends LifecycleListener> lifecycleListener;
+    private Class<? extends LifecycleListener> lifecycleListener = DefaultLifecycleListener.class;
     
     public WebConfiguration addXMLNamespace(String prefix, String path) {
         namespaces.put(prefix, path);

@@ -80,8 +80,7 @@ public class UpdateHandler {
                                 app.getHttpContext().setRequest(request);
                                 app.getHttpContext().setResponse(response);
                                 try {
-                                    listeners.beforeUpdate();
-                                    app.getApplication().updateState();
+                                    app.getApplication().updateState(listeners.beforeUpdate());
                                     listeners.afterUpdate();
                                     listeners.beforeRender();
                                     app.getApplication().sendResponse();
