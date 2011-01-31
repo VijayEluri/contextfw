@@ -3,7 +3,6 @@ contextfw = {
 	updateUrl:  null,
 	refreshUrl: null,
 	removeUrl:  null,
-	serializer: new XMLSerializer(),
 	afterCall: null,
 	defaultBeforeCall: null,
 	defaultAfterCall: null,
