@@ -18,6 +18,10 @@
 </updates>
 </xsl:template>
 
+<xsl:template match="Reload">
+<script>window.location.reload();</script>
+</xsl:template>
+
 <xsl:template match="Redirect">
 <script>window.location="<xsl:value-of select="@href" />";</script>
 </xsl:template>
