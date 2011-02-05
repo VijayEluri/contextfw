@@ -27,6 +27,10 @@ public class WebApplicationContextHandler {
         contexts.get(handle.getKey()).setTimestamp(System.currentTimeMillis());
     }
 
+    public int getContextCount() {
+        return contexts.size();
+    }
+    
     public synchronized WebApplicationContext getContext(WebApplicationHandle handle) {
         return contexts.get(handle.getKey());
     }
@@ -42,7 +46,7 @@ public class WebApplicationContextHandler {
 
     public synchronized void removeExpiredApplications() {
         long timestamp = System.currentTimeMillis();
-
+        
         Iterator<WebApplicationContext> iterator = contexts.values().iterator();
 
         while (iterator.hasNext()) {
