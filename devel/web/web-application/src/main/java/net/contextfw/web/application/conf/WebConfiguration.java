@@ -40,9 +40,9 @@ public class WebConfiguration {
     private boolean debugMode = false;
     private boolean logXML = false;
     private String resourcesPrefix = "/resources";
-    private long pollTime = 1000*60*5; // 5 minutes
-    private long maxInactivity = 1000*60*11; // 11 minutes
-    private long removalSchedulePeriod = 1000*60*5;
+    private long pollTime = 1000*30; // 30 seconds
+    private long maxInactivity = 1000*70; // 70 seconds
+    private long removalSchedulePeriod = 1000*60; // 1 minute
     private long errorTime = 2000;
     private String contextPath = "";
     private int transformerCount = 1;

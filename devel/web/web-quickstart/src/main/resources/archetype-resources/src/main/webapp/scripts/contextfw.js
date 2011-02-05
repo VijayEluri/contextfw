@@ -35,7 +35,7 @@ contextfw = {
 	},
 
 	setRefresh: function() {
-		setTimeout("contextfw.refresh();", 300000);
+		setTimeout("contextfw.refresh();", 1000*30);
 	},
 
 	unload: function() {
