@@ -21,10 +21,11 @@ public class WebApplicationContextHandler {
 
     private final WebConfiguration configuration;
     
-    private volatile static Map<String, WebApplicationContext> contexts = new HashMap<String, WebApplicationContext>();
+    private volatile static Map<WebApplicationHandle, WebApplicationContext> contexts = 
+        new HashMap<WebApplicationHandle, WebApplicationContext>();
 
     public synchronized void refreshApplication(WebApplicationHandle handle) throws Exception {
-        contexts.get(handle.getKey()).setTimestamp(System.currentTimeMillis());
+        contexts.get(handle).setTimestamp(System.currentTimeMillis());
     }
 
     public int getContextCount() {
@@ -32,15 +33,15 @@ public class WebApplicationContextHandler {
     }
     
     public synchronized WebApplicationContext getContext(WebApplicationHandle handle) {
-        return contexts.get(handle.getKey());
+        return contexts.get(handle);
     }
 
     public synchronized WebApplicationContext getContext(String handleKey) {
-        return contexts.get(handleKey);
+        return contexts.get(new WebApplicationHandle(handleKey));
     }
 
     public synchronized void addContext(WebApplicationContext context) throws Exception {
-        contexts.put(context.getHandle().getKey(), context);
+        contexts.put(context.getHandle(), context);
         refreshApplication(context.getHandle());
     }
 

@@ -6,10 +6,10 @@ public class WebApplicationHandle implements Serializable {
 
     private static final long serialVersionUID = -2578266439991410555L;
 
-    private String key;
+    private final String key;
 
-    public WebApplicationHandle(String handle) {
-        this.key = handle;
+    public WebApplicationHandle(String key) {
+        this.key = key;
     }
 
     public String getKey() {
@@ -18,27 +18,19 @@ public class WebApplicationHandle implements Serializable {
 
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((key == null) ? 0 : key.hashCode());
-        return result;
+        return key.hashCode();
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
+    public boolean equals(Object other) {
+        if (this == other) {
             return true;
-        if (obj == null)
-            return false;
-        if (getClass() != obj.getClass())
-            return false;
-        WebApplicationHandle other = (WebApplicationHandle) obj;
-        if (key == null) {
-            if (other.key != null)
-                return false;
+        } else if (other instanceof WebApplicationHandle) {
+            WebApplicationHandle otherHandle = (WebApplicationHandle) other;
+            return this.key.equals(otherHandle.key);
         }
-        else if (!key.equals(other.key))
+        else {
             return false;
-        return true;
+        }
     }
 }
