@@ -66,12 +66,13 @@ public class UpdateHandler {
                     synchronized (app) {
 
                         if ("contextfw-remove".equals(command)) {
+                            listeners.onRemove(handlerStr);
                             handler.removeApplication(app.getHandle());
-                            response.setStatus(HttpServletResponse.SC_OK);
+                            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
                         } else {
 
                             handler.refreshApplication(app.getHandle());
-
+                            
                             if ("contextfw-update".equals(command)) {
 
                                 response.setContentType("text/xml; charset=UTF-8");
@@ -93,7 +94,8 @@ public class UpdateHandler {
                                     app.getHttpContext().setResponse(null);
                                 }
                             } else if ("contextfw-refresh".equals(command)) {
-                                response.setStatus(HttpServletResponse.SC_OK);
+                                listeners.onRefresh(handlerStr);
+                                response.setStatus(HttpServletResponse.SC_NO_CONTENT);
                             }
                         }
                     }

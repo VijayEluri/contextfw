@@ -34,6 +34,10 @@ public interface LifecycleListener {
     
     void onException(Exception e);
     
+    void onRefresh(String handle);
+    
+    void onRemove(String handle);
+    
     void beforeRender();
     
     void afterRender();

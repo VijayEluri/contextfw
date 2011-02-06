@@ -77,4 +77,18 @@ public class LifecycleListeners implements LifecycleListener {
             listener.afterRender();
         }
     }
+
+    @Override
+    public void onRefresh(String handle) {
+        for (LifecycleListener listener : listeners) {
+            listener.onRefresh(handle);
+        }
+    }
+
+    @Override
+    public void onRemove(String handle) {
+        for (LifecycleListener listener : listeners) {
+            listener.onRemove(handle);
+        }        
+    }
 }
