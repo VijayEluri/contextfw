@@ -72,30 +72,29 @@ public class UpdateHandler {
                         } else {
 
                             handler.refreshApplication(app.getHandle());
-                            
-                            if ("contextfw-update".equals(command)) {
-
-                                response.setContentType("text/xml; charset=UTF-8");
-                                app.getBeans().setAsCurrentInstance();
-                                app.getHttpContext().setServlet(servlet);
-                                app.getHttpContext().setRequest(request);
-                                app.getHttpContext().setResponse(response);
-                                try {
-                                    app.getApplication().updateState(listeners.beforeUpdate());
-                                    listeners.afterUpdate();
-                                    listeners.beforeRender();
-                                    app.getApplication().sendResponse();
-                                    listeners.afterRender();
-                                } catch (Exception e) {
-                                    listeners.onException(e);
-                                } finally {
-                                    app.getHttpContext().setServlet(null);
-                                    app.getHttpContext().setRequest(null);
-                                    app.getHttpContext().setResponse(null);
+                            app.getBeans().setAsCurrentInstance();
+                            app.getHttpContext().setServlet(servlet);
+                            app.getHttpContext().setRequest(request);
+                            app.getHttpContext().setResponse(response);
+                            try {
+                                if ("contextfw-update".equals(command)) {
+                                    response.setContentType("text/xml; charset=UTF-8");
+                                    
+                                        app.getApplication().updateState(listeners.beforeUpdate());
+                                        listeners.afterUpdate();
+                                        listeners.beforeRender();
+                                        app.getApplication().sendResponse();
+                                        listeners.afterRender();
+                                } else if ("contextfw-refresh".equals(command)) {
+                                    listeners.onRefresh(handlerStr);
+                                    response.setStatus(HttpServletResponse.SC_NO_CONTENT);
                                 }
-                            } else if ("contextfw-refresh".equals(command)) {
-                                listeners.onRefresh(handlerStr);
-                                response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                            } catch (Exception e) {
+                                listeners.onException(e);
+                            } finally {
+                                app.getHttpContext().setServlet(null);
+                                app.getHttpContext().setRequest(null);
+                                app.getHttpContext().setResponse(null);
                             }
                         }
                     }
