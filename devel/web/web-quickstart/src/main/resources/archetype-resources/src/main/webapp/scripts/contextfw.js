@@ -25,7 +25,7 @@ contextfw = {
 			this.defaultAfterCall = function(){};
 		}
 
-		this.setRefresh();
+		this.refresh();
 	},
 
 	refresh: function() {
