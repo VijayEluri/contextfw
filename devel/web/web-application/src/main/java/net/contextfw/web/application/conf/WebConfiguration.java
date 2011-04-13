@@ -46,6 +46,7 @@ public class WebConfiguration {
     private long errorTime = 2000;
     private String contextPath = "";
     private int transformerCount = 1;
+    private long initialMaxInactivity = 1000*30;
     
     private Class<? extends PropertyProvider> propertyProvider = SystemPropertyProvider.class;
     
@@ -278,5 +279,13 @@ public class WebConfiguration {
 
     public Class<? extends PropertyProvider> getPropertyProvider() {
         return propertyProvider;
+    }
+
+    public long getInitialMaxInactivity() {
+        return initialMaxInactivity;
+    }
+
+    public void setInitialMaxInactivity(long initialMaxInactivity) {
+        this.initialMaxInactivity = initialMaxInactivity;
     }
 }

@@ -1,5 +1,7 @@
 package net.contextfw.web.application.internal.service;
 
+import java.util.concurrent.atomic.AtomicInteger;
+
 import net.contextfw.web.application.HttpContext;
 import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.internal.scope.WebApplicationScopedBeans;
@@ -9,23 +11,33 @@ public class WebApplicationContext {
     private WebApplicationHandle handle;
 
     private HttpContext httpContext;
+    
+    private final String remoteAddr;
+    
+    private int updateCount = 0;
 
-    public WebApplicationContext(HttpContext httpContext, WebApplicationHandle handle, WebApplicationScopedBeans beans) {
+    public int getUpdateCount() {
+        return updateCount;
+    }
+    
+    public void incrementUpdateCount() {
+        updateCount++;
+    }
+    
+    public WebApplicationContext(HttpContext httpContext, 
+            String remoteAddr,
+            long expires, 
+            WebApplicationHandle handle, 
+            WebApplicationScopedBeans beans) {
         super();
         this.handle = handle;
         this.beans = beans;
         this.httpContext = httpContext;
+        this.remoteAddr = remoteAddr;
+        this.expires = expires;
     }
 
-    private long timestamp = 0;
-
-    public long getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(long timestamp) {
-        this.timestamp = timestamp;
-    }
+    private long expires = 0;
 
     public WebApplicationScopedBeans getBeans() {
         return beans;
@@ -53,6 +65,18 @@ public class WebApplicationContext {
 
     public HttpContext getHttpContext() {
         return httpContext;
+    }
+
+    public String getRemoteAddr() {
+        return remoteAddr;
+    }
+
+    public void setExpires(long expires) {
+        this.expires = expires;
+    }
+
+    public long getExpires() {
+        return expires;
     }
 
     private WebApplicationScopedBeans beans;

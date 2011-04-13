@@ -5,6 +5,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 
+import net.contextfw.web.application.PageFlowFilter;
 import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.conf.WebConfiguration;
 
@@ -15,17 +16,24 @@ public class WebApplicationContextHandler {
 
     private Logger logger = LoggerFactory.getLogger(WebApplicationContextHandler.class);
     
-    public WebApplicationContextHandler(WebConfiguration configuration) {
+    public WebApplicationContextHandler(WebConfiguration configuration, 
+            PageFlowFilter pageFlowFilter) {
         this.configuration = configuration;
+        this.pageFlowFilter = pageFlowFilter;
     }
 
     private final WebConfiguration configuration;
     
+    private final PageFlowFilter pageFlowFilter;
+    
     private volatile static Map<WebApplicationHandle, WebApplicationContext> contexts = 
         new HashMap<WebApplicationHandle, WebApplicationContext>();
 
-    public synchronized void refreshApplication(WebApplicationHandle handle) throws Exception {
-        contexts.get(handle).setTimestamp(System.currentTimeMillis());
+    public synchronized int refreshApplication(WebApplicationHandle handle) {
+        WebApplicationContext context = contexts.get(handle);
+        context.setExpires(System.currentTimeMillis() + configuration.getMaxInactivity());
+        context.incrementUpdateCount();
+        return context.getUpdateCount();
     }
 
     public int getContextCount() {
@@ -40,9 +48,8 @@ public class WebApplicationContextHandler {
         return contexts.get(new WebApplicationHandle(handleKey));
     }
 
-    public synchronized void addContext(WebApplicationContext context) throws Exception {
+    public synchronized void addContext(WebApplicationContext context) {
         contexts.put(context.getHandle(), context);
-        refreshApplication(context.getHandle());
     }
 
     public synchronized void removeExpiredApplications() {
@@ -52,9 +59,12 @@ public class WebApplicationContextHandler {
 
         while (iterator.hasNext()) {
             WebApplicationContext context = iterator.next();
-            if (timestamp - context.getTimestamp() > configuration.getMaxInactivity()) {
+            if (timestamp > context.getExpires()) {
                 iterator.remove();
-                logger.debug("App removed: {}", context.getHandle());
+                pageFlowFilter.pageExpired(
+                        getContextCount(),
+                        context.getRemoteAddr(), 
+                        context.getHandle().getKey());
             }
         }
     }

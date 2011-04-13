@@ -105,8 +105,8 @@ public final class WebApplicationModule extends AbstractModule {
     
     @Singleton
     @Provides
-    public WebApplicationContextHandler provideWebApplicationContextHandler(WebConfiguration configuration) {
-        final WebApplicationContextHandler handler = new WebApplicationContextHandler(configuration);
+    public WebApplicationContextHandler provideWebApplicationContextHandler(WebConfiguration configuration, PageFlowFilter pageFlowFilter) {
+        final WebApplicationContextHandler handler = new WebApplicationContextHandler(configuration, pageFlowFilter);
         Timer timer = new Timer(true);
         logger.info("Starting scheduled removal for expired web applications");
         
