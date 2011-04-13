@@ -7,7 +7,7 @@ import net.contextfw.web.application.dom.DOMBuilder;
 import net.contextfw.web.application.internal.component.ComponentBuilder;
 
 @Buildable
-public class Component {
+public abstract class Component {
 
     private final Set<String> partialUpdates = new HashSet<String>();
     private String partialUpdateName;
@@ -15,6 +15,8 @@ public class Component {
     private Component parent = null;
     private Set<Component> children = null;
     private Set<Component> waitingToRegister = null;
+    
+    private boolean enabled = true;
 
     private enum RefreshMode {
         NONE, PASS, UPDATE
@@ -139,5 +141,13 @@ public class Component {
 
         partialUpdates.clear();
         partialUpdateName = null;
+    }
+
+    public void setEnabled(boolean enabled) {
+        this.enabled = enabled;
+    }
+
+    public boolean isEnabled() {
+        return enabled;
     }
 }
