@@ -184,6 +184,11 @@ public class ComponentBuilderImpl implements ComponentBuilder {
     @Override
     public void build(DOMBuilder sb, Object component, Object... buildins) {
         Class<?> cl = getActualClass(component);
+        if (component instanceof Component) {
+            if (!((Component) component).isEnabled()) {
+                return;
+            }
+        }
         if (isBuildable(cl)) {
             if (beforeBuilds.containsKey(cl)) {
                 for (Method method : beforeBuilds.get(cl)) {

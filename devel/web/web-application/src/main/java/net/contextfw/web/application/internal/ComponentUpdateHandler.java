@@ -32,8 +32,9 @@ public class ComponentUpdateHandler {
 
     public void invoke(Component element, Request request) {
         try {
-            invokeWithParams(element, request);
-
+            if (element != null && element.isEnabled()) {
+                invokeWithParams(element, request);
+            }
         }
         catch (IllegalArgumentException e) {
             e.printStackTrace();
