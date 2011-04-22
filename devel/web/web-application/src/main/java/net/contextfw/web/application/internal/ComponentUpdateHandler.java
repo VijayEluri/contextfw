@@ -4,6 +4,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
+import net.contextfw.web.application.annotations.Delayed;
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.request.Request;
 
@@ -12,14 +13,15 @@ import com.google.gson.Gson;
 public class ComponentUpdateHandler {
 
     private final Gson gson;
-    
-    private String key;
-    private Method method;
+    private final String key;
+    private final Method method;
+    private final Delayed delayed;
 
     public ComponentUpdateHandler(String key, Method method, Gson gson) {
         this.key = key;
         this.method = method;
         this.gson = gson;
+        this.delayed = method.getAnnotation(Delayed.class);
     }
 
     public static String getKey(Class<? extends Component> elClass, String methodName) {
@@ -83,5 +85,9 @@ public class ComponentUpdateHandler {
         }
 
         method.invoke(element, params);
+    }
+
+    public Delayed getDelayed() {
+        return delayed;
     }
 }

@@ -61,12 +61,6 @@ public class UpdateHandler {
             }
             
             String remoteAddr = pageFlowFilter.getRemoteAddr(request);
-            response.addHeader("Expires", "Sun, 19 Nov 1978 05:00:00 GMT");
-            response.addHeader("Last-Modified", new Date().toString());
-            response.addHeader("Cache-Control", "no-store, no-cache, must-revalidate");
-            // response.addHeader("Cache-Control","post-check=0, pre-check=0");
-            response.addHeader("Pragma", "no-cache");
-            response.setHeader("Connection", "Keep-Alive");
 
             WebApplicationContext app = handler.getContext(handlerStr);
 
@@ -103,11 +97,17 @@ public class UpdateHandler {
                                         handlerStr,
                                         updateCount);
                             if ("contextfw-update".equals(command)) {
-                                response.setContentType("text/xml; charset=UTF-8");
-
-                                app.getApplication().updateState(listeners.beforeUpdate());
+                                boolean cont = app.getApplication().updateState(listeners.beforeUpdate());
+                                if (!cont) {
+                                    app.getHttpContext().setServlet(null);
+                                    app.getHttpContext().setRequest(null);
+                                    app.getHttpContext().setResponse(null);
+                                    return;
+                                }
                                 listeners.afterUpdate();
                                 listeners.beforeRender();
+                                setHeaders(response);
+                                response.setContentType("text/xml; charset=UTF-8");
                                 app.getApplication().sendResponse();
                                 listeners.afterRender();
                             } else if ("contextfw-refresh".equals(command)) {
@@ -128,5 +128,14 @@ public class UpdateHandler {
         } else {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
         }
+    }
+
+    public void setHeaders(HttpServletResponse response) {
+        response.addHeader("Expires", "Sun, 19 Nov 1978 05:00:00 GMT");
+        response.addHeader("Last-Modified", new Date().toString());
+        response.addHeader("Cache-Control", "no-store, no-cache, must-revalidate");
+        // response.addHeader("Cache-Control","post-check=0, pre-check=0");
+        response.addHeader("Pragma", "no-cache");
+        response.setHeader("Connection", "Keep-Alive");
     }
 }

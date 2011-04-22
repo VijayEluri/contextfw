@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 
 import net.contextfw.web.application.HttpContext;
+import net.contextfw.web.application.PageFlowFilter;
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.annotations.PageScoped;
@@ -34,7 +35,7 @@ public class WebApplicationImpl implements WebApplication {
 
     @Inject
     private ComponentBuilder builder;
-    
+
     private static volatile Map<String, ComponentUpdateHandler> updateHandlers = new HashMap<String, ComponentUpdateHandler>();
 
     @Inject
@@ -42,6 +43,9 @@ public class WebApplicationImpl implements WebApplication {
 
     @Inject
     private HttpContext httpContext;
+
+    @Inject
+    private PageFlowFilter pageFlowFilter;
 
     private final ComponentRegister componentRegister = new ComponentRegister();
 
@@ -141,37 +145,48 @@ public class WebApplicationImpl implements WebApplication {
     }
 
     @Override
-    public void updateState(boolean updateComponents) throws WebApplicationException {
+    public boolean updateState(boolean updateComponents) throws WebApplicationException {
         mode = Mode.UPDATE;
         if (updateComponents) {
-            updateElements();
+            return updateElements();
+        } else {
+            return true;
         }
     }
 
-    protected void updateElements() throws WebApplicationException {
+    protected boolean updateElements() throws WebApplicationException {
         try {
             Request request = new Request(httpContext.getRequest());
 
             String[] elementIds = request.param("el").getStringValues(null);
 
             if (elementIds != null && elementIds.length > 0) {
+                String id = elementIds[0];
+                String event = request.param("method").getStringValue(null);
+                Component element = componentRegister.findComponent(id);
 
-                for (String id : elementIds) {
-                    String event = request.param("method").getStringValue(null);
-                    Component element = componentRegister.findComponent(id);
+                String key = ComponentUpdateHandler.getKey(element.getClass(), event);
 
-                    String key = ComponentUpdateHandler.getKey(element.getClass(), event);
-
-                    if (!updateHandlers.containsKey(key) || configuration.isDebugMode()) {
-                        updateHandlers.put(key, euhf.createHandler(element.getClass(), event));
-                    }
-
-                    ComponentUpdateHandler handler = updateHandlers.get(key);
-
-                    if (handler != null) {
-                        handler.invoke(element, request.subRequest(element.getId()));
-                    }
+                if (!updateHandlers.containsKey(key) || configuration.isDebugMode()) {
+                    updateHandlers.put(key, euhf.createHandler(element.getClass(), event));
                 }
+
+                ComponentUpdateHandler handler = updateHandlers.get(key);
+
+                if (handler != null) {
+                    if (handler.getDelayed() == null
+                                || !injector.getInstance(handler.getDelayed().value())
+                                  .isUpdateDelayed(element, httpContext.getRequest())) {
+                        handler.invoke(element, request.subRequest(element.getId()));
+                        return true;
+                    } else {
+                        return false;
+                    }
+                } else {
+                    return true;
+                }
+            } else {
+                return true;
             }
         } catch (Exception e) {
             throw new WebApplicationException("Failed to update elements", e);
