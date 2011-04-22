@@ -2,7 +2,7 @@ package net.contextfw.web.application.internal;
 
 import java.lang.reflect.Method;
 
-import net.contextfw.web.application.annotations.RemoteMethod;
+import net.contextfw.web.application.annotations.Remoted;
 import net.contextfw.web.application.component.Component;
 
 import com.google.gson.Gson;
@@ -40,7 +40,7 @@ public class ComponentUpdateHandlerFactory {
 
     private Method findMethod(Class<?> cls, String methodName) {
         for (Method method : cls.getDeclaredMethods()) {
-            if (method.getAnnotation(RemoteMethod.class) != null && method.getName().equals(methodName)) {
+            if (method.getAnnotation(Remoted.class) != null && method.getName().equals(methodName)) {
                 return method;
             }
         }

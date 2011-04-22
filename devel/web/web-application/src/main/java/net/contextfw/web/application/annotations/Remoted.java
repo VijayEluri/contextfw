@@ -8,6 +8,6 @@ import java.lang.annotation.Target;
 
 @Target( { METHOD })
 @Retention(RetentionPolicy.RUNTIME)
-public @interface RemoteMethod {
+public @interface Remoted {
 
 }
