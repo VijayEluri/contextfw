@@ -145,16 +145,17 @@ public class WebApplicationImpl implements WebApplication {
     }
 
     @Override
-    public boolean updateState(boolean updateComponents) throws WebApplicationException {
+    public UpdateInvocation updateState(boolean updateComponents) throws WebApplicationException {
         mode = Mode.UPDATE;
         if (updateComponents) {
             return updateElements();
         } else {
-            return true;
+            return UpdateInvocation.NOT_DELAYED;
         }
     }
 
-    protected boolean updateElements() throws WebApplicationException {
+    @SuppressWarnings("unchecked")
+    protected UpdateInvocation updateElements() throws WebApplicationException {
         try {
             Request request = new Request(httpContext.getRequest());
 
@@ -177,16 +178,18 @@ public class WebApplicationImpl implements WebApplication {
                     if (handler.getDelayed() == null
                                 || !injector.getInstance(handler.getDelayed().value())
                                   .isUpdateDelayed(element, httpContext.getRequest())) {
-                        handler.invoke(element, request.subRequest(element.getId()));
-                        return true;
+                        return new UpdateInvocation(
+                                handler.isResource(),
+                                handler.invoke(element, request.subRequest(element.getId()))
+                                );
                     } else {
-                        return false;
+                        return UpdateInvocation.DELAYED;
                     }
                 } else {
-                    return true;
+                    return UpdateInvocation.NOT_DELAYED;
                 }
             } else {
-                return true;
+                return UpdateInvocation.NOT_DELAYED;
             }
         } catch (Exception e) {
             throw new WebApplicationException("Failed to update elements", e);

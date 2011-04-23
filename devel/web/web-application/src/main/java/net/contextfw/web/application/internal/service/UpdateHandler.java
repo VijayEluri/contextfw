@@ -9,17 +9,25 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import net.contextfw.web.application.PageFlowFilter;
+import net.contextfw.web.application.ResourceResponse;
 import net.contextfw.web.application.conf.WebConfiguration;
 import net.contextfw.web.application.internal.LifecycleListeners;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.Gson;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 @Singleton
 public class UpdateHandler {
+
+    private static final String CONTEXTFW_REFRESH = "contextfw-refresh";
+
+    private static final String CONTEXTFW_UPDATE = "contextfw-update";
+
+    private static final String CONTEXTFW_REMOVE = "contextfw-remove";
 
     private Logger logger = LoggerFactory.getLogger(UpdateHandler.class);
 
@@ -32,6 +40,9 @@ public class UpdateHandler {
     private final PageFlowFilter pageFlowFilter;
 
     @Inject
+    private Gson gson;
+    
+    @Inject
     public UpdateHandler(
             WebApplicationContextHandler handler,
             WebConfiguration configuration,
@@ -43,17 +54,33 @@ public class UpdateHandler {
         this.pageFlowFilter = pageFlowFilter;
     }
 
+    private int getCommandStart(String[] splits) {
+        if (splits.length > 2) {
+            String command = splits[splits.length - 2];
+            if  (CONTEXTFW_REMOVE.equals(command) || 
+                 CONTEXTFW_UPDATE.equals(command) ||
+                 CONTEXTFW_REFRESH.equals(command)) {
+                return splits.length -2;
+            }
+            command = splits[splits.length - 3];
+            if (CONTEXTFW_UPDATE.equals(command)) {
+                return splits.length -3;
+            }
+        } 
+        return -1;
+    }
+    
     public final void handleRequest(HttpServlet servlet, HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
         String[] uriSplits = request.getRequestURI().split("/");
+        int commandStart = getCommandStart(uriSplits); 
+        if (commandStart != -1) {
+            
+            String command = uriSplits[commandStart];
+            String handlerStr = uriSplits[commandStart + 1];
 
-        if (uriSplits.length > 2) {
-
-            String command = uriSplits[uriSplits.length - 2];
-            String handlerStr = uriSplits[uriSplits.length - 1];
-
-            if (!"contextfw-remove".equals(command)) {
+            if (!CONTEXTFW_REMOVE.equals(command)) {
                 if (!pageFlowFilter.beforePageUpdate(handler.getContextCount(),
                         request)) {
                     return;
@@ -72,9 +99,10 @@ public class UpdateHandler {
                             " original = {}, current = {}",
                             app.getRemoteAddr(), remoteAddr);
             } else {
+                UpdateInvocation invocation = UpdateInvocation.NOT_DELAYED;
                 synchronized (app) {
 
-                    if ("contextfw-remove".equals(command)) {
+                    if (CONTEXTFW_REMOVE.equals(command)) {
                         listeners.onRemove(handlerStr);
                         handler.removeApplication(app.getHandle());
 
@@ -96,21 +124,25 @@ public class UpdateHandler {
                                         remoteAddr,
                                         handlerStr,
                                         updateCount);
-                            if ("contextfw-update".equals(command)) {
-                                boolean cont = app.getApplication().updateState(listeners.beforeUpdate());
-                                if (!cont) {
+                            if (CONTEXTFW_UPDATE.equals(command)) {
+                                invocation = 
+                                    app.getApplication().updateState(listeners.beforeUpdate());
+                                if (invocation.isDelayed()) {
                                     app.getHttpContext().setServlet(null);
                                     app.getHttpContext().setRequest(null);
                                     app.getHttpContext().setResponse(null);
                                     return;
                                 }
                                 listeners.afterUpdate();
-                                listeners.beforeRender();
-                                setHeaders(response);
-                                response.setContentType("text/xml; charset=UTF-8");
-                                app.getApplication().sendResponse();
-                                listeners.afterRender();
-                            } else if ("contextfw-refresh".equals(command)) {
+                                
+                                if (!invocation.isResource()) {
+                                    listeners.beforeRender();
+                                    setHeaders(response);
+                                    response.setContentType("text/xml; charset=UTF-8");
+                                    app.getApplication().sendResponse();
+                                    listeners.afterRender();
+                                }
+                            } else if (CONTEXTFW_REFRESH.equals(command)) {
                                 listeners.onRefresh(handlerStr);
                                 response.setStatus(HttpServletResponse.SC_NO_CONTENT);
                             }
@@ -123,10 +155,30 @@ public class UpdateHandler {
                         }
                     }
                 }
-                response.getWriter().close();
+                if (invocation.isResource()) {
+                    handleResource(request, response, invocation);
+                } else {
+                    response.getWriter().close();
+                }
             }
         } else {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+        }
+    }
+
+    private void handleResource(HttpServletRequest request, HttpServletResponse response,
+            UpdateInvocation invocation) throws IOException {
+        if (invocation.getRetVal() == null) {
+            response.getWriter().close();
+            return;
+        }
+        if (invocation.getRetVal() instanceof ResourceResponse) {
+            ((ResourceResponse) invocation.getRetVal()).serve(request, response);
+        } else {
+            setHeaders(response);
+            response.setContentType("application/json; charset=UTF-8");
+            gson.toJson(invocation.getRetVal(), response.getWriter());
+            response.getWriter().close();
         }
     }
 

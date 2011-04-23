@@ -5,6 +5,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import net.contextfw.web.application.annotations.Delayed;
+import net.contextfw.web.application.annotations.ResourceBody;
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.request.Request;
 
@@ -16,12 +17,14 @@ public class ComponentUpdateHandler {
     private final String key;
     private final Method method;
     private final Delayed delayed;
+    private final boolean resource;
 
     public ComponentUpdateHandler(String key, Method method, Gson gson) {
         this.key = key;
         this.method = method;
         this.gson = gson;
         this.delayed = method.getAnnotation(Delayed.class);
+        this.resource = method.getAnnotation(ResourceBody.class) != null;
     }
 
     public static String getKey(Class<? extends Component> elClass, String methodName) {
@@ -32,10 +35,10 @@ public class ComponentUpdateHandler {
         return key;
     }
 
-    public void invoke(Component element, Request request) {
+    public Object invoke(Component element, Request request) {
         try {
             if (element != null && element.isEnabled()) {
-                invokeWithParams(element, request);
+                return invokeWithParams(element, request);
             }
         }
         catch (IllegalArgumentException e) {
@@ -58,9 +61,10 @@ public class ComponentUpdateHandler {
         catch (InstantiationException e) {
             e.printStackTrace();
         }
+        return null;
     }
 
-    private void invokeWithParams(Component element, Request request) throws IllegalArgumentException,
+    private Object invokeWithParams(Component element, Request request) throws IllegalArgumentException,
             IllegalAccessException, InvocationTargetException, NoSuchMethodException, InstantiationException {
 
         Class<?>[] paramTypes = method.getParameterTypes();
@@ -84,10 +88,14 @@ public class ComponentUpdateHandler {
             }
         }
 
-        method.invoke(element, params);
+        return method.invoke(element, params);
     }
 
     public Delayed getDelayed() {
         return delayed;
+    }
+
+    public boolean isResource() {
+        return resource;
     }
 }
