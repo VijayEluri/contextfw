@@ -18,6 +18,14 @@ public class ComponentBuilderTest extends BaseComponentTest {
         @Element 
         public String bar="foo";
         
+        @Element(wrap=false)
+        public FieldEmbed fieldEmbedded = new FieldEmbed();
+        
+        @Element(wrap=false)
+        public MethodEmbed methodEmbedded() {
+            return new MethodEmbed();
+        }
+        
         @CustomBuild
         public void custom(DOMBuilder b) {
             order = order + ".custom";
@@ -81,6 +89,16 @@ public class ComponentBuilderTest extends BaseComponentTest {
         public Aa aa;
     }
     
+    @Buildable 
+    public static class FieldEmbed {
+        
+    }
+    
+    @Buildable 
+    public static class MethodEmbed {
+        
+    }
+    
     public static class Ee {
         public String toString() {
             return "Ee.toString()";
@@ -101,6 +119,8 @@ public class ComponentBuilderTest extends BaseComponentTest {
         assertEquals("el1", comp.getId());
         webApplicationComponent.buildChild(domBuilder);
         logXML(domBuilder);
+        assertDom("//WebApplication/Aa/FieldEmbed").exists();
+        assertDom("//WebApplication/Aa/MethodEmbed").exists();
         assertDom("//WebApplication/Aa").hasAttribute("id", "el1");
         assertDom("//WebApplication/Aa/custom/barFoo").hasAttribute("fooBar", "true");
         assertDom("//WebApplication/Aa/barFoo1").hasAttribute("fooBar1", "true");

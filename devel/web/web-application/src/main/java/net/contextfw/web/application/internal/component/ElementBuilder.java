@@ -15,7 +15,7 @@ class ElementBuilder extends NamedBuilder {
     void buildNamedValue(DOMBuilder b, String name, Object value) {
         if (value != null) {
             if (componentBuilder.isBuildable(value.getClass())) {
-                componentBuilder.build(b.descend(name), value);
+                componentBuilder.build(name == null ? b : b.descend(name), value);
             } else if (value instanceof Iterable) {
                 DOMBuilder child = b.descend(name);
                 for (Object i : ((Iterable<?>) value)) {

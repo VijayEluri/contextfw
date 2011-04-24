@@ -15,4 +15,5 @@ public @interface Element {
     boolean onCreate() default true;
     boolean onUpdate() default true;
     boolean onPartialUpdate() default true;
+    boolean wrap() default true;
 }

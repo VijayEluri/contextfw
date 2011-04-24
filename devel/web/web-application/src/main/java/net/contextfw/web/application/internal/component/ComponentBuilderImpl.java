@@ -80,7 +80,7 @@ public class ComponentBuilderImpl implements ComponentBuilder {
                 if (field.getAnnotation(Element.class) != null) {
                     Element element = field.getAnnotation(Element.class);
                     name = "".equals(element.name()) ? field.getName() : element.name();
-                    builder = new ElementBuilder(this, propertyAccess, name, field.getName());
+                    builder = new ElementBuilder(this, propertyAccess, element.wrap() ? name : null, field.getName());
                     addToBuilders(cl, element.onCreate(), element.onUpdate(), element.onPartialUpdate(), builder);
                 } else if (field.getAnnotation(Attribute.class) != null) {
                     Attribute attribute = field.getAnnotation(Attribute.class);
@@ -99,7 +99,7 @@ public class ComponentBuilderImpl implements ComponentBuilder {
                 if (method.getAnnotation(Element.class) != null) {
                     Element annotation = method.getAnnotation(Element.class);
                     name = "".equals(annotation.name()) ? method.getName() : annotation.name();
-                    builder = new ElementBuilder(this, propertyAccess, name, method.getName());
+                    builder = new ElementBuilder(this, propertyAccess, annotation.wrap() ? name : null, method.getName());
                     addToBuilders(cl, annotation.onCreate(), annotation.onUpdate(), annotation.onPartialUpdate(), builder);
                 } else if (method.getAnnotation(Attribute.class) != null) {
                     Attribute annotation = method.getAnnotation(Attribute.class);
