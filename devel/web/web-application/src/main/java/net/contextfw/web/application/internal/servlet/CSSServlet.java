@@ -1,4 +1,4 @@
-package net.contextfw.web.application.servlet;
+package net.contextfw.web.application.internal.servlet;
 
 import java.util.ArrayList;
 import java.util.List;

@@ -1,8 +1,8 @@
 package net.contextfw.web.application;
 
 import net.contextfw.web.application.internal.WebResponder;
-import net.contextfw.web.application.servlet.CSSServlet;
-import net.contextfw.web.application.servlet.ScriptServlet;
+import net.contextfw.web.application.internal.servlet.CSSServlet;
+import net.contextfw.web.application.internal.servlet.ScriptServlet;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;

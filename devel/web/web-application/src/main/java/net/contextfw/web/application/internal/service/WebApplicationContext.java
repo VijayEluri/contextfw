@@ -1,7 +1,5 @@
 package net.contextfw.web.application.internal.service;
 
-import java.util.concurrent.atomic.AtomicInteger;
-
 import net.contextfw.web.application.HttpContext;
 import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.internal.scope.WebApplicationScopedBeans;

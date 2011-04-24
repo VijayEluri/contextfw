@@ -5,12 +5,12 @@ import java.util.List;
 import java.util.TreeSet;
 
 import net.contextfw.web.application.conf.PropertyProvider;
+import net.contextfw.web.application.internal.servlet.CSSServlet;
+import net.contextfw.web.application.internal.servlet.InitServlet;
+import net.contextfw.web.application.internal.servlet.ScriptServlet;
+import net.contextfw.web.application.internal.servlet.UpdateServlet;
 import net.contextfw.web.application.internal.util.ClassScanner;
 import net.contextfw.web.application.properties.Properties;
-import net.contextfw.web.application.servlet.CSSServlet;
-import net.contextfw.web.application.servlet.InitServlet;
-import net.contextfw.web.application.servlet.ScriptServlet;
-import net.contextfw.web.application.servlet.UpdateServlet;
 import net.contextfw.web.application.view.View;
 
 import org.slf4j.Logger;

@@ -1,4 +1,4 @@
-package net.contextfw.web.application.servlet;
+package net.contextfw.web.application.internal.servlet;
 
 import java.io.IOException;
 
@@ -11,26 +11,6 @@ import net.contextfw.web.application.internal.service.InitHandler;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
-
-/**
- * - get/post
- * - create new web application
- * - let web application handle everything
- *    - create root element; (WebApplicationElement)
- *    - find initializer chain for url
- *    - Start initializing
- *    - Loop through initializer chain:
- *       - Create InitializerContextImpl, initialize
- *       - Initialize first element in the chain. If element contains method initialize(Context..) call it
- *          - if context.initializeChild is called initialize it. do recursively.
- *    - After initializing, check if redirect or error response is invoked
- *      - if redirect, do rediect
- *      - if error, do error
- *      - else, register root as child to web applicationelement,
- *      call build();
- * @author marko
- *
- */
 
 @Singleton
 public class InitServlet extends HttpServlet {

@@ -1,4 +1,4 @@
-package net.contextfw.web.application.servlet;
+package net.contextfw.web.application.internal.servlet;
 
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -23,11 +23,8 @@ public abstract class ResourceServlet extends HttpServlet {
 
     private volatile String content = null;
 
-    private long capacity = 0;
-
     public void clean() {
         content = null;
-        capacity = 0;
     }
     
     @Override

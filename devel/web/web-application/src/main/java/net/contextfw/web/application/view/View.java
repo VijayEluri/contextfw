@@ -46,7 +46,7 @@ public @interface View {
      * 
      * <p>
      *  A view may have a parent which is initialized before this view. The parent
-     *  may choose not to initilialize this view, if it is not seen necessary.
+     *  may choose not to initialize this view, if it is not seen necessary.
      * </p>
      * 
      * @see ViewComponent
