@@ -8,7 +8,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.regex.Pattern;
 
 import javax.servlet.ServletException;
@@ -20,9 +19,10 @@ import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamSource;
 
 import net.contextfw.web.application.WebApplicationException;
-import net.contextfw.web.application.conf.WebConfiguration;
 import net.contextfw.web.application.internal.util.ResourceEntry;
 import net.contextfw.web.application.internal.util.ResourceScanner;
+import net.contextfw.web.application.properties.KeyValue;
+import net.contextfw.web.application.properties.Properties;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -49,9 +49,16 @@ public class WebResponder {
 	private Logger logger = LoggerFactory.getLogger(WebResponder.class);
 
 	private List<String> rootResourcePaths = new ArrayList<String>();
-
+	private final List<String> resourcePaths = new ArrayList<String>();
+	private final List<KeyValue<String, String>> namespaces = 
+	    new ArrayList<KeyValue<String, String>>();
+	
 	private int currentTransformer = 0;
 	private List<Transformer> transformers;
+	
+	private final int transformerCount;
+	private final boolean debugMode;
+	private final boolean logXml;
 
 	public enum Mode {
 
@@ -69,12 +76,14 @@ public class WebResponder {
 		}
 	}
 
-	private final WebConfiguration configuration;
-
 	@Inject
-	public WebResponder(WebConfiguration configuration) {
-		this.configuration = configuration;
+	public WebResponder(Properties configuration) {
 		rootResourcePaths.add("net.contextfw.web.application");
+		transformerCount = configuration.get(Properties.TRANSFORMER_COUNT);
+		debugMode = configuration.get(Properties.DEBUG_MODE);
+		logXml = configuration.get(Properties.LOG_XML);
+		resourcePaths.addAll(configuration.get(Properties.RESOURCE_PATH));
+		namespaces.addAll(configuration.get(Properties.NAMESPACE));
 	}
 
 	private final static TransformerFactory factory = TransformerFactory
@@ -100,23 +109,21 @@ public class WebResponder {
 		
 		List<Transformer> transformers = this.transformers;
 		synchronized (this) {
-			if (transformers == null || configuration.isDebugMode()) {
+			if (transformers == null || debugMode) {
 				clean();
 				transformers = this.transformers;
 			}
 		}
-		currentTransformer = (currentTransformer + 1)
-				% configuration.getTransformerCount();
+		currentTransformer = (currentTransformer + 1) % transformerCount;
 		return transformers.get(currentTransformer);
 	}
 
 	public synchronized void clean() {
-		transformers = new ArrayList<Transformer>(
-				configuration.getTransformerCount());
+		transformers = new ArrayList<Transformer>(transformerCount);
 
 		String xslDocumenContent = getXSLDocumentContent();
 
-		for (int i = 0; i < configuration.getTransformerCount(); i++) {
+		for (int i = 0; i < transformerCount; i++) {
 			try {
 				transformers.add(factory.newTransformer(new StreamSource(
 						new StringReader(xslDocumenContent))));
@@ -145,8 +152,7 @@ public class WebResponder {
 			}
 		}
 
-		List<ResourceEntry> resources = ResourceScanner.findResources(
-				configuration.getResourcePaths(), XSL_ACCEPTOR);
+		List<ResourceEntry> resources = ResourceScanner.findResources(resourcePaths, XSL_ACCEPTOR);
 
 		InputStream stream;
 		SAXReader reader = new SAXReader();
@@ -154,8 +160,7 @@ public class WebResponder {
 			stream = root.getInputStream();
 			Document document = reader.read(stream);
 			stream.close();
-			for (Entry<String, String> entry : configuration.getXMLNamespaces()
-					.entrySet()) {
+			for (KeyValue<String, String> entry : namespaces) {
 				document.getRootElement().addNamespace(entry.getKey(),
 						entry.getValue());
 			}
@@ -203,7 +208,7 @@ public class WebResponder {
 
 	public void sendResponse(Document document, HttpServletResponse resp,
 			Mode mode) throws ServletException, IOException {
-		if (configuration.isLogXML()) {
+		if (logXml) {
 			logXML(document);
 		}
 		if (mode != Mode.XML) {

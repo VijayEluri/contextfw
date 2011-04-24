@@ -11,7 +11,6 @@ import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.annotations.PageScoped;
 import net.contextfw.web.application.component.Component;
-import net.contextfw.web.application.conf.WebConfiguration;
 import net.contextfw.web.application.dom.DOMBuilder;
 import net.contextfw.web.application.internal.ComponentUpdateHandler;
 import net.contextfw.web.application.internal.ComponentUpdateHandlerFactory;
@@ -22,6 +21,7 @@ import net.contextfw.web.application.internal.component.ComponentRegister;
 import net.contextfw.web.application.internal.component.WebApplicationComponent;
 import net.contextfw.web.application.internal.initializer.InitializerContextImpl;
 import net.contextfw.web.application.internal.util.AttributeHandler;
+import net.contextfw.web.application.properties.Properties;
 import net.contextfw.web.application.request.Request;
 
 import com.google.inject.Inject;
@@ -67,10 +67,17 @@ public class WebApplicationImpl implements WebApplication {
     @Inject
     private WebApplicationHandle webApplicationHandle;
 
+    private final String contextPath;
+    
+    private final String xmlParamName;
+    
+    private final boolean debugMode;
+    
     @Inject
-    private WebConfiguration configuration;
-
-    public WebApplicationImpl() {
+    public WebApplicationImpl(Properties props) {
+        contextPath = props.get(Properties.CONTEXT_PATH);
+        xmlParamName = props.get(Properties.XML_PARAM_NAME);
+        debugMode = props.get(Properties.DEBUG_MODE);
     }
 
     @Override
@@ -108,7 +115,7 @@ public class WebApplicationImpl implements WebApplication {
                 }
 
                 d.attr("handle", webApplicationHandle.getKey());
-                d.attr("contextPath", configuration.getContextPath());
+                d.attr("contextPath", contextPath);
 
                 if (context.getLocale() != null) {
                     d.attr("xml:lang", context.getLocale().toString());
@@ -127,8 +134,8 @@ public class WebApplicationImpl implements WebApplication {
 
                 rootComponent.clearCascadedUpdate();
 
-                if (configuration.getXmlParamName() == null
-                        || httpContext.getRequest().getParameter(configuration.getXmlParamName()) == null) {
+                if (xmlParamName == null
+                        || httpContext.getRequest().getParameter(xmlParamName) == null) {
                     responder.sendResponse(d.toDocument(), httpContext.getResponse(), mode);
                 } else {
                     responder.sendResponse(d.toDocument(), httpContext.getResponse(), Mode.XML);
@@ -145,31 +152,24 @@ public class WebApplicationImpl implements WebApplication {
     }
 
     @Override
-    public UpdateInvocation updateState(boolean updateComponents) throws WebApplicationException {
+    public UpdateInvocation updateState(boolean updateComponents, String componentId, String method) throws WebApplicationException {
         mode = Mode.UPDATE;
         if (updateComponents) {
-            return updateElements();
+            return updateElements(componentId, method);
         } else {
             return UpdateInvocation.NOT_DELAYED;
         }
     }
 
     @SuppressWarnings("unchecked")
-    protected UpdateInvocation updateElements() throws WebApplicationException {
+    protected UpdateInvocation updateElements(final String id, final String method) throws WebApplicationException {
         try {
             Request request = new Request(httpContext.getRequest());
+            Component element = componentRegister.findComponent(id);
+            String key = ComponentUpdateHandler.getKey(element.getClass(), method);
 
-            String[] elementIds = request.param("el").getStringValues(null);
-
-            if (elementIds != null && elementIds.length > 0) {
-                String id = elementIds[0];
-                String event = request.param("method").getStringValue(null);
-                Component element = componentRegister.findComponent(id);
-
-                String key = ComponentUpdateHandler.getKey(element.getClass(), event);
-
-                if (!updateHandlers.containsKey(key) || configuration.isDebugMode()) {
-                    updateHandlers.put(key, euhf.createHandler(element.getClass(), event));
+                if (!updateHandlers.containsKey(key) || debugMode) {
+                    updateHandlers.put(key, euhf.createHandler(element.getClass(), method));
                 }
 
                 ComponentUpdateHandler handler = updateHandlers.get(key);
@@ -180,7 +180,7 @@ public class WebApplicationImpl implements WebApplication {
                                   .isUpdateDelayed(element, httpContext.getRequest())) {
                         return new UpdateInvocation(
                                 handler.isResource(),
-                                handler.invoke(element, request.subRequest(element.getId()))
+                                handler.invoke(element, request)
                                 );
                     } else {
                         return UpdateInvocation.DELAYED;
@@ -188,9 +188,6 @@ public class WebApplicationImpl implements WebApplication {
                 } else {
                     return UpdateInvocation.NOT_DELAYED;
                 }
-            } else {
-                return UpdateInvocation.NOT_DELAYED;
-            }
         } catch (Exception e) {
             throw new WebApplicationException("Failed to update elements", e);
         }

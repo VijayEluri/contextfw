@@ -4,7 +4,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 import net.contextfw.web.application.LifecycleListener;
-import net.contextfw.web.application.conf.WebConfiguration;
+import net.contextfw.web.application.properties.Properties;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -20,9 +20,9 @@ public class LifecycleListeners implements LifecycleListener {
     }
     
     @Inject
-    public LifecycleListeners(Injector injector, WebConfiguration configuration) {
-        if (configuration.getLifecycleListener() != null) {
-            addListener(injector.getInstance(configuration.getLifecycleListener()));
+    public LifecycleListeners(Injector injector, Properties configuration) {
+        if (configuration.get(Properties.LIFECYCLE_LISTENER) != null) {
+            addListener(injector.getInstance(configuration.get(Properties.LIFECYCLE_LISTENER)));
         }
     }
     

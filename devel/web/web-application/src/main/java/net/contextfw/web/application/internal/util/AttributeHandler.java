@@ -2,12 +2,13 @@ package net.contextfw.web.application.internal.util;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Map.Entry;
 
-import net.contextfw.web.application.conf.WebConfiguration;
+import net.contextfw.web.application.converter.AttributeJsonSerializer;
 import net.contextfw.web.application.converter.AttributeSerializer;
 import net.contextfw.web.application.converter.ObjectAttributeSerializer;
 import net.contextfw.web.application.internal.ToStringSerializer;
+import net.contextfw.web.application.properties.KeyValue;
+import net.contextfw.web.application.properties.Properties;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -23,10 +24,22 @@ public class AttributeHandler implements ObjectAttributeSerializer {
     
     @SuppressWarnings("unchecked")
     @Inject
-    public AttributeHandler(Injector injector, WebConfiguration conf) {
-        for (Entry<Class<?>, Class<? extends AttributeSerializer<?>>> entry : conf.getAttributeSerializerClasses()) {
-            serializers.put(entry.getKey(), (AttributeSerializer<Object>) injector.getInstance(entry.getValue()));
+    public AttributeHandler(Injector injector, Properties conf) {
+        
+        for (KeyValue<Class<?>, Class<? extends AttributeSerializer<?>>> entry : conf
+                .get(Properties.ATTRIBUTE_SERIALIZER)) {
+            serializers.put(
+                    entry.getKey(), 
+                    (AttributeSerializer<Object>) injector.getInstance(entry.getValue()));
         }
+        
+        for (KeyValue<Class<?>, Class<? extends AttributeJsonSerializer<?>>> entry : conf
+                .get(Properties.ATTRIBUTE_JSON_SERIALIZER)) {
+            serializers.put(
+                    entry.getKey(), 
+                    (AttributeSerializer<Object>) injector.getInstance(entry.getValue()));
+        }
+
     }
     
     @Override

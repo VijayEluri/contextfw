@@ -14,10 +14,10 @@ import net.contextfw.web.application.PageFlowFilter;
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.component.Component;
-import net.contextfw.web.application.conf.WebConfiguration;
 import net.contextfw.web.application.internal.LifecycleListeners;
 import net.contextfw.web.application.internal.initializer.InitializerProvider;
 import net.contextfw.web.application.internal.scope.WebApplicationScopedBeans;
+import net.contextfw.web.application.properties.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,24 +39,24 @@ public class InitHandler {
 
     private final LifecycleListeners listeners;
 
-    private final WebConfiguration configuration;
-
     private final PageFlowFilter pageFlowFilter;
+    
+    private final long initialMaxInactivity;
 
     @Inject
     public InitHandler(WebApplicationContextHandler handler,
                        Provider<WebApplication> webApplicationProvider,
                        InitializerProvider initializers,
                        LifecycleListeners listeners,
-                       WebConfiguration configuration,
+                       Properties configuration,
                        PageFlowFilter pageFlowFilter) {
 
         this.handler = handler;
         this.webApplicationProvider = webApplicationProvider;
         this.initializers = initializers;
         this.listeners = listeners;
-        this.configuration = configuration;
         this.pageFlowFilter = pageFlowFilter;
+        initialMaxInactivity = configuration.get(Properties.INITIAL_MAX_INACTIVITY);
     }
 
     public final void handleRequest(HttpServlet servlet,
@@ -107,8 +107,7 @@ public class InitHandler {
                     // not
                     // penalizing client
 
-                    context.setExpires(System.currentTimeMillis()
-                                + configuration.getInitialMaxInactivity());
+                    context.setExpires(System.currentTimeMillis() + initialMaxInactivity);
 
                 } catch (Exception e) {
                     listeners.onException(e);
@@ -132,7 +131,7 @@ public class InitHandler {
         HttpContext httpContext = new HttpContext(servlet, request, response);
         WebApplicationContext context = new WebApplicationContext(httpContext,
                 pageFlowFilter.getRemoteAddr(request),
-                System.currentTimeMillis() + configuration.getInitialMaxInactivity(),
+                System.currentTimeMillis() + initialMaxInactivity,
                 handler.createNewHandle(), beans);
         beans.seed(HttpContext.class, httpContext);
         beans.seed(WebApplicationHandle.class, context.getHandle());

@@ -12,7 +12,7 @@ import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.annotations.PageScoped;
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.conf.PropertyProvider;
-import net.contextfw.web.application.conf.WebConfiguration;
+import net.contextfw.web.application.properties.Properties;
 import net.contextfw.web.application.view.View;
 
 import org.slf4j.Logger;
@@ -35,10 +35,10 @@ public class InitializerProvider {
     private final Map<Class<? extends Component>, List<Class<? extends Component>>> chain
          = new HashMap<Class<? extends Component>, List<Class<? extends Component>>>(); 
 
-    private final WebConfiguration configuration;
+    private final String contextPath;
     
-    public InitializerProvider(WebConfiguration configuration) {
-        this.configuration = configuration;
+    public InitializerProvider(Properties configuration) {
+        contextPath = configuration.get(Properties.CONTEXT_PATH);
     }
 
     public void addInitializer(Class<? extends Component> cl) {
@@ -55,14 +55,14 @@ public class InitializerProvider {
         try {
             for (String url : annotation.url()) {
                 if (!"".equals(url)) {
-                    initializers.put(Pattern.compile(configuration.getContextPath() + url, Pattern.CASE_INSENSITIVE), cl);
+                    initializers.put(Pattern.compile(contextPath + url, Pattern.CASE_INSENSITIVE), cl);
                 }
             }
             for (String property : annotation.property()) {
                 if (!"".equals(property)) {
                     String url = properties.get().getProperty(property);
                     if (url != null && !"".equals(url)) {
-                        initializers.put(Pattern.compile(configuration.getContextPath() + url, Pattern.CASE_INSENSITIVE), cl);
+                        initializers.put(Pattern.compile(contextPath + url, Pattern.CASE_INSENSITIVE), cl);
                     }
                 }
             }

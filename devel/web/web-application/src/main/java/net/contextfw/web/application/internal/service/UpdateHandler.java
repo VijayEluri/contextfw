@@ -10,7 +10,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import net.contextfw.web.application.PageFlowFilter;
 import net.contextfw.web.application.ResourceResponse;
-import net.contextfw.web.application.conf.WebConfiguration;
 import net.contextfw.web.application.internal.LifecycleListeners;
 
 import org.slf4j.Logger;
@@ -33,8 +32,6 @@ public class UpdateHandler {
 
     private final WebApplicationContextHandler handler;
 
-    private final WebConfiguration configuration;
-
     private final LifecycleListeners listeners;
 
     private final PageFlowFilter pageFlowFilter;
@@ -45,11 +42,9 @@ public class UpdateHandler {
     @Inject
     public UpdateHandler(
             WebApplicationContextHandler handler,
-            WebConfiguration configuration,
             LifecycleListeners listeners,
             PageFlowFilter pageFlowFilter) {
         this.handler = handler;
-        this.configuration = configuration;
         this.listeners = listeners;
         this.pageFlowFilter = pageFlowFilter;
     }
@@ -58,15 +53,22 @@ public class UpdateHandler {
         if (splits.length > 2) {
             String command = splits[splits.length - 2];
             if  (CONTEXTFW_REMOVE.equals(command) || 
-                 CONTEXTFW_UPDATE.equals(command) ||
                  CONTEXTFW_REFRESH.equals(command)) {
-                return splits.length -2;
+                return splits.length - 2;
             }
-            command = splits[splits.length - 3];
+        }
+        if (splits.length > 4) {
+            String command = splits[splits.length - 4];
+            if  (CONTEXTFW_UPDATE.equals(command)) {
+                return splits.length -4;
+            }
+        }
+        if (splits.length > 5) {
+            String command = splits[splits.length - 5];
             if (CONTEXTFW_UPDATE.equals(command)) {
-                return splits.length -3;
+                return splits.length -5;
             }
-        } 
+        }
         return -1;
     }
     
@@ -126,7 +128,10 @@ public class UpdateHandler {
                                         updateCount);
                             if (CONTEXTFW_UPDATE.equals(command)) {
                                 invocation = 
-                                    app.getApplication().updateState(listeners.beforeUpdate());
+                                    app.getApplication().updateState(
+                                            listeners.beforeUpdate(), 
+                                            uriSplits[commandStart+2],
+                                            uriSplits[commandStart+3]);
                                 if (invocation.isDelayed()) {
                                     app.getHttpContext().setServlet(null);
                                     app.getHttpContext().setRequest(null);

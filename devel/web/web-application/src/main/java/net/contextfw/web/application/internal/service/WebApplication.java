@@ -29,7 +29,7 @@ public interface WebApplication {
      * 
      * @throws ContextServiceException
      */
-    public UpdateInvocation updateState(boolean updateComponents) throws WebApplicationException;
+    public UpdateInvocation updateState(boolean updateComponents, String componentId, String method) throws WebApplicationException;
     
     public void setInitializerChain(List<Class<? extends Component>> chain);
 }

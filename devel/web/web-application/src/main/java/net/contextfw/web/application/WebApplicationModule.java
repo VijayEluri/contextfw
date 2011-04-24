@@ -1,14 +1,14 @@
 package net.contextfw.web.application;
 
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import net.contextfw.web.application.annotations.PageScoped;
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.conf.PropertyProvider;
-import net.contextfw.web.application.conf.WebConfiguration;
+import net.contextfw.web.application.converter.AttributeJsonSerializer;
 import net.contextfw.web.application.converter.ObjectAttributeSerializer;
 import net.contextfw.web.application.internal.component.AutoRegisterListener;
 import net.contextfw.web.application.internal.initializer.InitializerProvider;
@@ -19,6 +19,8 @@ import net.contextfw.web.application.internal.scope.WebApplicationScope;
 import net.contextfw.web.application.internal.service.WebApplicationContextHandler;
 import net.contextfw.web.application.internal.util.AttributeHandler;
 import net.contextfw.web.application.internal.util.ClassScanner;
+import net.contextfw.web.application.properties.KeyValue;
+import net.contextfw.web.application.properties.Properties;
 import net.contextfw.web.application.request.Request;
 import net.contextfw.web.application.view.View;
 
@@ -41,14 +43,14 @@ import com.google.inject.spi.TypeListener;
 
 public final class WebApplicationModule extends AbstractModule {
 
-    private final WebConfiguration configuration;
+    private final Properties configuration;
     
     private Logger logger = LoggerFactory.getLogger(WebApplicationModule.class);
 
     @SuppressWarnings("rawtypes")
     private AutoRegisterListener autoRegisterListener = new AutoRegisterListener();
 
-    public WebApplicationModule(WebConfiguration configuration) {
+    public WebApplicationModule(Properties configuration) {
         this.configuration = configuration;
     }
 
@@ -67,8 +69,8 @@ public final class WebApplicationModule extends AbstractModule {
                 WebApplicationHandleProvider.class);
         bind(Request.class).toProvider(RequestProvider.class);
         bind(InitializerProvider.class).toInstance(configureInitializers());
-        bind(WebConfiguration.class).toInstance(configuration);
-        bind(PropertyProvider.class).to(configuration.getPropertyProvider());
+        bind(Properties.class).toInstance(configuration);
+        bind(PropertyProvider.class).to(configuration.get(Properties.PROPERTY_PROVIDER));
         
         this.bindListener(Matchers.any(), new TypeListener() {
             @SuppressWarnings("unchecked")
@@ -90,22 +92,30 @@ public final class WebApplicationModule extends AbstractModule {
     @Singleton
     @Provides
     public Gson provideGson(Injector injector) {
+        
         GsonBuilder builder = new GsonBuilder();
         
-        for (Entry<Class<?>, Class<? extends JsonSerializer<?>>> entry: configuration.getJsonSerializerClasses()) {
+        for (KeyValue<Class<?>, Class<? extends JsonSerializer<?>>> entry : configuration
+                .get(Properties.JSON_SERIALIZER)) {
             builder.registerTypeAdapter(entry.getKey(), injector.getInstance(entry.getValue()));
         }
-
-        for (Entry<Class<?>, Class<? extends JsonDeserializer<?>>> entry: configuration.getJsonDeserializerClasses()) {
+        
+        for (KeyValue<Class<?>, Class<? extends JsonDeserializer<?>>> entry : configuration
+                .get(Properties.JSON_DESERIALIZER)) {
             builder.registerTypeAdapter(entry.getKey(), injector.getInstance(entry.getValue()));
-        }        
+        }
+        
+        for (KeyValue<Class<?>, Class<? extends AttributeJsonSerializer<?>>> entry : configuration
+                .get(Properties.ATTRIBUTE_JSON_SERIALIZER)) {
+            builder.registerTypeAdapter(entry.getKey(), injector.getInstance(entry.getValue()));
+        }
         
         return builder.create();
     }
     
     @Singleton
     @Provides
-    public WebApplicationContextHandler provideWebApplicationContextHandler(WebConfiguration configuration, PageFlowFilter pageFlowFilter) {
+    public WebApplicationContextHandler provideWebApplicationContextHandler(PageFlowFilter pageFlowFilter) {
         final WebApplicationContextHandler handler = new WebApplicationContextHandler(configuration, pageFlowFilter);
         Timer timer = new Timer(true);
         logger.info("Starting scheduled removal for expired web applications");
@@ -114,17 +124,19 @@ public final class WebApplicationModule extends AbstractModule {
             public void run() {
                 handler.removeExpiredApplications();
             }
-        }, configuration.getRemovalSchedulePeriod(), 
-        configuration.getRemovalSchedulePeriod()); 
+        }, configuration.get(Properties.REMOVAL_SCHEDULE_PERIOD), 
+        configuration.get(Properties.REMOVAL_SCHEDULE_PERIOD)); 
         
         return handler;
     }
     
     @SuppressWarnings("unchecked")
     private InitializerProvider configureInitializers() {
+        
         InitializerProvider provider = new InitializerProvider(configuration);
-
-        List<Class<?>> classes = ClassScanner.getClasses(configuration.getViewComponentRootPackages());
+        List<String> rootPackages = new ArrayList<String>();
+        rootPackages.addAll(configuration.get(Properties.COMPONENT_ROOT_PACKAGE));
+        List<Class<?>> classes = ClassScanner.getClasses(rootPackages);
 
         for (Class<?> cl : classes) {
             if (Component.class.isAssignableFrom(cl)

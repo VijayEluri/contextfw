@@ -1,11 +1,12 @@
 package net.contextfw.web.application;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
 
 import net.contextfw.web.application.conf.PropertyProvider;
-import net.contextfw.web.application.conf.WebConfiguration;
 import net.contextfw.web.application.internal.util.ClassScanner;
+import net.contextfw.web.application.properties.Properties;
 import net.contextfw.web.application.servlet.CSSServlet;
 import net.contextfw.web.application.servlet.InitServlet;
 import net.contextfw.web.application.servlet.ScriptServlet;
@@ -22,22 +23,24 @@ public class WebApplicationServletModule extends ServletModule {
 
     private Logger logger = LoggerFactory.getLogger(WebApplicationServletModule.class);
 
-    private final WebConfiguration configuration;
-
     @Inject
     private PropertyProvider properties;
     
-    public WebApplicationServletModule(WebConfiguration configuration) {
-        this.configuration = configuration;
+    private final String resourcePrefix;
+    private final List<String> rootPackages = new ArrayList<String>();
+    
+    public WebApplicationServletModule(Properties configuration) {
+        resourcePrefix = configuration.get(Properties.RESOURCES_PREFIX);
+        rootPackages.addAll(configuration.get(Properties.COMPONENT_ROOT_PACKAGE));
     }
     
     @Override
     protected void configureServlets() {
         
         logger.info("Configuring default servlets");
-        serve(configuration.getResourcesPrefix() + ".js").with(
+        serve(resourcePrefix + ".js").with(
                 ScriptServlet.class);
-        serve(configuration.getResourcesPrefix() + ".css").with(
+        serve(resourcePrefix + ".css").with(
                 CSSServlet.class);
         serveRegex(".*/contextfw-update/.*").with(UpdateServlet.class);
         serveRegex(".*/contextfw-refresh/.*").with(UpdateServlet.class);
@@ -50,7 +53,7 @@ public class WebApplicationServletModule extends ServletModule {
         logger.info("Configuring view components");
         TreeSet<String> urls = new TreeSet<String>();
 
-        List<Class<?>> classes = ClassScanner.getClasses(configuration.getViewComponentRootPackages());
+        List<Class<?>> classes = ClassScanner.getClasses(rootPackages);
 
         for (Class<?> cl : classes) {
             View annotation = cl.getAnnotation(View.class);

@@ -7,23 +7,20 @@ import java.util.UUID;
 
 import net.contextfw.web.application.PageFlowFilter;
 import net.contextfw.web.application.WebApplicationHandle;
-import net.contextfw.web.application.conf.WebConfiguration;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import net.contextfw.web.application.properties.Properties;
 
 public class WebApplicationContextHandler {
 
-    private Logger logger = LoggerFactory.getLogger(WebApplicationContextHandler.class);
+    // private Logger logger = LoggerFactory.getLogger(WebApplicationContextHandler.class);
     
-    public WebApplicationContextHandler(WebConfiguration configuration, 
+    private final long maxInactivity;
+    
+    public WebApplicationContextHandler(Properties configuration, 
             PageFlowFilter pageFlowFilter) {
-        this.configuration = configuration;
+        maxInactivity = configuration.get(Properties.MAX_INACTIVITY);
         this.pageFlowFilter = pageFlowFilter;
     }
 
-    private final WebConfiguration configuration;
-    
     private final PageFlowFilter pageFlowFilter;
     
     private volatile static Map<WebApplicationHandle, WebApplicationContext> contexts = 
@@ -31,7 +28,7 @@ public class WebApplicationContextHandler {
 
     public synchronized int refreshApplication(WebApplicationHandle handle) {
         WebApplicationContext context = contexts.get(handle);
-        context.setExpires(System.currentTimeMillis() + configuration.getMaxInactivity());
+        context.setExpires(System.currentTimeMillis() + maxInactivity);
         context.incrementUpdateCount();
         return context.getUpdateCount();
     }

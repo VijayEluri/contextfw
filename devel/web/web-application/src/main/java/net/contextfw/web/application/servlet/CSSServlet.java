@@ -1,9 +1,10 @@
 package net.contextfw.web.application.servlet;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
-import net.contextfw.web.application.conf.WebConfiguration;
+import net.contextfw.web.application.properties.Properties;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -15,12 +16,12 @@ public class CSSServlet extends ResourceServlet {
     
     private final boolean debugMode;
 
-    private final List<String> resourcePaths;
+    private final List<String> resourcePaths = new ArrayList<String>();
 
     @Inject
-    public CSSServlet(WebConfiguration configuration) {
-        this.debugMode = configuration.isDebugMode();
-        this.resourcePaths = configuration.getResourcePaths();
+    public CSSServlet(Properties configuration) {
+        this.debugMode = configuration.get(Properties.DEBUG_MODE);
+        this.resourcePaths.addAll(configuration.get(Properties.RESOURCE_PATH));
     }
     
     @Override
