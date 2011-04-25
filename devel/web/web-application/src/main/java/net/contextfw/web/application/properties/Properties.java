@@ -21,6 +21,10 @@ import com.google.gson.JsonSerializer;
 public class Properties {
     
     private static final String KEY_NAMESPACE = "contextfw.namespace";
+    
+//    private static final String KEY_CREATE_HTTP_HEADER = "contextfw.createHttpHeader";
+    
+//    private static final String KEY_UPDATE_HTTP_HEADER = "contextfw.updateHttpHeader";
 
     private static final String KEY_ATTRIBUTE_SERIALIZER = "contextfw.attributeSerializer";
 
@@ -40,7 +44,7 @@ public class Properties {
 
   //  private static final String KEY_ERROR_TIME = "contextfw.errorTime";
 
-    private static final String KEY_COMPONENT_ROOT_PACKAGE = "contextfw.componentRootPackage";
+    private static final String KEY_VIEW_COMPONENT_ROOT_PACKAGE = "contextfw.viewComponentRootPackage";
 
     private static final String KEY_RESOURCE_PATH = "contextfw.resourcePath";
 
@@ -71,12 +75,12 @@ public class Properties {
           .set(PROPERTY_PROVIDER, SystemPropertyProvider.class)
           .set(LIFECYCLE_LISTENER, DefaultLifecycleListener.class)
           .set(RESOURCE_PATH, new HashSet<String>())
-          .set(COMPONENT_ROOT_PACKAGE, new HashSet<String>())
+          .set(VIEW_COMPONENT_ROOT_PACKAGE, new HashSet<String>())
           // .set(ERROR_TIME.inMinsAndSecs(1, 30))
           .set(INITIAL_MAX_INACTIVITY.inSeconds(30))
           //.set(POLL_TIME.inSeconds(70))
           .set(REMOVAL_SCHEDULE_PERIOD.inMinutes(1))
-          .set(MAX_INACTIVITY.inHoursAndMins(3, 0))
+          .set(MAX_INACTIVITY.inMinutes(2))
           .set(NAMESPACE, new HashSet<KeyValue<String, String>>())
           .set(ATTRIBUTE_JSON_SERIALIZER, new HashSet<KeyValue<Class<?>, 
                      Class<? extends AttributeJsonSerializer<?>>>>())
@@ -115,8 +119,8 @@ public class Properties {
     public static final AddableProperty<Set<String>, String> RESOURCE_PATH
         = new StringSetProperty(KEY_RESOURCE_PATH);
     
-    public static final AddableProperty<Set<String>, String> COMPONENT_ROOT_PACKAGE
-        = new StringSetProperty(KEY_COMPONENT_ROOT_PACKAGE);
+    public static final AddableProperty<Set<String>, String> VIEW_COMPONENT_ROOT_PACKAGE
+        = new StringSetProperty(KEY_VIEW_COMPONENT_ROOT_PACKAGE);
     
 //    public static final TemporalProperty ERROR_TIME = 
 //        new TemporalProperty(KEY_ERROR_TIME);
@@ -136,6 +140,14 @@ public class Properties {
     public static final SelfKeyValueSetProperty<String, String>
         NAMESPACE
         = new SelfKeyValueSetProperty<String, String>(KEY_NAMESPACE);
+    
+//    public static final SelfKeyValueSetProperty<String, String>
+//      CREATE_HTTP_HEADER
+//      = new SelfKeyValueSetProperty<String, String>(KEY_CREATE_HTTP_HEADER);
+//    
+//    public static final SelfKeyValueSetProperty<String, String>
+//      UPDATE_HTTP_HEADER
+//    = new SelfKeyValueSetProperty<String, String>(KEY_UPDATE_HTTP_HEADER);
     
     public static final SelfKeyValueSetProperty<Class<?>, 
         Class<? extends AttributeJsonSerializer<?>>> ATTRIBUTE_JSON_SERIALIZER

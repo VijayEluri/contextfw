@@ -136,7 +136,7 @@ public final class WebApplicationModule extends AbstractModule {
         
         InitializerProvider provider = new InitializerProvider(configuration);
         List<String> rootPackages = new ArrayList<String>();
-        rootPackages.addAll(configuration.get(Properties.COMPONENT_ROOT_PACKAGE));
+        rootPackages.addAll(configuration.get(Properties.VIEW_COMPONENT_ROOT_PACKAGE));
         List<Class<?>> classes = ClassScanner.getClasses(rootPackages);
 
         for (Class<?> cl : classes) {

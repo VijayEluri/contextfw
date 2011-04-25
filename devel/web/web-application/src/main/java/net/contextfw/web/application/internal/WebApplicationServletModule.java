@@ -32,7 +32,7 @@ public class WebApplicationServletModule extends ServletModule {
     
     public WebApplicationServletModule(Properties configuration) {
         resourcePrefix = configuration.get(Properties.RESOURCES_PREFIX);
-        rootPackages.addAll(configuration.get(Properties.COMPONENT_ROOT_PACKAGE));
+        rootPackages.addAll(configuration.get(Properties.VIEW_COMPONENT_ROOT_PACKAGE));
     }
     
     @Override
