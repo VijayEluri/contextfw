@@ -21,12 +21,12 @@ limitations under the License.
    <parent>
 		<artifactId>web</artifactId>
 		<groupId>net.contextfw</groupId>
-		<version>0.7.1-SNAPSHOT</version>
+		<version>0.8.0</version>
 	</parent>
 
   <groupId>net.contextfw</groupId>
   <artifactId>web-quickstart</artifactId>
-  <version>0.7.1-SNAPSHOT</version>
+  <version>0.8.0</version>
   <packaging>maven-archetype</packaging>
 
   <name>Context :: Web :: Quickstart</name>
