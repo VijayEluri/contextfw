@@ -3,12 +3,15 @@
 #set( $symbol_escape = '\' )
 package ${package};
 
-import net.contextfw.web.application.conf.WebConfiguration;
 import net.contextfw.web.application.WebApplicationModule;
-
-import org.guiceyfruit.jsr250.Jsr250Module;
+import net.contextfw.web.application.lifecycle.DefaultPageFlowFilter;
+import net.contextfw.web.application.lifecycle.PageFlowFilter;
+import net.contextfw.web.application.properties.Properties;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
+import com.mycila.inject.jsr250.Jsr250;
 
 public class MyApplicationModule extends AbstractModule {
 
@@ -17,15 +20,20 @@ public class MyApplicationModule extends AbstractModule {
     @Override
     protected void configure() {
 
-        WebConfiguration config = new WebConfiguration()
-            .addResourcePaths("${package}")
-            .setViewComponentRootPackages("${package}.views")
-            .debugMode(true);
-        
-        config.setXmlParamName("xml");
-        config.setLogXML(true);
-        
-        install(new WebApplicationModule(config));
-        install(new Jsr250Module());
+        Properties props = Properties.getDefaults()
+          .add(Properties.RESOURCE_PATH, "${package}")
+          .add(Properties.VIEW_COMPONENT_ROOT_PACKAGE, "${package}.views")
+          .set(Properties.DEBUG_MODE, true)
+          .set(Properties.XML_PARAM_NAME, "xml")
+          .set(Properties.LOG_XML, true);
+       
+        install(new WebApplicationModule(props));
+        install(Jsr250.newJsr250Module());
+    }
+    
+    @Provides
+    @Singleton
+    public PageFlowFilter providePageFlowFilter() {
+        return new DefaultPageFlowFilter();
     }
 }

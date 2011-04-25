@@ -13,25 +13,30 @@
 	<name>Context :: Quickstart</name>
 	<packaging>war</packaging>
 
-	<repositories>
-		<repository>
-			<id>guiceyfruit.release</id>
-			<name>GuiceyFruit Release Repository</name>
-			<url>http://guiceyfruit.googlecode.com/svn/repo/releases/</url>
-			<snapshots>
-				<enabled>false</enabled>
-			</snapshots>
-			<releases>
-			</releases>
-		</repository>
-	</repositories>
-
+	<properties>
+		<jetty.version>7.0.2.v20100331</jetty.version>
+	</properties>
 	<dependencies>
-        <dependency>
-			<groupId>org.mortbay.jetty</groupId>
-			<artifactId>jetty</artifactId>
-			<version>6.1.26</version>
-			<scope>test</scope>
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-server</artifactId>
+			<version>${jetty.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.jetty</groupId>
+			<artifactId>jetty-webapp</artifactId>
+			<version>${jetty.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.mycila</groupId>
+			<artifactId>mycila-guice</artifactId>
+			<version>2.0.ga</version>
+			<exclusions>
+			 <exclusion>
+			  <groupId>com.google.inject</groupId>
+			  <artifactId>guice</artifactId>
+			 </exclusion>
+			</exclusions>
 		</dependency>
 		<dependency>
 			<groupId>commons-lang</groupId>
@@ -46,17 +51,12 @@
 		<dependency>
 			<groupId>net.contextfw</groupId>
 			<artifactId>web-application</artifactId>
-			<version>0.7.1</version>
+			<version>0.8.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-simple</artifactId>
 			<version>1.6.1</version>
-		</dependency>
-		<dependency>
-			<groupId>org.guiceyfruit</groupId>
-			<artifactId>guiceyfruit-core</artifactId>
-			<version>2.0</version>
 		</dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>

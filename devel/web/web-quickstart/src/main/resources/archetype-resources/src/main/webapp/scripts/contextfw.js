@@ -3,70 +3,38 @@ contextfw = {
 	updateUrl:  null,
 	refreshUrl: null,
 	removeUrl:  null,
-	afterCall: null,
-	defaultBeforeCall: null,
-	defaultAfterCall: null,
 
-	init: function(context, handle, defaultBeforeCall, defaultAfterCall) {
+	init: function(context, handle) {
 		this.handle = handle;
-		this.updateUrl = context + "/contextfw-update/"+handle+"?";
-		this.refreshUrl = context + "/contextfw-refresh/"+handle+"?";
-		this.removeUrl = context + "/contextfw-remove/"+handle+"?";
-
-		if (jQuery.isFunction(defaultBeforeCall)) {
-			this.defaultBeforeCall = defaultBeforeCall;
-		} else {
-			this.defaultBeforeCall = function(){};
-		}
-
-		if (jQuery.isFunction(defaultAfterCall)) {
-			this.defaultAfterCall = defaultAfterCall;
-		} else {
-			this.defaultAfterCall = function(){};
-		}
-
+		this.updateUrl = context + "/contextfw-update/"+handle;
+		this.refreshUrl = context + "/contextfw-refresh/"+handle;
+		this.removeUrl = context + "/contextfw-remove/"+handle;
 		this.refresh();
+		setInterval(function() {contextfw.refresh()}, 1000*30);
 	},
 
 	refresh: function() {
-		jQuery.get(this.refreshUrl, null, function() {
-			contextfw.setRefresh();
-		});
-	},
-
-	setRefresh: function() {
-		setTimeout("contextfw.refresh();", 1000*30);
+		jQuery.get(this.refreshUrl, null);
 	},
 
 	unload: function() {
 		jQuery.get(this.removeUrl);
 	},
 
-	call: function(elId, method, beforeCall, afterCall) {
-
-		if (jQuery.isFunction(beforeCall)) {
-			beforeCall();
-		} else {
-			this.defaultBeforeCall();
-		}
-
-		this.afterCall = afterCall;
+	call: function(elId, method) {
 
 		var params = {}
 
 		for(var i=2; i< arguments.length; i++) {
 	      if (arguments[i] != null && typeof(arguments[i]) == "object") {
-	    	  params[elId+".p"+(i-2)] = JSON.serialize(arguments[i]);
+	    	  params["p"+(i-2)] = JSON.serialize(arguments[i]);
 	      }
 	      else {
-	    	  params[elId+".p"+(i-2)] = arguments[i];
+	    	  params["p"+(i-2)] = arguments[i];
 	      }
 		}
 
-		params.el = elId;
-		params.method = method;
-
-		jQuery.post(this.updateUrl, params, function(data, textStatus) {
+		jQuery.post(this.updateUrl+"/"+elId+"/"+method, params, function(data, textStatus) {
 			contextfw._handleResponse(data);
 	    }, "text");
 	},
@@ -111,13 +79,6 @@ contextfw = {
 	  },
 
 	_handleResponse: function(domDocument) {
-
-		if (jQuery.isFunction(this.afterCall)) {
-			this.afterCall();
-			this.afterCall = null;
-		} else {
-			this.defaultAfterCall();
-		}
 
 		this._parseUpdate(domDocument, "replace", function(attr, data) {
 			try {

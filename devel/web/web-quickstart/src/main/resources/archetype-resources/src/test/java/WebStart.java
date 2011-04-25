@@ -3,10 +3,9 @@
 #set( $symbol_escape = '\' )
 package ${package};
 
-import org.mortbay.jetty.Server;
-import org.mortbay.jetty.handler.DefaultHandler;
-import org.mortbay.jetty.nio.SelectChannelConnector;
-import org.mortbay.jetty.webapp.WebAppContext;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.nio.SelectChannelConnector;
+import org.eclipse.jetty.webapp.WebAppContext;
 
 public class WebStart {
 
@@ -21,9 +20,7 @@ public class WebStart {
         WebAppContext wac = new WebAppContext();
         wac.setContextPath(CONTEXT_PATH);
         wac.setWar(WAR_PATH);
-        
-        server.addHandler(wac);
-        server.addHandler(new DefaultHandler());
+        server.setHandler(wac);
         
         SelectChannelConnector scc = new SelectChannelConnector();
         scc.setPort(HTTP_PORT);
