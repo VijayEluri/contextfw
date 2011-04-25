@@ -4,7 +4,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.contextfw.web.application.annotations.PageScoped;
+import net.contextfw.web.application.lifecycle.PageScoped;
 
 @PageScoped
 public class HttpContext {

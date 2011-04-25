@@ -13,8 +13,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
 
-import net.contextfw.web.application.DefaultLifecycleListener;
-import net.contextfw.web.application.conf.SystemPropertyProvider;
+import net.contextfw.web.application.SystemPropertyProvider;
+import net.contextfw.web.application.lifecycle.DefaultLifecycleListener;
 
 import org.junit.Test;
 

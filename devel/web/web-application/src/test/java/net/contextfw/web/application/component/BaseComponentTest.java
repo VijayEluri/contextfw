@@ -3,13 +3,12 @@ package net.contextfw.web.application.component;
 import java.io.StringWriter;
 
 import net.contextfw.web.application.WebApplicationException;
-import net.contextfw.web.application.converter.AttributeSerializer;
-import net.contextfw.web.application.dom.DOMBuilder;
 import net.contextfw.web.application.internal.ToStringSerializer;
 import net.contextfw.web.application.internal.component.ComponentBuilder;
 import net.contextfw.web.application.internal.component.ComponentBuilderImpl;
 import net.contextfw.web.application.internal.component.ComponentRegister;
 import net.contextfw.web.application.internal.component.WebApplicationComponent;
+import net.contextfw.web.application.serialize.AttributeSerializer;
 
 import org.dom4j.Node;
 import org.dom4j.io.OutputFormat;

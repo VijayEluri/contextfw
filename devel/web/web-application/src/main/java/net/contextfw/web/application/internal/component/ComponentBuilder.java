@@ -3,7 +3,7 @@ package net.contextfw.web.application.internal.component;
 import java.util.Set;
 
 import net.contextfw.web.application.component.Component;
-import net.contextfw.web.application.dom.DOMBuilder;
+import net.contextfw.web.application.component.DOMBuilder;
 
 import com.google.inject.ImplementedBy;
 

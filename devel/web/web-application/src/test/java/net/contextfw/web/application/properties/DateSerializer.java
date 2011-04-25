@@ -2,7 +2,7 @@ package net.contextfw.web.application.properties;
 
 import java.util.Date;
 
-import net.contextfw.web.application.converter.AttributeJsonSerializer;
+import net.contextfw.web.application.serialize.AttributeJsonSerializer;
 
 public class DateSerializer extends AttributeJsonSerializer<Date> {
 

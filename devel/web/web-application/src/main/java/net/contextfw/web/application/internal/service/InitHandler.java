@@ -10,13 +10,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import net.contextfw.web.application.HttpContext;
-import net.contextfw.web.application.PageFlowFilter;
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.internal.LifecycleListeners;
 import net.contextfw.web.application.internal.initializer.InitializerProvider;
 import net.contextfw.web.application.internal.scope.WebApplicationScopedBeans;
+import net.contextfw.web.application.lifecycle.PageFlowFilter;
 import net.contextfw.web.application.properties.Properties;
 
 import org.slf4j.Logger;
@@ -29,6 +29,7 @@ import com.google.inject.Singleton;
 @Singleton
 public class InitHandler {
 
+    @SuppressWarnings("unused")
     private Logger logger = LoggerFactory.getLogger(InitHandler.class);
 
     private final WebApplicationContextHandler handler;

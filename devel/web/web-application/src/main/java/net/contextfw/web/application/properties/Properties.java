@@ -6,12 +6,12 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import net.contextfw.web.application.DefaultLifecycleListener;
-import net.contextfw.web.application.LifecycleListener;
-import net.contextfw.web.application.conf.PropertyProvider;
-import net.contextfw.web.application.conf.SystemPropertyProvider;
-import net.contextfw.web.application.converter.AttributeJsonSerializer;
-import net.contextfw.web.application.converter.AttributeSerializer;
+import net.contextfw.web.application.PropertyProvider;
+import net.contextfw.web.application.SystemPropertyProvider;
+import net.contextfw.web.application.lifecycle.DefaultLifecycleListener;
+import net.contextfw.web.application.lifecycle.LifecycleListener;
+import net.contextfw.web.application.serialize.AttributeJsonSerializer;
+import net.contextfw.web.application.serialize.AttributeSerializer;
 
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonSerializer;
@@ -30,13 +30,13 @@ public class Properties {
 
     private static final String KEY_REMOVAL_SCHEDULE_PERIOD = "contextfw.removalSchedulePeriod";
 
-    private static final String KEY_POLL_TIME = "contextfw.pollTime";
+   // private static final String KEY_POLL_TIME = "contextfw.pollTime";
 
     private static final String KEY_MAX_INACTIVITY = "contextfw.maxInactivity";
 
     private static final String KEY_INITIAL_MAX_INACTIVITY = "contextfw.initialMaxInactivity";
 
-    private static final String KEY_ERROR_TIME = "contextfw.errorTime";
+  //  private static final String KEY_ERROR_TIME = "contextfw.errorTime";
 
     private static final String KEY_COMPONENT_ROOT_PACKAGE = "contextfw.componentRootPackage";
 

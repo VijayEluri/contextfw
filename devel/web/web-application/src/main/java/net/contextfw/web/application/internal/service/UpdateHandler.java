@@ -8,9 +8,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.contextfw.web.application.PageFlowFilter;
-import net.contextfw.web.application.ResourceResponse;
 import net.contextfw.web.application.internal.LifecycleListeners;
+import net.contextfw.web.application.lifecycle.PageFlowFilter;
+import net.contextfw.web.application.remote.ResourceResponse;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

@@ -3,8 +3,8 @@ package net.contextfw.web.application.internal.component;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.contextfw.web.application.annotations.PageScoped;
 import net.contextfw.web.application.component.Component;
+import net.contextfw.web.application.lifecycle.PageScoped;
 
 @PageScoped
 public class ComponentRegister {

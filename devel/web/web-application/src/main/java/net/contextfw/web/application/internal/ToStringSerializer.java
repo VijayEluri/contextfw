@@ -1,6 +1,6 @@
 package net.contextfw.web.application.internal;
 
-import net.contextfw.web.application.converter.AttributeSerializer;
+import net.contextfw.web.application.serialize.AttributeSerializer;
 
 /**
  * Default implementation for Object serialization.

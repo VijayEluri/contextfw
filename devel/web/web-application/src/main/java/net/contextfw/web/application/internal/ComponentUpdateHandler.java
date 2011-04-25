@@ -4,10 +4,10 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
-import net.contextfw.web.application.annotations.Delayed;
-import net.contextfw.web.application.annotations.ResourceBody;
 import net.contextfw.web.application.component.Component;
-import net.contextfw.web.application.request.Request;
+import net.contextfw.web.application.remote.Delayed;
+import net.contextfw.web.application.remote.ResourceBody;
+import net.contextfw.web.application.util.Request;
 
 import com.google.gson.Gson;
 

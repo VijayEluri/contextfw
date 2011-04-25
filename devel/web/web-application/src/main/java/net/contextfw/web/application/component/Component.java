@@ -3,7 +3,6 @@ package net.contextfw.web.application.component;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.contextfw.web.application.dom.DOMBuilder;
 import net.contextfw.web.application.internal.component.ComponentBuilder;
 
 @Buildable

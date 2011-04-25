@@ -3,7 +3,7 @@ package net.contextfw.web.application.internal;
 import java.util.HashSet;
 import java.util.Set;
 
-import net.contextfw.web.application.LifecycleListener;
+import net.contextfw.web.application.lifecycle.LifecycleListener;
 import net.contextfw.web.application.properties.Properties;
 
 import com.google.inject.Inject;

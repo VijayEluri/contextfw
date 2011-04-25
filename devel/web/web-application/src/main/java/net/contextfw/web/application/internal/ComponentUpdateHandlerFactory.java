@@ -2,8 +2,8 @@ package net.contextfw.web.application.internal;
 
 import java.lang.reflect.Method;
 
-import net.contextfw.web.application.annotations.Remoted;
 import net.contextfw.web.application.component.Component;
+import net.contextfw.web.application.remote.Remoted;
 
 import com.google.gson.Gson;
 import com.google.inject.Inject;

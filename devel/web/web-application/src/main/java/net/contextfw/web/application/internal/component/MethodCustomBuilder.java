@@ -2,7 +2,7 @@ package net.contextfw.web.application.internal.component;
 
 import java.lang.reflect.Method;
 
-import net.contextfw.web.application.dom.DOMBuilder;
+import net.contextfw.web.application.component.DOMBuilder;
 
 class MethodCustomBuilder extends Builder {
 

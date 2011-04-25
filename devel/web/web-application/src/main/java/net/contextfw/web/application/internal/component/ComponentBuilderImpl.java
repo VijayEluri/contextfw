@@ -11,15 +11,15 @@ import java.util.Map;
 import java.util.Set;
 
 import net.contextfw.web.application.WebApplicationException;
-import net.contextfw.web.application.component.AfterBuild;
 import net.contextfw.web.application.component.Attribute;
-import net.contextfw.web.application.component.BeforeBuild;
 import net.contextfw.web.application.component.Buildable;
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.component.CustomBuild;
+import net.contextfw.web.application.component.DOMBuilder;
 import net.contextfw.web.application.component.Element;
-import net.contextfw.web.application.dom.DOMBuilder;
 import net.contextfw.web.application.internal.util.AttributeHandler;
+import net.contextfw.web.application.lifecycle.AfterBuild;
+import net.contextfw.web.application.lifecycle.BeforeBuild;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;

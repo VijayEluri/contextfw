@@ -2,7 +2,8 @@ package net.contextfw.web.application.component;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
-import net.contextfw.web.application.dom.DOMBuilder;
+import net.contextfw.web.application.lifecycle.AfterBuild;
+import net.contextfw.web.application.lifecycle.BeforeBuild;
 
 import org.junit.Test;
 

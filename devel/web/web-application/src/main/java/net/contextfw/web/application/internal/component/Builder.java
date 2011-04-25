@@ -2,7 +2,7 @@ package net.contextfw.web.application.internal.component;
 
 import java.util.Set;
 
-import net.contextfw.web.application.dom.DOMBuilder;
+import net.contextfw.web.application.component.DOMBuilder;
 
 abstract class Builder {
 

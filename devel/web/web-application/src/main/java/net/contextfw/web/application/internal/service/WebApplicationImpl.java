@@ -6,12 +6,10 @@ import java.util.List;
 import java.util.Map;
 
 import net.contextfw.web.application.HttpContext;
-import net.contextfw.web.application.PageFlowFilter;
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.WebApplicationHandle;
-import net.contextfw.web.application.annotations.PageScoped;
 import net.contextfw.web.application.component.Component;
-import net.contextfw.web.application.dom.DOMBuilder;
+import net.contextfw.web.application.component.DOMBuilder;
 import net.contextfw.web.application.internal.ComponentUpdateHandler;
 import net.contextfw.web.application.internal.ComponentUpdateHandlerFactory;
 import net.contextfw.web.application.internal.WebResponder;
@@ -21,8 +19,10 @@ import net.contextfw.web.application.internal.component.ComponentRegister;
 import net.contextfw.web.application.internal.component.WebApplicationComponent;
 import net.contextfw.web.application.internal.initializer.InitializerContextImpl;
 import net.contextfw.web.application.internal.util.AttributeHandler;
+import net.contextfw.web.application.lifecycle.PageFlowFilter;
+import net.contextfw.web.application.lifecycle.PageScoped;
 import net.contextfw.web.application.properties.Properties;
-import net.contextfw.web.application.request.Request;
+import net.contextfw.web.application.util.Request;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;

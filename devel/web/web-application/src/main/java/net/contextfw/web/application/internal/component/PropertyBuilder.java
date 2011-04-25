@@ -1,6 +1,6 @@
 package net.contextfw.web.application.internal.component;
 
-import net.contextfw.web.application.dom.DOMBuilder;
+import net.contextfw.web.application.component.DOMBuilder;
 
 abstract class PropertyBuilder extends Builder {
 

@@ -5,8 +5,8 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 
-import net.contextfw.web.application.PageFlowFilter;
 import net.contextfw.web.application.WebApplicationHandle;
+import net.contextfw.web.application.lifecycle.PageFlowFilter;
 import net.contextfw.web.application.properties.Properties;
 
 public class WebApplicationContextHandler {

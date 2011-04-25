@@ -1,7 +1,7 @@
 package net.contextfw.web.application.internal.component;
 
 import net.contextfw.web.application.component.Component;
-import net.contextfw.web.application.dom.DOMBuilder;
+import net.contextfw.web.application.component.DOMBuilder;
 
 public class WebApplicationComponent extends Component {
 

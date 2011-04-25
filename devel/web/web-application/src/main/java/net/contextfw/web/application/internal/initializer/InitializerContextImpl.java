@@ -5,8 +5,8 @@ import java.util.Locale;
 
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.component.Component;
-import net.contextfw.web.application.view.ViewContext;
-import net.contextfw.web.application.view.ViewComponent;
+import net.contextfw.web.application.lifecycle.ViewComponent;
+import net.contextfw.web.application.lifecycle.ViewContext;
 
 import com.google.inject.Injector;
 
