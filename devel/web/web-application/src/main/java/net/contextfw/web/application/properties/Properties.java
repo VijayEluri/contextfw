@@ -16,6 +16,8 @@ import net.contextfw.web.application.serialize.AttributeSerializer;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonSerializer;
 
+// 
+
 public class Properties {
     
     private static final String KEY_NAMESPACE = "contextfw.namespace";
@@ -86,35 +88,35 @@ public class Properties {
                      Class<? extends AttributeSerializer<?>>>>());
     }
     
-    public static final Property<Boolean> DEBUG_MODE = 
+    public static final SettableProperty<Boolean> DEBUG_MODE = 
         new BooleanProperty(KEY_DEBUG_MODE);
     
-    public static final Property<Boolean> LOG_XML = 
+    public static final SettableProperty<Boolean> LOG_XML = 
         new BooleanProperty(KEY_LOG_XML);
     
-    public static final Property<String> RESOURCES_PREFIX = 
+    public static final SettableProperty<String> RESOURCES_PREFIX = 
         new StringProperty(KEY_RESOURCES_PREFIX);
     
-    public static final Property<String> CONTEXT_PATH = 
+    public static final SettableProperty<String> CONTEXT_PATH = 
         new StringProperty(KEY_CONTEXT_PATH);
     
-    public static final Property<String> XML_PARAM_NAME = 
+    public static final SettableProperty<String> XML_PARAM_NAME = 
         new StringProperty(KEY_XML_PARAM_NAME);
     
-    public static final Property<Class<? extends PropertyProvider>> PROPERTY_PROVIDER = 
+    public static final SettableProperty<Class<? extends PropertyProvider>> PROPERTY_PROVIDER = 
         new ClassProperty<PropertyProvider>(KEY_PROPERTY_PROVIDER);
     
-    public static final Property<Class<? extends LifecycleListener>> LIFECYCLE_LISTENER = 
+    public static final SettableProperty<Class<? extends LifecycleListener>> LIFECYCLE_LISTENER = 
         new ClassProperty<LifecycleListener>(KEY_LIFECYCLE_LISTENER);
     
-    public static final Property<Integer> TRANSFORMER_COUNT =
+    public static final SettableProperty<Integer> TRANSFORMER_COUNT =
         new RangedIntegerProperty(KEY_TRANSFORMER_COUNT, 1, 200);
     
-    public static final AppendableProperty<Set<String>, String> RESOURCE_PATH
-        = new AppendableStringSetProperty(KEY_RESOURCE_PATH);
+    public static final AddableProperty<Set<String>, String> RESOURCE_PATH
+        = new StringSetProperty(KEY_RESOURCE_PATH);
     
-    public static final AppendableProperty<Set<String>, String> COMPONENT_ROOT_PACKAGE
-        = new AppendableStringSetProperty(KEY_COMPONENT_ROOT_PACKAGE);
+    public static final AddableProperty<Set<String>, String> COMPONENT_ROOT_PACKAGE
+        = new StringSetProperty(KEY_COMPONENT_ROOT_PACKAGE);
     
 //    public static final TemporalProperty ERROR_TIME = 
 //        new TemporalProperty(KEY_ERROR_TIME);
@@ -131,28 +133,29 @@ public class Properties {
     public static final TemporalProperty REMOVAL_SCHEDULE_PERIOD = 
         new TemporalProperty(KEY_REMOVAL_SCHEDULE_PERIOD);
     
-    public static final KeyValueSetProperty<String, String> NAMESPACE
-        = new KeyValueSetProperty<String, String>(KEY_NAMESPACE);
+    public static final SelfKeyValueSetProperty<String, String>
+        NAMESPACE
+        = new SelfKeyValueSetProperty<String, String>(KEY_NAMESPACE);
     
-    public static final  KeyValueSetProperty<Class<?>, 
+    public static final SelfKeyValueSetProperty<Class<?>, 
         Class<? extends AttributeJsonSerializer<?>>> ATTRIBUTE_JSON_SERIALIZER
-           = new KeyValueSetProperty<Class<?>, 
+           = new SelfKeyValueSetProperty<Class<?>, 
               Class<? extends AttributeJsonSerializer<?>>>(KEY_ATTRIBUTE_JSON_SERIALIZER 
               );
     
-    public static final  KeyValueSetProperty<Class<?>, 
+    public static final SelfKeyValueSetProperty<Class<?>, 
     Class<? extends JsonDeserializer<?>>> JSON_DESERIALIZER
-        = new KeyValueSetProperty<Class<?>, 
+        = new SelfKeyValueSetProperty<Class<?>, 
             Class<? extends JsonDeserializer<?>>>(KEY_JSON_DESERIALIZER);
     
-    public static final  KeyValueSetProperty<Class<?>, 
+    public static final SelfKeyValueSetProperty<Class<?>, 
     Class<? extends JsonSerializer<?>>> JSON_SERIALIZER
-        = new KeyValueSetProperty<Class<?>, 
+        = new SelfKeyValueSetProperty<Class<?>, 
             Class<? extends JsonSerializer<?>>>(KEY_JSON_SERIALIZER);
     
-    public static final  KeyValueSetProperty<Class<?>, 
+    public static final SelfKeyValueSetProperty<Class<?>, 
     Class<? extends AttributeSerializer<?>>> ATTRIBUTE_SERIALIZER
-        = new KeyValueSetProperty<Class<?>, 
+        = new SelfKeyValueSetProperty<Class<?>, 
             Class<? extends AttributeSerializer<?>>>(KEY_ATTRIBUTE_SERIALIZER);
 
     
@@ -169,23 +172,36 @@ public class Properties {
     }
     
     @SuppressWarnings("unchecked")
-    public <T> T get(UnsettableProperty<T> property) {
-        return property.get((T)values.get(property.getKey()));
+    public <T> T get(Property<T> property) {
+        return property.validate((T) values.get(property.getKey()));
     }
     
-    public <T> Properties set(Property<T> property, T value) {
+    public <T> Properties set(SettableProperty<T> property, T value) {
         return new Properties(values, property, value);
     }
-    public <T> Properties set(SettableProperty<T> property) {
-        return new Properties(values, property, property.get());
+    
+    public <T extends Collection<V>, V> Properties set(AddableProperty<T, V> property, T value) {
+        return new Properties(values, property, value);
     }
     
-    public <C extends Collection<T>, T> Properties add(AppendableProperty<C, T> property, T value) {
-        return new Properties(values, property, property.append(get(property), value));
+    public <T extends Collection<V>, V> Properties set(SelfAddableProperty<T, V> property, T value) {
+        return new Properties(values, property, value);
     }
     
-    public <K, V> Properties add(KeyValueSetProperty<K, V> property) {
-        return new Properties(values, property, property.append(
-                get(property), property.getValue()));
+    public <T> Properties set(SelfSettableProperty<T> property) {
+        return new Properties(values, property, property.getValue());
     }
+    
+    public <T extends Collection<V>, V> Properties add(AddableProperty<T, V> property, V value) {
+        return new Properties(values, property, property.add(get(property), value));
+    }
+    
+    public <T extends Collection<V>, V> Properties add(SelfAddableProperty<T, V> property) {
+        return new Properties(values, property, property.add(get(property), property.getValue()));
+    }
+    
+//    public <K, V> Properties add(KeyValueSetProperty<K, V> property) {
+//        return new Properties(values, property, property.append(
+//                get(property), property.getValue()));
+//    }
 }

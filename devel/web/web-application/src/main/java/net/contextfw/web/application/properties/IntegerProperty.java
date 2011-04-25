@@ -1,6 +1,7 @@
 package net.contextfw.web.application.properties;
 
-public class IntegerProperty extends BaseProperty<Integer> implements Property<Integer> {
+public class IntegerProperty extends BaseProperty<Integer> 
+    implements SettableProperty<Integer> {
 
     public IntegerProperty(String key) {
         super(key);
@@ -18,11 +19,6 @@ public class IntegerProperty extends BaseProperty<Integer> implements Property<I
 
     @Override
     public Integer validate(Integer value) {
-        return value;
-    }
-
-    @Override
-    public Integer get(Integer value) {
         return value;
     }
 }

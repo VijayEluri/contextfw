@@ -1,6 +1,6 @@
 package net.contextfw.web.application.properties;
 
-public class TemporalProperty implements SettableProperty<Long> {
+public class TemporalProperty implements SelfSettableProperty<Long> {
 
     private final String key;
     
@@ -41,11 +41,6 @@ public class TemporalProperty implements SettableProperty<Long> {
         return new TemporalProperty(key, millis);
     }
 
-    @Override
-    public Long get(Long value) {
-        return value;
-    }
-
     public Long unserialize(String value) {
         return Long.parseLong(value);
     }
@@ -65,7 +60,7 @@ public class TemporalProperty implements SettableProperty<Long> {
     }
 
     @Override
-    public Long get() {
+    public Long getValue() {
         return value;
     }
 }

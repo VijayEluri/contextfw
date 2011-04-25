@@ -1,7 +1,7 @@
 package net.contextfw.web.application.properties;
 
 public class ClassProperty<S> extends BaseProperty<Class<? extends S>> 
-   implements Property<Class<? extends S>> {
+   implements SettableProperty<Class<? extends S>> {
 
     public ClassProperty(String key) {
         super(key);
@@ -21,11 +21,6 @@ public class ClassProperty<S> extends BaseProperty<Class<? extends S>>
 
     @Override
     public Class<? extends S> validate(Class<? extends S> value) {
-        return value;
-    }
-
-    @Override
-    public Class<? extends S> get(Class<? extends S> value) {
         return value;
     }
 }

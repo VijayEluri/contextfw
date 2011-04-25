@@ -1,7 +1,7 @@
 package net.contextfw.web.application.properties;
 
 public class BooleanProperty extends BaseProperty<Boolean> 
-   implements Property<Boolean> {
+   implements SettableProperty<Boolean> {
 
     public BooleanProperty(String key) {
         super(key);
@@ -19,11 +19,6 @@ public class BooleanProperty extends BaseProperty<Boolean>
 
     @Override
     public Boolean validate(Boolean value) {
-        return value;
-    }
-
-    @Override
-    public Boolean get(Boolean value) {
         return value;
     }
 }

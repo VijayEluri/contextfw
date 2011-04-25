@@ -6,7 +6,9 @@ package net.contextfw.web.application.properties;
  * @param <T>
  *   Type of the property
  */
-public interface Property<T> extends UnsettableProperty<T> {
+public interface Property<T> {
+    
+    String getKey();
     
     /**
      * Unserializes value from String representation
