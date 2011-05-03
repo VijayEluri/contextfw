@@ -18,6 +18,7 @@ import javax.xml.transform.TransformerException;
 import javax.xml.transform.TransformerFactory;
 import javax.xml.transform.stream.StreamSource;
 
+import net.contextfw.web.application.DocumentProcessor;
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.internal.util.ResourceEntry;
 import net.contextfw.web.application.internal.util.ResourceScanner;
@@ -38,6 +39,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
+import com.google.inject.Injector;
 import com.google.inject.Singleton;
 
 @Singleton
@@ -59,7 +61,9 @@ public class WebResponder {
 	private final int transformerCount;
 	private final boolean debugMode;
 	private final boolean logXml;
-
+	private final DocumentProcessor xslPostProcessor;
+	
+	
 	public enum Mode {
 
 		INIT("text/html;charset=UTF-8"), UPDATE("text/xml;charset=UTF-8"), XML(
@@ -77,13 +81,19 @@ public class WebResponder {
 	}
 
 	@Inject
-	public WebResponder(Properties configuration) {
+	public WebResponder(Properties configuration, Injector injector) {
 		rootResourcePaths.add("net.contextfw.web.application");
 		transformerCount = configuration.get(Properties.TRANSFORMER_COUNT);
 		debugMode = configuration.get(Properties.DEBUG_MODE);
 		logXml = configuration.get(Properties.LOG_XML);
 		resourcePaths.addAll(configuration.get(Properties.RESOURCE_PATH));
 		namespaces.addAll(configuration.get(Properties.NAMESPACE));
+		if (configuration.get(Properties.XSL_POST_PROCESSOR) != null) {
+			xslPostProcessor = injector.getInstance(
+					configuration.get(Properties.XSL_POST_PROCESSOR));
+		} else {
+			xslPostProcessor = null;
+		}
 	}
 
 	private final static TransformerFactory factory = TransformerFactory
@@ -184,6 +194,11 @@ public class WebResponder {
 					}
 				}
 			}
+			
+			if (xslPostProcessor != null) {
+				xslPostProcessor.process(document);
+			}
+			
 			StringWriter content = new StringWriter();
 			OutputFormat format = OutputFormat.createCompactFormat();
 			format.setXHTML(true);

@@ -35,7 +35,7 @@ public class ComponentBuilderImpl implements ComponentBuilder {
 
     @Inject
     private AttributeHandler attributeHandler;
-    
+
     private Map<Class<?>, Buildable> annotations = new HashMap<Class<?>, Buildable>();
 
     private synchronized List<Builder> getBuilder(Class<?> cl) {
@@ -184,66 +184,80 @@ public class ComponentBuilderImpl implements ComponentBuilder {
     @Override
     public void build(DOMBuilder sb, Object component, Object... buildins) {
         Class<?> cl = getActualClass(component);
+        if (isBuildable(cl)) {
+            List<Builder> builder = getBuilder(cl);
+            DOMBuilder b;
+            Buildable bd = annotations.get(cl);
+            if (bd == null || bd.wrap()) {
+                b = sb.descend(getBuildName(cl));
+            } else {
+                b = sb;
+            }
+            build(cl, b, component, builder, false, null, buildins);
+        } else {
+            sb.text(attributeHandler.serialize(component));
+        }
+    }
+
+    private void build(Class<?> cl, DOMBuilder b, Object component, List<Builder> builders, boolean partial, Set<String> updates, Object... buildins) {
         if (component instanceof Component) {
             if (!((Component) component).isEnabled()) {
                 return;
             }
         }
-        if (isBuildable(cl)) {
-            if (beforeBuilds.containsKey(cl)) {
-                for (Method method : beforeBuilds.get(cl)) {
-                    try {
-                        method.invoke(component);
-                    } catch (IllegalArgumentException e) {
-                        throw new WebApplicationException(e);
-                    } catch (IllegalAccessException e) {
-                        throw new WebApplicationException(e);
-                    } catch (InvocationTargetException e) {
-                        throw new WebApplicationException(e);
-                    }
+        if (beforeBuilds.containsKey(cl)) {
+            for (Method method : beforeBuilds.get(cl)) {
+                try {
+                    method.invoke(component);
+                } catch (IllegalArgumentException e) {
+                    throw new WebApplicationException(e);
+                } catch (IllegalAccessException e) {
+                    throw new WebApplicationException(e);
+                } catch (InvocationTargetException e) {
+                    throw new WebApplicationException(e);
                 }
             }
-            DOMBuilder b;
-            Buildable bd = annotations.get(cl);
-            if (bd.wrap()) {
-                b = sb.descend(getBuildName(cl));
-            } else {
-                b = sb;
+        }
+
+        if (partial) {
+            for (Builder builder : builders) {
+              if (builder.isUpdateBuildable(updates)) {
+                              builder.build(b, component);
+              }
             }
-            for (Builder builder : getBuilder(cl)) {
+        } else {
+            for (Builder builder : builders) {
                 builder.build(b, component);
             }
+        }
 
-            // Handling buildins
-            
-            if (buildins != null) {
-                for (Object buildIn : buildins) {
-                    if (buildIn != null) {
-                        Class<?> bcl = getActualClass(buildIn);
-                        if (isBuildable(bcl)) {
-                            for (Builder builder : getBuilder(bcl)) {
-                                builder.build(b, buildIn);
-                            }
+        // Handling buildins
+
+        if (buildins != null) {
+            for (Object buildIn : buildins) {
+                if (buildIn != null) {
+                    Class<?> bcl = getActualClass(buildIn);
+                    if (isBuildable(bcl)) {
+                        for (Builder builder : getBuilder(bcl)) {
+                            builder.build(b, buildIn);
                         }
                     }
                 }
             }
+        }
 
-            if (afterBuilds.containsKey(cl)) {
-                for (Method method : afterBuilds.get(cl)) {
-                    try {
-                        method.invoke(component);
-                    } catch (IllegalArgumentException e) {
-                        throw new WebApplicationException(e);
-                    } catch (IllegalAccessException e) {
-                        throw new WebApplicationException(e);
-                    } catch (InvocationTargetException e) {
-                        throw new WebApplicationException(e);
-                    }
+        if (afterBuilds.containsKey(cl)) {
+            for (Method method : afterBuilds.get(cl)) {
+                try {
+                    method.invoke(component);
+                } catch (IllegalArgumentException e) {
+                    throw new WebApplicationException(e);
+                } catch (IllegalAccessException e) {
+                    throw new WebApplicationException(e);
+                } catch (InvocationTargetException e) {
+                    throw new WebApplicationException(e);
                 }
             }
-        } else {
-            sb.text(attributeHandler.serialize(component));
         }
     }
 
@@ -251,28 +265,19 @@ public class ComponentBuilderImpl implements ComponentBuilder {
     public void buildUpdate(DOMBuilder sb, Component component, String updateName) {
         Class<?> cl = getActualClass(component);
         if (isBuildable(cl)) {
+            List<Builder> updateBuilder = getUpdateBuilder(cl);
             DOMBuilder b = sb.descend(getBuildName(cl) + "." + updateName);
-            List<Builder> builders = getUpdateBuilder(cl);
-
-            for (Builder builder : builders) {
-                builder.build(b, component);
-            }
+            build(cl, b, component, updateBuilder, false, null, (Object[]) null);
         }
     }
 
     @Override
     public void buildPartialUpdate(DOMBuilder sb, Component component, String updateName, Set<String> updates) {
-
         Class<?> cl = getActualClass(component);
-
-        DOMBuilder b = sb.descend(getBuildName(cl) + "." + updateName);
-
-        List<Builder> builders = getPartialUpdateBuilder(cl);
-
-        for (Builder builder : builders) {
-            if (builder.isUpdateBuildable(updates)) {
-                builder.build(b, component);
-            }
+        if (isBuildable(cl)) {
+            List<Builder> partialUpdateBuilder = getPartialUpdateBuilder(cl);
+            DOMBuilder b = sb.descend(getBuildName(cl) + "." + updateName);
+            build(cl, b, component, partialUpdateBuilder, true, updates, (Object[]) null);
         }
     }
 

@@ -119,6 +119,7 @@ public class WebApplicationImpl implements WebApplication {
 
                 if (context.getLocale() != null) {
                     d.attr("xml:lang", context.getLocale().toString());
+                    d.attr("lang", context.getLocale().toString());
                 }
                 if (mode == Mode.INIT) {
                     rootComponent.buildChild(d);

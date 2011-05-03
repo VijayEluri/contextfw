@@ -10,7 +10,7 @@ public class WebResponderTest {
     public void testReadingXSL() {
         Properties configuration = Properties.getDefaults();
         configuration.add(Properties.RESOURCE_PATH ,"net.contextfw.web.application.internal");
-        WebResponder responder = new WebResponder(configuration);
+        WebResponder responder = new WebResponder(configuration, null);
         System.out.println(responder.getXSLDocumentContent());
     }
 }

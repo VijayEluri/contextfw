@@ -6,6 +6,7 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import net.contextfw.web.application.DocumentProcessor;
 import net.contextfw.web.application.PropertyProvider;
 import net.contextfw.web.application.SystemPropertyProvider;
 import net.contextfw.web.application.lifecycle.DefaultLifecycleListener;
@@ -53,6 +54,8 @@ public class Properties {
     private static final String KEY_LIFECYCLE_LISTENER = "contextfw.lifecycleListener";
 
     private static final String KEY_PROPERTY_PROVIDER = "contextfw.propertyProvider";
+    
+    private static final String KEY_XSL_POST_PROCESSOR = "contextfw.xslPostProcessor";
 
     private static final String KEY_XML_PARAM_NAME = "contextfw.xmlParamName";
 
@@ -112,6 +115,9 @@ public class Properties {
     
     public static final SettableProperty<Class<? extends LifecycleListener>> LIFECYCLE_LISTENER = 
         new ClassProperty<LifecycleListener>(KEY_LIFECYCLE_LISTENER);
+    
+    public static final SettableProperty<Class<? extends DocumentProcessor>> XSL_POST_PROCESSOR = 
+        new ClassProperty<DocumentProcessor>(KEY_XSL_POST_PROCESSOR);
     
     public static final SettableProperty<Integer> TRANSFORMER_COUNT =
         new RangedIntegerProperty(KEY_TRANSFORMER_COUNT, 1, 200);
