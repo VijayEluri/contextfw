@@ -20,6 +20,7 @@ import javax.xml.transform.stream.StreamSource;
 
 import net.contextfw.web.application.DocumentProcessor;
 import net.contextfw.web.application.WebApplicationException;
+import net.contextfw.web.application.internal.service.DirectoryWatcher;
 import net.contextfw.web.application.internal.util.ResourceEntry;
 import net.contextfw.web.application.internal.util.ResourceScanner;
 import net.contextfw.web.application.properties.KeyValue;
@@ -63,7 +64,6 @@ public class WebResponder {
 	private final boolean logXml;
 	private final DocumentProcessor xslPostProcessor;
 	
-	
 	public enum Mode {
 
 		INIT("text/html;charset=UTF-8"), UPDATE("text/xml;charset=UTF-8"), XML(
@@ -81,10 +81,10 @@ public class WebResponder {
 	}
 
 	@Inject
-	public WebResponder(Properties configuration, Injector injector) {
+	public WebResponder(Properties configuration, Injector injector, DirectoryWatcher watcher) {
 		rootResourcePaths.add("net.contextfw.web.application");
 		transformerCount = configuration.get(Properties.TRANSFORMER_COUNT);
-		debugMode = configuration.get(Properties.DEBUG_MODE);
+		debugMode = configuration.get(Properties.DEVELOPMENT_MODE);
 		logXml = configuration.get(Properties.LOG_XML);
 		resourcePaths.addAll(configuration.get(Properties.RESOURCE_PATH));
 		namespaces.addAll(configuration.get(Properties.NAMESPACE));
@@ -119,7 +119,8 @@ public class WebResponder {
 		
 		List<Transformer> transformers = this.transformers;
 		synchronized (this) {
-			if (transformers == null || debugMode) {
+			if (transformers == null) {
+				logger.info("Reloading resources");
 				clean();
 				transformers = this.transformers;
 			}

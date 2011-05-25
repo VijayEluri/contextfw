@@ -1,6 +1,7 @@
 package net.contextfw.web.application;
 
 import net.contextfw.web.application.internal.WebResponder;
+import net.contextfw.web.application.internal.component.ComponentBuilderImpl;
 import net.contextfw.web.application.internal.servlet.CSSServlet;
 import net.contextfw.web.application.internal.servlet.ScriptServlet;
 
@@ -27,6 +28,9 @@ public class ResourceCleaner {
     @Inject
     private ScriptServlet scriptServlet;
     
+    @Inject
+    private ComponentBuilderImpl builder;
+    
     /**
      * Cleans resources
      */
@@ -34,5 +38,6 @@ public class ResourceCleaner {
         webResponder.clean();
         cssServlet.clean();
         scriptServlet.clean();
+        builder.clean();
     }
 }

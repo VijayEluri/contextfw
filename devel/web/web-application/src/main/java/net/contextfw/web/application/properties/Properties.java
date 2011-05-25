@@ -65,11 +65,11 @@ public class Properties {
 
     private static final String KEY_LOG_XML = "contextfw.logXML";
 
-    private static final String KEY_DEBUG_MODE = "contextfw.debugMode";
+    private static final String KEY_DEVELOPMENT_MODE = "contextfw.developmentMode";
 
     public static Properties getDefaults() {
         return new Properties()
-          .set(DEBUG_MODE, true)
+          .set(DEVELOPMENT_MODE, true)
           .set(LOG_XML, true)
           .set(TRANSFORMER_COUNT, 1)
           .set(RESOURCES_PREFIX, "/resources")
@@ -95,8 +95,8 @@ public class Properties {
                      Class<? extends AttributeSerializer<?>>>>());
     }
     
-    public static final SettableProperty<Boolean> DEBUG_MODE = 
-        new BooleanProperty(KEY_DEBUG_MODE);
+    public static final SettableProperty<Boolean> DEVELOPMENT_MODE = 
+        new BooleanProperty(KEY_DEVELOPMENT_MODE);
     
     public static final SettableProperty<Boolean> LOG_XML = 
         new BooleanProperty(KEY_LOG_XML);

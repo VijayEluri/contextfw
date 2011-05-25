@@ -8,8 +8,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import net.contextfw.web.application.ResourceCleaner;
 import net.contextfw.web.application.internal.LifecycleListeners;
 import net.contextfw.web.application.lifecycle.PageFlowFilter;
+import net.contextfw.web.application.properties.Properties;
 import net.contextfw.web.application.remote.ResourceResponse;
 
 import org.slf4j.Logger;
@@ -39,14 +41,31 @@ public class UpdateHandler {
     @Inject
     private Gson gson;
     
+    private final DirectoryWatcher watcher;
+    
+    private final ResourceCleaner cleaner;
+
+    
     @Inject
     public UpdateHandler(
             WebApplicationContextHandler handler,
             LifecycleListeners listeners,
-            PageFlowFilter pageFlowFilter) {
+            PageFlowFilter pageFlowFilter,
+            DirectoryWatcher watcher,
+            ResourceCleaner cleaner,
+            Properties configuration) {
+    	
         this.handler = handler;
         this.listeners = listeners;
         this.pageFlowFilter = pageFlowFilter;
+        
+        if (configuration.get(Properties.DEVELOPMENT_MODE)) {
+        	this.cleaner = cleaner;
+        	this.watcher = watcher;
+        } else {
+        	this.cleaner = null;
+        	this.watcher = null;
+        }
     }
 
     private int getCommandStart(String[] splits) {
@@ -75,6 +94,11 @@ public class UpdateHandler {
     public final void handleRequest(HttpServlet servlet, HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
+    	if (watcher != null && watcher.hasChanged()) {
+    		logger.info("Reloading resources");
+    		cleaner.clean();
+    	}
+    	
         String[] uriSplits = request.getRequestURI().split("/");
         int commandStart = getCommandStart(uriSplits); 
         if (commandStart != -1) {

@@ -17,9 +17,11 @@ import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.component.CustomBuild;
 import net.contextfw.web.application.component.DOMBuilder;
 import net.contextfw.web.application.component.Element;
+import net.contextfw.web.application.internal.service.DirectoryWatcher;
 import net.contextfw.web.application.internal.util.AttributeHandler;
 import net.contextfw.web.application.lifecycle.AfterBuild;
 import net.contextfw.web.application.lifecycle.BeforeBuild;
+import net.contextfw.web.application.properties.Properties;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -27,24 +29,37 @@ import com.google.inject.Singleton;
 @Singleton
 public class ComponentBuilderImpl implements ComponentBuilder {
 
-    private Map<Class<?>, List<Method>> beforeBuilds = new HashMap<Class<?>, List<Method>>();
-    private Map<Class<?>, List<Method>> afterBuilds = new HashMap<Class<?>, List<Method>>();
-    private Map<Class<?>, List<Builder>> builders = new HashMap<Class<?>, List<Builder>>();
-    private Map<Class<?>, List<Builder>> updateBuilders = new HashMap<Class<?>, List<Builder>>();
-    private Map<Class<?>, List<Builder>> partialBuilders = new HashMap<Class<?>, List<Builder>>();
+    private final Map<Class<?>, List<Method>> beforeBuilds = new HashMap<Class<?>, List<Method>>();
+    private final Map<Class<?>, List<Method>> afterBuilds = new HashMap<Class<?>, List<Method>>();
+    private final Map<Class<?>, List<Builder>> builders = new HashMap<Class<?>, List<Builder>>();
+    private final Map<Class<?>, List<Builder>> updateBuilders = new HashMap<Class<?>, List<Builder>>();
+    private final Map<Class<?>, List<Builder>> partialBuilders = new HashMap<Class<?>, List<Builder>>();
+
+    private final AttributeHandler attributeHandler;
+    
+    private final Map<Class<?>, Buildable> annotations = new HashMap<Class<?>, Buildable>();
 
     @Inject
-    private AttributeHandler attributeHandler;
+    public ComponentBuilderImpl(AttributeHandler attributeHandler,
+			Properties properties) {
+		this.attributeHandler = attributeHandler;
+	}
 
-    private Map<Class<?>, Buildable> annotations = new HashMap<Class<?>, Buildable>();
-
-    private synchronized List<Builder> getBuilder(Class<?> cl) {
+	private synchronized List<Builder> getBuilder(Class<?> cl) {
         if (builders.containsKey(cl)) {
             return builders.get(cl);
         }
         createBuilders(cl);
         return builders.get(cl);
     }
+
+	public void clean() {
+		beforeBuilds.clear();
+		afterBuilds.clear();
+		builders.clear();
+		updateBuilders.clear();
+		partialBuilders.clear();
+	}
 
     private void createBuilders(Class<?> cl) {
         builders.put(cl, new ArrayList<Builder>());

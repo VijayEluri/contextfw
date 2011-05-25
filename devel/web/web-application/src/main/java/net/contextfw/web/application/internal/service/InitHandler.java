@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import net.contextfw.web.application.HttpContext;
+import net.contextfw.web.application.ResourceCleaner;
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.component.Component;
@@ -43,6 +44,10 @@ public class InitHandler {
     private final PageFlowFilter pageFlowFilter;
     
     private final long initialMaxInactivity;
+    
+    private final DirectoryWatcher watcher;
+    
+    private final ResourceCleaner cleaner;
 
     @Inject
     public InitHandler(WebApplicationContextHandler handler,
@@ -50,7 +55,9 @@ public class InitHandler {
                        InitializerProvider initializers,
                        LifecycleListeners listeners,
                        Properties configuration,
-                       PageFlowFilter pageFlowFilter) {
+                       PageFlowFilter pageFlowFilter, 
+                       DirectoryWatcher watcher,
+                       ResourceCleaner cleaner) {
 
         this.handler = handler;
         this.webApplicationProvider = webApplicationProvider;
@@ -58,12 +65,25 @@ public class InitHandler {
         this.listeners = listeners;
         this.pageFlowFilter = pageFlowFilter;
         initialMaxInactivity = configuration.get(Properties.INITIAL_MAX_INACTIVITY);
+        if (configuration.get(Properties.DEVELOPMENT_MODE)) {
+        	this.cleaner = cleaner;
+        	this.watcher = watcher;
+        } else {
+        	this.cleaner = null;
+        	this.watcher = null;
+        }
+        	
     }
 
     public final void handleRequest(HttpServlet servlet,
             HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
         
+    	if (watcher != null && watcher.hasChanged()) {
+    		logger.info("Reloading resources");
+    		cleaner.clean();
+    	}
+    	
         if(!pageFlowFilter.beforePageCreate(
                 handler.getContextCount(),
                     request)) {

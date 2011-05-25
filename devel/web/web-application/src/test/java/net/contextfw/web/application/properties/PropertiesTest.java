@@ -1,7 +1,7 @@
 package net.contextfw.web.application.properties;
 
 import static net.contextfw.web.application.properties.Properties.ATTRIBUTE_JSON_SERIALIZER;
-import static net.contextfw.web.application.properties.Properties.DEBUG_MODE;
+import static net.contextfw.web.application.properties.Properties.DEVELOPMENT_MODE;
 import static net.contextfw.web.application.properties.Properties.LIFECYCLE_LISTENER;
 import static net.contextfw.web.application.properties.Properties.NAMESPACE;
 import static net.contextfw.web.application.properties.Properties.PROPERTY_PROVIDER;
@@ -29,7 +29,7 @@ public class PropertiesTest {
           .add(NAMESPACE.as("foo", "bar"))
           .add(ATTRIBUTE_JSON_SERIALIZER.as(Date.class, DateSerializer.class));
         
-        assertTrue(props.get(DEBUG_MODE));
+        assertTrue(props.get(DEVELOPMENT_MODE));
         assertEquals(1, props.get(TRANSFORMER_COUNT).intValue());
         
         assertEquals(2, props.get(RESOURCE_PATH).size());

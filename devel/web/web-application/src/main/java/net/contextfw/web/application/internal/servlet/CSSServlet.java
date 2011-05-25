@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import net.contextfw.web.application.internal.service.DirectoryWatcher;
 import net.contextfw.web.application.properties.Properties;
 
 import com.google.inject.Inject;
@@ -17,16 +18,19 @@ public class CSSServlet extends ResourceServlet {
     private final boolean debugMode;
 
     private final List<String> resourcePaths = new ArrayList<String>();
-
+    
+    private final DirectoryWatcher watcher;
+    
     @Inject
-    public CSSServlet(Properties configuration) {
-        this.debugMode = configuration.get(Properties.DEBUG_MODE);
+    public CSSServlet(Properties configuration, DirectoryWatcher watcher) {
+        this.debugMode = configuration.get(Properties.DEVELOPMENT_MODE);
         this.resourcePaths.addAll(configuration.get(Properties.RESOURCE_PATH));
+        this.watcher = watcher;
     }
     
     @Override
     public boolean clear() {
-        return debugMode;
+        return false;
     }
 
     @Override

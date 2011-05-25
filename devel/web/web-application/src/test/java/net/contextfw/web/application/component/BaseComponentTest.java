@@ -8,6 +8,8 @@ import net.contextfw.web.application.internal.component.ComponentBuilder;
 import net.contextfw.web.application.internal.component.ComponentBuilderImpl;
 import net.contextfw.web.application.internal.component.ComponentRegister;
 import net.contextfw.web.application.internal.component.WebApplicationComponent;
+import net.contextfw.web.application.internal.service.DirectoryWatcher;
+import net.contextfw.web.application.properties.Properties;
 import net.contextfw.web.application.serialize.AttributeSerializer;
 
 import org.dom4j.Node;
@@ -39,7 +41,8 @@ public abstract class BaseComponentTest {
     @Before
     public void before() {
         componentRegister = new ComponentRegister();
-        componentBuilder = new ComponentBuilderImpl();
+        Properties configuration = Properties.getDefaults();
+        componentBuilder = new ComponentBuilderImpl(null, configuration);
         domBuilder = new DOMBuilder("WebApplication", serializer, componentBuilder);
         webApplicationComponent = new WebApplicationComponent(componentRegister);
     }

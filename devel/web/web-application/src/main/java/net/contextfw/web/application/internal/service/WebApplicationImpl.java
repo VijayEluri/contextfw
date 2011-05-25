@@ -77,7 +77,7 @@ public class WebApplicationImpl implements WebApplication {
     public WebApplicationImpl(Properties props) {
         contextPath = props.get(Properties.CONTEXT_PATH);
         xmlParamName = props.get(Properties.XML_PARAM_NAME);
-        debugMode = props.get(Properties.DEBUG_MODE);
+        debugMode = props.get(Properties.DEVELOPMENT_MODE);
     }
 
     @Override
