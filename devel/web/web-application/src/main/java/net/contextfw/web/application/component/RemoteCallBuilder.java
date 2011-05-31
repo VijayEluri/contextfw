@@ -35,6 +35,7 @@ public class RemoteCallBuilder {
     
     public void buildCall(DOMBuilder b, String method, Object... args) {
         StringBuilder sb = new StringBuilder(StringEscapeUtils.escapeJavaScript(method));
+        sb.append("(");
         addArguments(sb, args);
         sb.append(");");
         b.descend("Script").text(sb);

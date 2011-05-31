@@ -17,12 +17,13 @@ import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.component.CustomBuild;
 import net.contextfw.web.application.component.DOMBuilder;
 import net.contextfw.web.application.component.Element;
-import net.contextfw.web.application.internal.service.DirectoryWatcher;
+import net.contextfw.web.application.component.ScriptElement;
 import net.contextfw.web.application.internal.util.AttributeHandler;
 import net.contextfw.web.application.lifecycle.AfterBuild;
 import net.contextfw.web.application.lifecycle.BeforeBuild;
 import net.contextfw.web.application.properties.Properties;
 
+import com.google.gson.Gson;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -39,10 +40,13 @@ public class ComponentBuilderImpl implements ComponentBuilder {
     
     private final Map<Class<?>, Buildable> annotations = new HashMap<Class<?>, Buildable>();
 
+    private final Gson gson;
+    
     @Inject
-    public ComponentBuilderImpl(AttributeHandler attributeHandler,
+    public ComponentBuilderImpl(AttributeHandler attributeHandler, Gson gson,
 			Properties properties) {
 		this.attributeHandler = attributeHandler;
+		this.gson = gson;
 	}
 
 	private synchronized List<Builder> getBuilder(Class<?> cl) {
@@ -102,6 +106,11 @@ public class ComponentBuilderImpl implements ComponentBuilder {
                     name = "".equals(attribute.name()) ? field.getName() : attribute.name();
                     builder = new AttributeBuilder(propertyAccess, name, field.getName());
                     addToBuilders(cl, attribute.onCreate(), attribute.onUpdate(), attribute.onPartialUpdate(), builder);
+                } else if (field.getAnnotation(ScriptElement.class) != null) {
+                	ScriptElement scriptElement = field.getAnnotation(ScriptElement.class);
+                    name = scriptElement.wrapper();
+                    builder = new ScriptElementBuilder(this, gson, propertyAccess, name, name);
+                    addToBuilders(cl, scriptElement.onCreate(), scriptElement.onUpdate(), scriptElement.onPartialUpdate(), builder);
                 }
             }
 
@@ -126,6 +135,11 @@ public class ComponentBuilderImpl implements ComponentBuilder {
                     name = "".equals(annotation.name()) ? method.getName() : annotation.name();
                     builder = new MethodCustomBuilder(method, annotation.wrap() ? name : null);
                     addToBuilders(cl, annotation.onCreate(), annotation.onUpdate(), annotation.onPartialUpdate(), builder);
+                } else if (method.getAnnotation(ScriptElement.class) != null) {
+                    	ScriptElement scriptElement = method.getAnnotation(ScriptElement.class);
+                        name = scriptElement.wrapper();
+                        builder = new ScriptElementBuilder(this, gson, propertyAccess, name, name);
+                        addToBuilders(cl, scriptElement.onCreate(), scriptElement.onUpdate(), scriptElement.onPartialUpdate(), builder);
                 } else if (method.getAnnotation(AfterBuild.class) != null) {
                     addAfterBuild(cl, method);
                 } else if (method.getAnnotation(BeforeBuild.class) != null) {

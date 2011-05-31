@@ -47,6 +47,14 @@ public class ComponentBuilderTest extends BaseComponentTest {
         public void after() {
             order = order + ".after";
         }
+        
+        @ScriptElement
+        public Script init() {
+        	return new ComponentFunction(this, "init", "a");
+        }
+
+        @ScriptElement
+        private Script init2 = new ComponentFunction(this, "init2", "a");
     }
     
     public static class Bee extends Component {
@@ -122,6 +130,8 @@ public class ComponentBuilderTest extends BaseComponentTest {
         logXML(domBuilder);
         assertDom("//WebApplication/Aa/FieldEmbed").exists();
         assertDom("//WebApplication/Aa/MethodEmbed").exists();
+        assertDom("//WebApplication/Aa/Script[1]").hasText("Aa(\"null\").init2(\"a\");\n");
+        assertDom("//WebApplication/Aa/Script[2]").hasText("Aa(\"el1\").init(\"a\");\n");
         assertDom("//WebApplication/Aa").hasAttribute("id", "el1");
         assertDom("//WebApplication/Aa/custom/barFoo").hasAttribute("fooBar", "true");
         assertDom("//WebApplication/Aa/barFoo1").hasAttribute("fooBar1", "true");
@@ -155,6 +165,8 @@ public class ComponentBuilderTest extends BaseComponentTest {
         webApplicationComponent.buildChildUpdate(domBuilder, componentBuilder);
         logXML(domBuilder);
         assertDom("//WebApplication/Aa.update").exists();
+        assertDom("//WebApplication/Aa.update/Script[1]").hasText("Aa(\"null\").init2(\"a\");\n");
+        assertDom("//WebApplication/Aa.update/Script[2]").hasText("Aa(\"el1\").init(\"a\");\n");
     }
     
     @Test

@@ -8,7 +8,6 @@ import net.contextfw.web.application.internal.component.ComponentBuilder;
 import net.contextfw.web.application.internal.component.ComponentBuilderImpl;
 import net.contextfw.web.application.internal.component.ComponentRegister;
 import net.contextfw.web.application.internal.component.WebApplicationComponent;
-import net.contextfw.web.application.internal.service.DirectoryWatcher;
 import net.contextfw.web.application.properties.Properties;
 import net.contextfw.web.application.serialize.AttributeSerializer;
 
@@ -18,6 +17,8 @@ import org.dom4j.io.XMLWriter;
 import org.junit.Before;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.gson.Gson;
 
 public abstract class BaseComponentTest {
     
@@ -42,7 +43,8 @@ public abstract class BaseComponentTest {
     public void before() {
         componentRegister = new ComponentRegister();
         Properties configuration = Properties.getDefaults();
-        componentBuilder = new ComponentBuilderImpl(null, configuration);
+        Gson gson = new Gson();
+        componentBuilder = new ComponentBuilderImpl(null, gson, configuration);
         domBuilder = new DOMBuilder("WebApplication", serializer, componentBuilder);
         webApplicationComponent = new WebApplicationComponent(componentRegister);
     }

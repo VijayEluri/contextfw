@@ -51,7 +51,7 @@ public class ResourceScannerTest {
         paths.add("classpath:net/contextfw/web");
         
         List<ResourceEntry> rootFiles = AbstractScanner.findResourceEntries(paths);
-        assertEquals(327, rootFiles.size());
+        assertEquals(341, rootFiles.size());
         
 //        assertTrue(rootFiles.get(0).getAbsolutePath().endsWith("/target/test-classes/net/contextfw/web"));
 //        assertTrue(rootFiles.get(1).getAbsolutePath().endsWith("/target/classes/net/contextfw/web"));
