@@ -10,6 +10,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 @Singleton
+@Deprecated
 public class RemoteCallBuilder {
 
     private final Gson gson;
