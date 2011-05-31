@@ -170,6 +170,17 @@ public class ComponentBuilderTest extends BaseComponentTest {
     }
     
     @Test
+    public void testPartialAaUpdate() {
+        Aa comp = new Aa();
+        webApplicationComponent.registerChild(comp);
+        comp.partialRefresh("scriptUpdate", "init");
+        webApplicationComponent.buildChildUpdate(domBuilder, componentBuilder);
+        logXML(domBuilder);
+        assertDom("//WebApplication/Aa.scriptUpdate").exists();
+        assertDom("//WebApplication/Aa.scriptUpdate/Script[1]").hasText("Aa(\"el1\").init(\"a\");\n");
+    }
+    
+    @Test
     public void testBeeUpdate() {
         Bee comp = new Bee(new Aa());
         webApplicationComponent.registerChild(comp);

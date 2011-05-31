@@ -109,7 +109,7 @@ public class ComponentBuilderImpl implements ComponentBuilder {
                 } else if (field.getAnnotation(ScriptElement.class) != null) {
                 	ScriptElement scriptElement = field.getAnnotation(ScriptElement.class);
                     name = scriptElement.wrapper();
-                    builder = new ScriptElementBuilder(this, gson, propertyAccess, name, name);
+                    builder = new ScriptElementBuilder(this, gson, propertyAccess, name, field.getName());
                     addToBuilders(cl, scriptElement.onCreate(), scriptElement.onUpdate(), scriptElement.onPartialUpdate(), builder);
                 }
             }
@@ -138,7 +138,7 @@ public class ComponentBuilderImpl implements ComponentBuilder {
                 } else if (method.getAnnotation(ScriptElement.class) != null) {
                     	ScriptElement scriptElement = method.getAnnotation(ScriptElement.class);
                         name = scriptElement.wrapper();
-                        builder = new ScriptElementBuilder(this, gson, propertyAccess, name, name);
+                        builder = new ScriptElementBuilder(this, gson, propertyAccess, name, method.getName());
                         addToBuilders(cl, scriptElement.onCreate(), scriptElement.onUpdate(), scriptElement.onPartialUpdate(), builder);
                 } else if (method.getAnnotation(AfterBuild.class) != null) {
                     addAfterBuild(cl, method);
