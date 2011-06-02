@@ -55,6 +55,9 @@ public abstract class ResourceServlet extends HttpServlet {
         try {
             InputStream stream = file.getInputStream();
             contentBuilder.append(IOUtils.toString(stream));
+            if (contentBuilder.charAt(contentBuilder.length() - 1) != '\n') {
+            	contentBuilder.append("\n");
+            }
             stream.close();
         } catch (FileNotFoundException e) {
             throw new WebApplicationException(e);
