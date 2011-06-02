@@ -38,7 +38,7 @@ public class ScriptTest extends BaseComponentTest {
 	public void test4() {
 		List<String> strs = new ArrayList<String>();
 		strs.add("1"); strs.add("2");
-		Function script = new Function("foo", strs, "3");
+		FunctionCall script = new FunctionCall("foo", strs, "3");
 		script.build(domBuilder.descend("Script"), gson, componentBuilder);
 		assertDom("//WebApplication/Script").hasText("foo([\"1\",\"2\"],\"3\");\n");
 	}
@@ -47,7 +47,7 @@ public class ScriptTest extends BaseComponentTest {
 	public void test5() {
 		List<String> strs = new ArrayList<String>();
 		strs.add("1"); strs.add("2");
-		Function script = new Function("foo");
+		FunctionCall script = new FunctionCall("foo");
 		script.build(domBuilder.descend("Script"), gson, componentBuilder);
 		assertDom("//WebApplication/Script").hasText("foo();\n");
 	}
@@ -58,7 +58,7 @@ public class ScriptTest extends BaseComponentTest {
 		strs.add("1"); strs.add("2");
 		A a = new A();
 		a.setId("el1");
-		ComponentFunction script = new ComponentFunction(a, "foo");
+		ComponentFunctionCall script = new ComponentFunctionCall(a, "foo");
 		script.build(domBuilder.descend("Script"), gson, componentBuilder);
 		assertDom("//WebApplication/Script").hasText("A(\"el1\").foo();\n");
 	}
@@ -69,7 +69,7 @@ public class ScriptTest extends BaseComponentTest {
 		strs.add("1"); strs.add("2");
 		A a = new A();
 		a.setId("el1");
-		ComponentFunction script = new ComponentFunction(a, "foo", 1, 2);
+		ComponentFunctionCall script = new ComponentFunctionCall(a, "foo", 1, 2);
 		script.build(domBuilder.descend("Script"), gson, componentBuilder);
 		assertDom("//WebApplication/Script").hasText("A(\"el1\").foo(1,2);\n");
 	}

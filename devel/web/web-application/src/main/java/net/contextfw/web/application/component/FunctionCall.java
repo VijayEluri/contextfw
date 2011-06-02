@@ -2,9 +2,9 @@ package net.contextfw.web.application.component;
 
 import net.contextfw.web.application.internal.component.ComponentBuilder;
 
-public class Function extends Script {
+public class FunctionCall extends Script {
 	
-	public Function(String function, Object... args) {
+	public FunctionCall(String function, Object... args) {
 		super(function, args);
 	}
 	
@@ -21,7 +21,7 @@ public class Function extends Script {
 	
 	@Override
 	protected String getScript(ComponentBuilder componentBuilder) {
-		return Function.toScript(script, 
+		return FunctionCall.toScript(script, 
 				getParams() == null ? 0 : getParams().length);
 	}
 }

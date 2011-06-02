@@ -50,11 +50,11 @@ public class ComponentBuilderTest extends BaseComponentTest {
         
         @ScriptElement
         public Script init() {
-        	return new ComponentFunction(this, "init", "a");
+        	return new ComponentFunctionCall(this, "init", "a");
         }
 
         @ScriptElement
-        private Script init2 = new ComponentFunction(this, "init2", "a");
+        private Script init2 = new ComponentFunctionCall(this, "init2", "a");
     }
     
     public static class Bee extends Component {
