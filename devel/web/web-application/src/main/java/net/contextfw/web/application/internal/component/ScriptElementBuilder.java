@@ -24,7 +24,7 @@ class ScriptElementBuilder extends NamedBuilder {
         		((Script) value).build(b.descend(name), gson, componentBuilder);
         	}
         	else {
-        		throw new WebApplicationException("Instance of '"+value.getClass().getName()+"' is not a sub class of Script");
+        		throw new WebApplicationException("Instance of '"+value.getClass().getName()+"' is not a subclass of Script");
         	}
         }
     }
