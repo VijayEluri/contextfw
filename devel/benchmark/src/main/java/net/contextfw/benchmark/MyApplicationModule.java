@@ -21,6 +21,7 @@ public class MyApplicationModule extends AbstractModule {
           .add(Properties.RESOURCE_PATH, "net.contextfw.benchmark")
           .add(Properties.VIEW_COMPONENT_ROOT_PACKAGE, "net.contextfw.benchmark.views")
           .set(Properties.DEVELOPMENT_MODE, false)
+          .set(Properties.CONTEXT_PATH, "/benchmark")
           .set(Properties.XML_PARAM_NAME, "xml")
           .set(Properties.LIFECYCLE_LISTENER, MyLifecycleListener.class)
           .set(Properties.LOG_XML, false);
