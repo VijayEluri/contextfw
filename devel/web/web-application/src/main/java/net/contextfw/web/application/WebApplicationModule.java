@@ -6,6 +6,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import net.contextfw.web.application.component.Component;
+import net.contextfw.web.application.internal.ContextPathProvider;
 import net.contextfw.web.application.internal.WebApplicationServletModule;
 import net.contextfw.web.application.internal.component.AutoRegisterListener;
 import net.contextfw.web.application.internal.initializer.InitializerProvider;
@@ -46,6 +47,10 @@ public final class WebApplicationModule extends AbstractModule {
 
     private final Properties configuration;
     
+    private final ContextPathProvider contextPathProvider = new ContextPathProvider();
+    
+    private InitializerProvider initializerProvider;
+    
     private Logger logger = LoggerFactory.getLogger(WebApplicationModule.class);
 
     @SuppressWarnings("rawtypes")
@@ -72,6 +77,7 @@ public final class WebApplicationModule extends AbstractModule {
         bind(InitializerProvider.class).toInstance(configureInitializers());
         bind(Properties.class).toInstance(configuration);
         bind(PropertyProvider.class).to(configuration.get(Properties.PROPERTY_PROVIDER));
+        bind(ContextPathProvider.class).toInstance(contextPathProvider);
         
         this.bindListener(Matchers.any(), new TypeListener() {
             @SuppressWarnings("unchecked")
@@ -130,22 +136,29 @@ public final class WebApplicationModule extends AbstractModule {
         
         return handler;
     }
-    
+
     @SuppressWarnings("unchecked")
-    private InitializerProvider configureInitializers() {
-        
-        InitializerProvider provider = new InitializerProvider(configuration);
-        List<String> rootPackages = new ArrayList<String>();
+    public void postInitialize(String contextPath) {
+    	contextPathProvider.setContextPath(contextPath);
+    	initializerProvider.setContextPath(contextPath);
+    	List<String> rootPackages = new ArrayList<String>();
         rootPackages.addAll(configuration.get(Properties.VIEW_COMPONENT_ROOT_PACKAGE));
         List<Class<?>> classes = ClassScanner.getClasses(rootPackages);
 
         for (Class<?> cl : classes) {
             if (Component.class.isAssignableFrom(cl)
                     && cl.getAnnotation(View.class) != null) {
-                provider.addInitializer((Class<? extends Component>) cl);
+                initializerProvider.addInitializer((Class<? extends Component>) cl);
             }
         }
-
-        return provider;
     }
+    
+    private InitializerProvider configureInitializers() {
+        initializerProvider = new InitializerProvider(configuration);
+        return initializerProvider;
+    }
+
+	public InitializerProvider getInitializerProvider() {
+		return initializerProvider;
+	}
 }

@@ -116,13 +116,14 @@ public class WebResponder {
 	}
 
 	private Transformer getTransformer() {
-		
 		List<Transformer> transformers = this.transformers;
-		synchronized (this) {
-			if (transformers == null) {
-				logger.info("Reloading resources");
-				clean();
-				transformers = this.transformers;
+		if (transformers == null) {
+			synchronized (this) {
+				if (transformers == null) {
+					logger.info("Reloading resources");
+					clean();
+					transformers = this.transformers;
+				}
 			}
 		}
 		currentTransformer = (currentTransformer + 1) % transformerCount;

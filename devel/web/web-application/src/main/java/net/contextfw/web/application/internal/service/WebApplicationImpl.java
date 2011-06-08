@@ -12,6 +12,7 @@ import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.component.DOMBuilder;
 import net.contextfw.web.application.internal.ComponentUpdateHandler;
 import net.contextfw.web.application.internal.ComponentUpdateHandlerFactory;
+import net.contextfw.web.application.internal.ContextPathProvider;
 import net.contextfw.web.application.internal.WebResponder;
 import net.contextfw.web.application.internal.WebResponder.Mode;
 import net.contextfw.web.application.internal.component.ComponentBuilder;
@@ -19,7 +20,6 @@ import net.contextfw.web.application.internal.component.ComponentRegister;
 import net.contextfw.web.application.internal.component.WebApplicationComponent;
 import net.contextfw.web.application.internal.initializer.InitializerContextImpl;
 import net.contextfw.web.application.internal.util.AttributeHandler;
-import net.contextfw.web.application.lifecycle.PageFlowFilter;
 import net.contextfw.web.application.lifecycle.PageScoped;
 import net.contextfw.web.application.properties.Properties;
 import net.contextfw.web.application.util.Request;
@@ -44,8 +44,8 @@ public class WebApplicationImpl implements WebApplication {
     @Inject
     private HttpContext httpContext;
 
-    @Inject
-    private PageFlowFilter pageFlowFilter;
+//    @Inject
+//    private PageFlowFilter pageFlowFilter;
 
     private final ComponentRegister componentRegister = new ComponentRegister();
 
@@ -74,8 +74,8 @@ public class WebApplicationImpl implements WebApplication {
     private final boolean debugMode;
     
     @Inject
-    public WebApplicationImpl(Properties props) {
-        contextPath = props.get(Properties.CONTEXT_PATH);
+    public WebApplicationImpl(Properties props, ContextPathProvider contextPathProvider) {
+        contextPath = contextPathProvider.getContextPath();
         xmlParamName = props.get(Properties.XML_PARAM_NAME);
         debugMode = props.get(Properties.DEVELOPMENT_MODE);
     }

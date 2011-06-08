@@ -35,10 +35,10 @@ public class InitializerProvider {
     private final Map<Class<? extends Component>, List<Class<? extends Component>>> chain
          = new HashMap<Class<? extends Component>, List<Class<? extends Component>>>(); 
 
-    private final String contextPath;
+    private String contextPath;
     
     public InitializerProvider(Properties configuration) {
-        contextPath = configuration.get(Properties.CONTEXT_PATH);
+        //contextPath = configuration.get(Properties.CONTEXT_PATH);
     }
 
     public void addInitializer(Class<? extends Component> cl) {
@@ -105,4 +105,8 @@ public class InitializerProvider {
         }
         return annotation;
     }
+
+	public void setContextPath(String contextPath) {
+		this.contextPath = contextPath;
+	}
 }
