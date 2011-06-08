@@ -15,6 +15,8 @@ import com.mycila.inject.jsr250.Jsr250;
 
 public class MyApplicationModule extends AbstractModule {
 
+    private WebApplicationModule webApplicationModule;
+    
     public MyApplicationModule() {}
 
     @Override
@@ -23,11 +25,13 @@ public class MyApplicationModule extends AbstractModule {
         Properties props = Properties.getDefaults()
           .add(Properties.RESOURCE_PATH, "${package}")
           .add(Properties.VIEW_COMPONENT_ROOT_PACKAGE, "${package}.views")
-          .set(Properties.DEBUG_MODE, true)
+          .set(Properties.DEVELOPMENT_MODE, true)
           .set(Properties.XML_PARAM_NAME, "xml")
           .set(Properties.LOG_XML, true);
        
-        install(new WebApplicationModule(props));
+        webApplicationModule = new WebApplicationModule(props);
+        
+        install(webApplicationModule);
         install(Jsr250.newJsr250Module());
     }
     
@@ -35,5 +39,9 @@ public class MyApplicationModule extends AbstractModule {
     @Singleton
     public PageFlowFilter providePageFlowFilter() {
         return new DefaultPageFlowFilter();
+    }
+    
+    public WebApplicationModule getWebApplicationModule() {
+        return webApplicationModule;
     }
 }
