@@ -8,12 +8,34 @@ import net.contextfw.web.application.internal.component.ComponentBuilder;
 
 import com.google.gson.Gson;
 
+/**
+ * This class provides the base implementation for calling javascript commands on web client. 
+ * 
+ * <p>
+ *  <code>Script</code> can be used as a class property or as a return value of a method. 
+ *  The method or class property must be annotated with 
+ *  {@link ScriptElement}-annotation to be recognized.
+ * </p>
+ * 
+ * <p>
+ *  The script is using {@link MessageFormat} as script format.
+ */
 public class Script {
 
 	protected final String script;
 	
 	protected final Object[] params;
 
+	/**
+	 * Sole constructor
+	 * 
+	 * @param script
+	 *    The script to be executed. Uses {@link MessageFormat} for injecting parameters
+	 * @param params
+	 *    The parameters to be injected in to the script. Parameters are run through Gson to 
+	 *    format them into Javascript. 
+	 *    
+	 */
 	public Script(String script, Object[] params) {
 		this.script = script;
 		this.params = params;
