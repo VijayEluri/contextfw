@@ -14,6 +14,8 @@ public class MyApplicationModule extends AbstractModule {
 
     public MyApplicationModule() {}
 
+    private WebApplicationModule webApplicationModule;
+    
     @Override
     protected void configure() {
 
@@ -21,12 +23,13 @@ public class MyApplicationModule extends AbstractModule {
           .add(Properties.RESOURCE_PATH, "net.contextfw.benchmark")
           .add(Properties.VIEW_COMPONENT_ROOT_PACKAGE, "net.contextfw.benchmark.views")
           .set(Properties.DEVELOPMENT_MODE, false)
-          .set(Properties.CONTEXT_PATH, "/benchmark")
           .set(Properties.XML_PARAM_NAME, "xml")
           .set(Properties.LIFECYCLE_LISTENER, MyLifecycleListener.class)
           .set(Properties.LOG_XML, false);
        
-        install(new WebApplicationModule(props));
+        webApplicationModule = new WebApplicationModule(props);
+        
+        install(getWebApplicationModule());
         install(Jsr250.newJsr250Module());
     }
     
@@ -34,5 +37,9 @@ public class MyApplicationModule extends AbstractModule {
     @Singleton
     public PageFlowFilter providePageFlowFilter() {
         return new DefaultPageFlowFilter();
+    }
+
+    public WebApplicationModule getWebApplicationModule() {
+        return webApplicationModule;
     }
 }
