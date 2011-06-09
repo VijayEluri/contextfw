@@ -20,23 +20,34 @@ contextfw = {
 	unload: function() {
 		jQuery.get(this.removeUrl);
 	},
+	
+	_call: function(elId, method, args, beforeCall, afterCall) {
+		
+		if (jQuery.isFunction(beforeCall)) beforeCall();
+		
+		var params = {};
 
-	call: function(elId, method) {
-
-		var params = {}
-
-		for(var i=2; i< arguments.length; i++) {
-	      if (arguments[i] != null && typeof(arguments[i]) == "object") {
-	    	  params["p"+(i-2)] = JSON.serialize(arguments[i]);
+		for(var i=0; i< args.length; i++) {
+	      if (args[i] != null && typeof(args[i]) == "object") {
+	    	  params["p"+i] = JSON.serialize(args[i]);
 	      }
 	      else {
-	    	  params["p"+(i-2)] = arguments[i];
+	    	  params["p"+i] = args[i];
 	      }
 		}
 
 		jQuery.post(this.updateUrl+"/"+elId+"/"+method, params, function(data, textStatus) {
 			contextfw._handleResponse(data);
+			if (jQuery.isFunction(afterCall)) afterCall();
 	    }, "text");
+	},
+	
+	call: function(elId, method) {
+		var args = []
+		for(var i=2; i< arguments.length; i++) {
+	      args.push(arguments[i]);
+		}
+		this._call(elId, method, args);
 	},
 
 	_parseUpdate: function(data, tagName, callback) {
