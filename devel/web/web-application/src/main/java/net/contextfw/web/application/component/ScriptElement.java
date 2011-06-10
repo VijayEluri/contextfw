@@ -13,5 +13,4 @@ public @interface ScriptElement {
     String wrapper() default "Script";
     boolean onCreate() default true;
     boolean onUpdate() default true;
-    boolean onPartialUpdate() default true;
 }

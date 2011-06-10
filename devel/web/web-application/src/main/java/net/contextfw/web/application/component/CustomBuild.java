@@ -12,6 +12,5 @@ public @interface CustomBuild {
     String name() default "";
     boolean onCreate() default true;
     boolean onUpdate() default true;
-    boolean onPartialUpdate() default true;
     boolean wrap() default true;
 }
