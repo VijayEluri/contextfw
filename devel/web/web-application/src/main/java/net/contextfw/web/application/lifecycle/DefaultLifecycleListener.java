@@ -5,6 +5,9 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Singleton;
 
+/**
+ * The default implementation for LifecycleListener
+ */
 @Singleton
 public class DefaultLifecycleListener implements LifecycleListener {
     

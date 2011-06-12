@@ -233,6 +233,15 @@ public abstract class Component {
         partialUpdateName = null;
     }
 
+    /**
+     * Defines if this component is enabled or disabled.
+     * 
+     * <p>
+     *  If component is disabled then it is not added to DOM-tree during rendering phase. Also
+     *  disabled component does not listen remote calls.
+     * </p>
+     * @param enabled
+     */
     public void setEnabled(boolean enabled) {
         this.enabled = enabled;
     }

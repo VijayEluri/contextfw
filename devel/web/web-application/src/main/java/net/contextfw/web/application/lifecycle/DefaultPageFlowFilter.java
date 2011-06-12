@@ -2,6 +2,9 @@ package net.contextfw.web.application.lifecycle;
 
 import javax.servlet.http.HttpServletRequest;
 
+/**
+ * The default implementation for PageFlowFilter
+ */
 public class DefaultPageFlowFilter implements PageFlowFilter {
 
     @Override
