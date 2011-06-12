@@ -1,13 +1,21 @@
 package net.contextfw.web.application.properties;
 
 /**
- * Represents generic property
+ * Defines generic property
  * 
  * @param <T>
  *   Type of the property
  */
 public interface Property<T> {
     
+    /**
+     * Returns the key for this property. 
+     * 
+     * <p>
+     *  All information is stored by their keys thus keys must be unique.
+     * </p>
+     * @return
+     */
     String getKey();
     
     /**
