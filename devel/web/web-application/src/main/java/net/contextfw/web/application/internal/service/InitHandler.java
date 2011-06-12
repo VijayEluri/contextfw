@@ -101,7 +101,7 @@ public class InitHandler {
         if (chain == null) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         } else {
-
+            
             WebApplicationContext context = prepareWebApplicationScope(servlet,
                         request, response);
             WebApplication app = webApplicationProvider.get();
@@ -111,7 +111,7 @@ public class InitHandler {
 
             synchronized (context.getApplication()) {
                 try {
-
+                    
                     pageFlowFilter.onPageCreate(
                                 handler.getContextCount(),
                                 pageFlowFilter.getRemoteAddr(request),
@@ -121,14 +121,17 @@ public class InitHandler {
                     app.initState();
                     listeners.afterInitialize();
                     listeners.beforeRender();
-                    app.sendResponse();
+                    boolean expired = app.sendResponse();
                     listeners.afterRender();
 
                     // Setting expiration here so that long page processing is
                     // not
                     // penalizing client
-
-                    context.setExpires(System.currentTimeMillis() + initialMaxInactivity);
+                    if (expired) {
+                        context.setExpires(System.currentTimeMillis());
+                    } else {
+                        context.setExpires(System.currentTimeMillis() + initialMaxInactivity);
+                    }
 
                 } catch (Exception e) {
                     listeners.onException(e);
@@ -138,11 +141,8 @@ public class InitHandler {
                     context.getHttpContext().setRequest(null);
                     context.getHttpContext().setResponse(null);
                 }
-
             }
         }
-
-        response.getWriter().close();
     }
 
     private WebApplicationContext prepareWebApplicationScope(HttpServlet servlet, HttpServletRequest request,
