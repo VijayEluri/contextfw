@@ -1,136 +1,57 @@
-* {
-	font-family: sans-serif;
-	font-size: 9pt;
-}
-
-body {
-	background: url("gfx/pageheader.png") repeat-x;
-}
-
-code {
-	font-family: monospace;
-	-moz-border-radius: 4px;
-    -webkit-border-radius: 4px;
-    border: 1px solid #C3C3C3;
-    padding: 1px;
-    font-size: 8pt;
-}
-
-pre {
-	margin-left: 20px;
-	padding: 4px;
-	font-family: monospace;
-	font-size: 8pt;
-	-moz-border-radius: 4px;
-    -webkit-border-radius: 4px;
-    border: 1px solid #C3C3C3;
-    white-space: pre-wrap; /* css-3 */
-	white-space: -moz-pre-wrap !important; /* Mozilla, since 1999 */
-	white-space: -pre-wrap; /* Opera 4-6 */
-	white-space: -o-pre-wrap; /* Opera 7 */
-	word-wrap: break-word; /* Internet Explorer 5.5+ */
-}
-
-div.pageHeader {
-   position: absolute;
-   left: 0;
-   top: 0;
-   width: 80%;
-   padding-left: 16px;
-   height: 32px;
-   line-height: 32px;
-   color: #666666;
-   font-weight: bold;
-   /*background: #bdbdff;*/
-   margin-bottom: 4px;
-}
-
-div.pageHeader a {
-	text-decoration: none;
-	color: #666666;
-}
-
-div.pageMenu {
-    position: absolute;
-    left: 0;
-    top: 31px;
-    height: 18px;
-    width: 80%;
-    /*background: #666666;*/
-    color: #FFFFFF;
-    line-height: 18px;
-    padding-left: 16px;
-}
-
-div.pageMenu a {
-	color: #FFFFFF;
-}
-
-div.pageMenu a.selected {
-	color: #FFFFFF;
-	font-weight: bold;
-	text-decoration: none;
-}
-
-div.pageMenu ul {
-   margin: 0;
-   padding: 0;
-}
-
-div.pageMenu ul li {
-   float: left;
-   margin-right: 30px;
-   font-size: 9pt;
-   list-style-type: none;
-   margin: 0;
-   padding-right: 4px;
-   
-}
-
-div.pageContent {
-	max-width: 800px;
-	padding-top: 50px;
-}
-
-div.pageFooter {
-    padding-top: 10px;
-	color: #666666;
-	font-size: 10px;
-}
-
-div.pageContent h1 {
-    color: #666666;
-}
-
-div.pageContent h2 {
-    color: #666666;
-}
-
-div.pageContent h3 {
-    color: #666666;
-}
-
-div.pageContent p {
-	font-size: 9pt;
-	margin-left: 9pt;
-}
-
-div.snippet {
-	border: 1px solid #666666;
-	background: #e0e0ff;
-	margin: 4px 0 4px 20pt;
-}
-
-
-input.button {
-    padding: 2px;
-    height: 24px;
-}
-
-label {
-	cursor: pointer;
-}
-
-li {
-	margin: 4pt 0;
-}
+        body{
+            margin:0;
+            padding:0;
+            line-height: 1.5em;
+        }
+    
+        b{font-size: 110%;}
+        em{color: red;}
+    
+        #maincontainer{
+            width: 840px; /*Width of main container*/
+            margin: 0 auto; /*Center container on page*/
+        }
+    
+        #topsection{
+            background: #EAEAEA;
+            height: 90px; /*Height of top section*/
+        }
+    
+        #topsection h1{
+            margin: 0;
+            padding-top: 15px;
+        }
+    
+        #contentwrapper{
+            float: left;
+            width: 100%;
+        }
+    
+        #contentcolumn{
+            margin-left: 200px; /*Set left margin to LeftColumnWidth*/
+        }
+    
+        #leftcolumn{
+            float: left;
+            width: 200px; /*Width of left column*/
+            margin-left: -840px; /*Set left margin to -(MainContainerWidth)*/
+            background: #C8FC98;
+        }
+    
+        #footer{
+            clear: left;
+            width: 100%;
+            background: black;
+            color: #FFF;
+            text-align: center;
+            padding: 4px 0;
+        }
+    
+        #footer a{
+            color: #FFFF80;
+        }
+    
+        .innertube{
+            margin: 10px; /*Margins for inner DIV inside each column (to provide padding)*/
+            margin-top: 0;
+        }

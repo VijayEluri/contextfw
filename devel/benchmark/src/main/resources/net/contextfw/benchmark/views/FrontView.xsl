@@ -5,6 +5,7 @@
 <xsl:template match="FrontView">
  <h1>Welcome to Quickstart</h1>
  <p>It works!</p>
+ <button onclick="c('{@id}', 'test', 'ewpork')" type="button">Test</button>
 </xsl:template>
 	
 </xsl:stylesheet>

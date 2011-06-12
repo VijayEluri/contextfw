@@ -13,13 +13,15 @@ import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.component.Element;
 import net.contextfw.web.application.lifecycle.PageScoped;
 import net.contextfw.web.application.lifecycle.View;
+import net.contextfw.web.application.lifecycle.ViewComponent;
+import net.contextfw.web.application.lifecycle.ViewContext;
 import net.contextfw.web.application.util.Request;
 
 import com.google.inject.Inject;
 
 @PageScoped
-@View(url="/test1", parent = RootView.class)
-public class Test1View extends Component {
+@View(url={"/test1", "/test1/"}, parent = RootView.class)
+public class Test1View extends Component implements ViewComponent  {
 
 	private final ProductService productService;
 	
@@ -54,4 +56,9 @@ public class Test1View extends Component {
 	public List<Product> products() {
 		return productService.getProducts(productCount);
 	}
+
+    @Override
+    public void initialize(ViewContext context) {
+       // postConstruct();
+    }
 }

@@ -29,8 +29,7 @@ public class MyLifecycleListener implements LifecycleListener {
 
 	@Override
 	public boolean beforeUpdate() {
-		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	@Override

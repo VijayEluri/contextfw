@@ -1,4 +1,5 @@
-contextfw = {
+var contextfw = {
+		
 	handle:     null,
 	updateUrl:  null,
 	refreshUrl: null,
@@ -10,7 +11,7 @@ contextfw = {
 		this.refreshUrl = context + "/contextfw-refresh/"+handle;
 		this.removeUrl = context + "/contextfw-remove/"+handle;
 		this.refresh();
-		setInterval(function() {contextfw.refresh()}, 1000*30);
+		//setInterval(function() {contextfw.refresh()}, 1000*30);
 	},
 
 	refresh: function() {
@@ -21,22 +22,49 @@ contextfw = {
 		jQuery.get(this.removeUrl);
 	},
 
-	call: function(elId, method) {
+	_call: function(elId, method, args, beforeCall, afterCall) {
+		
+		if (jQuery.isFunction(beforeCall)) beforeCall();
+		
+		var params = {};
 
-		var params = {}
-
-		for(var i=2; i< arguments.length; i++) {
-	      if (arguments[i] != null && typeof(arguments[i]) == "object") {
-	    	  params["p"+(i-2)] = JSON.serialize(arguments[i]);
+		for(var i=0; i< args.length; i++) {
+	      if (args[i] != null && typeof(args[i]) == "object") {
+	    	  params["p"+i] = JSON.serialize(args[i]);
 	      }
 	      else {
-	    	  params["p"+(i-2)] = arguments[i];
+	    	  params["p"+i] = args[i];
 	      }
 		}
 
 		jQuery.post(this.updateUrl+"/"+elId+"/"+method, params, function(data, textStatus) {
 			contextfw._handleResponse(data);
+			if (jQuery.isFunction(afterCall)) afterCall();
 	    }, "text");
+	},
+	
+	call2: function(elId, method) {
+		
+		var args = [];
+		
+		for(var i=2; i< arguments.length; i++) {
+	      args.push(arguments[i]);
+		}
+		var before = function() {
+			alert("Before");
+		}
+		var after = function() {
+			alert("After");
+		}
+		this._call(elId, method, args, before, after);
+	},
+	
+	call: function(elId, method) {
+		var args = []
+		for(var i=2; i< arguments.length; i++) {
+	      args.push(arguments[i]);
+		}
+		this._call(elId, method, args);
 	},
 
 	_parseUpdate: function(data, tagName, callback) {
@@ -159,3 +187,7 @@ jQuery.fn.formToObject = function() {
   });
   return o;
 };
+
+var c = function() {
+	contextfw.call2(arguments)
+}

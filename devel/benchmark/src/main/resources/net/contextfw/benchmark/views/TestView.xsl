@@ -54,14 +54,13 @@
 
 	<xsl:template match="Product">
 		<div class="product">
-			<img src="1.jpg" />
+			<img src="/productImage/{@name}.jpg" />
 			<span class="productname">
 				<xsl:value-of select="@name" />
 			</span>
 			,
 			<span class="price">
-				$
-				<xsl:value-of select="@price" />
+				$<xsl:value-of select="@price" />
 			</span>
 		</div>
 	</xsl:template>

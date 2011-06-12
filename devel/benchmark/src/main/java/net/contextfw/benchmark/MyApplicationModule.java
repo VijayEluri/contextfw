@@ -22,8 +22,9 @@ public class MyApplicationModule extends AbstractModule {
         Properties props = Properties.getDefaults()
           .add(Properties.RESOURCE_PATH, "net.contextfw.benchmark")
           .add(Properties.VIEW_COMPONENT_ROOT_PACKAGE, "net.contextfw.benchmark.views")
-          .set(Properties.DEVELOPMENT_MODE, false)
+          .set(Properties.DEVELOPMENT_MODE, true)
           .set(Properties.XML_PARAM_NAME, "xml")
+          .set(Properties.MAX_INACTIVITY.inHoursAndMins(1, 0))
           .set(Properties.LIFECYCLE_LISTENER, MyLifecycleListener.class)
           .set(Properties.LOG_XML, false);
        

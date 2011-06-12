@@ -87,7 +87,7 @@
 				<configuration>
 					<scanIntervalSeconds>0</scanIntervalSeconds>
 					<webAppConfig>
-                        <contextPath>/benchmark</contextPath>
+                        <contextPath>/abck</contextPath>
                     </webAppConfig>
 				</configuration>
 			</plugin>
