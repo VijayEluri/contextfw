@@ -18,10 +18,12 @@ public class ComponentRegister {
     }
 
     public void register(Component component) {
+        
         if (component.getId() == null) {
             component.setId(getNextId());
-            components.put(component.getId(), component);
         }
+        
+        components.put(component.getId(), component);
     }
 
     public void unregister(Component component) {
