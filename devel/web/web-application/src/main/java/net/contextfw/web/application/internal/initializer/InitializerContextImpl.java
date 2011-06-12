@@ -19,6 +19,8 @@ public class InitializerContextImpl implements ViewContext {
     
     private Locale locale = null;
     
+    private Component leaf;
+    
     public InitializerContextImpl(Injector injector, List<Class<? extends Component>> chain) {
         this.chain = chain;
         this.injector = injector;
@@ -42,15 +44,16 @@ public class InitializerContextImpl implements ViewContext {
             throw new WebApplicationException("Error getting a child initializer. Initializer " 
                     + chain.get(currentIndex-1).getName() + " does not have any children");
         }
-
-        Component child = injector.getInstance(cl);
+        Component component = injector.getInstance(cl);
+        
+        leaf = component;
         
         if (ViewComponent.class.isAssignableFrom(cl)) {
             currentIndex++;
-            ((ViewComponent) child).initialize(this);
+            ((ViewComponent) component).initialize(this);
         }
         
-        return child;
+        return component;
     }
 
     @Override
@@ -60,5 +63,9 @@ public class InitializerContextImpl implements ViewContext {
     
     public Locale getLocale() {
         return locale;
+    }
+
+    public Component getLeaf() {
+        return leaf;
     }
 }

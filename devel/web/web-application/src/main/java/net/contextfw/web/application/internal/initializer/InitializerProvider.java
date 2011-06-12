@@ -11,6 +11,7 @@ import java.util.regex.PatternSyntaxException;
 import net.contextfw.web.application.PropertyProvider;
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.component.Component;
+import net.contextfw.web.application.internal.servlet.InitServlet;
 import net.contextfw.web.application.lifecycle.PageScoped;
 import net.contextfw.web.application.lifecycle.View;
 import net.contextfw.web.application.properties.Properties;
@@ -25,26 +26,28 @@ import com.google.inject.Singleton;
 public class InitializerProvider {
 
     private Logger logger = LoggerFactory.getLogger(InitializerProvider.class);
-    
+
     @Inject
     private PropertyProvider properties;
-    
-    private final Map<Pattern, Class<? extends Component>> initializers 
-        = new HashMap<Pattern, Class<? extends Component>>();
-    
-    private final Map<Class<? extends Component>, List<Class<? extends Component>>> chain
-         = new HashMap<Class<? extends Component>, List<Class<? extends Component>>>(); 
+
+    private final Map<Pattern, Class<? extends Component>> initializers = new HashMap<Pattern, Class<? extends Component>>();
+
+    private final Map<Class<? extends Component>, List<Class<? extends Component>>> chain = new HashMap<Class<? extends Component>, List<Class<? extends Component>>>();
 
     private String contextPath;
-    
+
     public InitializerProvider(Properties configuration) {
-        //contextPath = configuration.get(Properties.CONTEXT_PATH);
+        // contextPath = configuration.get(Properties.CONTEXT_PATH);
     }
 
     public void addInitializer(Class<? extends Component> cl) {
 
         if (cl == null) {
-            throw new WebApplicationException("Initializer was null");
+            throw new WebApplicationException("View was null");
+        }
+        if (!Component.class.isAssignableFrom(cl)) {
+            throw new WebApplicationException("View " + cl.getName()
+                    + " does not extend Component");
         }
 
         View annotation = processClass(cl);
@@ -55,22 +58,24 @@ public class InitializerProvider {
         try {
             for (String url : annotation.url()) {
                 if (!"".equals(url)) {
-                    initializers.put(Pattern.compile(contextPath + url, Pattern.CASE_INSENSITIVE), cl);
+                    initializers.put(Pattern.compile(contextPath + toUrl(url),
+                            Pattern.CASE_INSENSITIVE), cl);
                 }
             }
             for (String property : annotation.property()) {
                 if (!"".equals(property)) {
                     String url = properties.get().getProperty(property);
                     if (url != null && !"".equals(url)) {
-                        initializers.put(Pattern.compile(contextPath + url, Pattern.CASE_INSENSITIVE), cl);
+                        initializers.put(Pattern.compile(contextPath + toUrl(url),
+                                Pattern.CASE_INSENSITIVE), cl);
                     }
                 }
             }
             List<Class<? extends Component>> classes = new ArrayList<Class<? extends Component>>();
-            
+
             Class<? extends Component> currentClass = annotation.parent();
-            
-            logger.info("Registered initializer: {}", cl.getName());
+
+            logger.info("Registered view: {}", cl.getName());
             classes.add(cl);
             while (!currentClass.equals(Component.class)) {
                 View anno = processClass(currentClass);
@@ -79,34 +84,42 @@ public class InitializerProvider {
             }
             chain.put(cl, classes);
         } catch (PatternSyntaxException pse) {
-            throw new WebApplicationException("Could not compile url:" + annotation.url(), pse);
+            throw new WebApplicationException("Could not compile url:"
+                    + annotation.url(), pse);
         }
     }
 
     public List<Class<? extends Component>> findChain(String url) {
-        for (Entry<Pattern, Class<? extends Component>> entry : initializers.entrySet()) {
+        for (Entry<Pattern, Class<? extends Component>> entry : initializers
+                .entrySet()) {
             if (entry.getKey().matcher(url).matches()) {
                 return chain.get(entry.getValue());
             }
         }
         return null;
     }
-    
+
     private View processClass(Class<?> cl) {
-        
+
         if (cl.getAnnotation(PageScoped.class) == null) {
-            throw new WebApplicationException("Initializer '"+cl.getName()+"' is missing @PageScoped-annotation");
+            throw new WebApplicationException("View '" + cl.getName()
+                    + "' is missing @PageScoped-annotation");
         }
-        
+
         View annotation = cl.getAnnotation(View.class);
-        
+
         if (annotation == null) {
-            throw new WebApplicationException("Initializer '"+cl.getName()+"' is missing @View-annotation");
+            throw new WebApplicationException("View '" + cl.getName()
+                    + "' is missing @View-annotation");
         }
         return annotation;
     }
 
-	public void setContextPath(String contextPath) {
-		this.contextPath = contextPath;
-	}
+    public void setContextPath(String contextPath) {
+        this.contextPath = contextPath;
+    }
+    
+    private String toUrl(String url) {
+        return url.startsWith("regex:") ? url.substring(6) : url.replaceAll("\\*", "[^/]*"); 
+    }
 }

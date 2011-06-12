@@ -1,11 +1,13 @@
 package net.contextfw.web.application.internal;
 
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.TreeSet;
 
 import net.contextfw.web.application.PropertyProvider;
 import net.contextfw.web.application.WebApplicationException;
+import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.internal.servlet.CSSServlet;
 import net.contextfw.web.application.internal.servlet.InitServlet;
 import net.contextfw.web.application.internal.servlet.ScriptServlet;
@@ -59,6 +61,10 @@ public class WebApplicationServletModule extends ServletModule {
         for (Class<?> cl : classes) {
             View annotation = cl.getAnnotation(View.class);
             if (annotation != null) {
+                if (!Component.class.isAssignableFrom(cl)) {
+                    throw new WebApplicationException("Class " + cl.getName() + " annotated with @View does " +
+                    		"not extend Component");
+                }
                 for (String url : annotation.url()) {
                     if (!"".equals(url)) {
                         urls.add(url);
@@ -80,8 +86,15 @@ public class WebApplicationServletModule extends ServletModule {
         }
 
         for (String url : urls.descendingSet()) {
-            logger.info("  Serving url: {}", url);
-            serveRegex(url).with(InitServlet.class);
+            
+            if (url.startsWith("regex:")) {
+                String serveUrl = url.substring(6); 
+                logger.info("  Serving url: {} (regex)", serveUrl);
+                serveRegex(serveUrl).with(InitServlet.class);
+            } else {
+                logger.info("  Serving url: {}", url);
+                serve(url).with(InitServlet.class);
+            }
         }
     }
 }
