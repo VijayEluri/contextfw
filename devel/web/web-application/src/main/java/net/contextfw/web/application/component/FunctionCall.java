@@ -2,6 +2,16 @@ package net.contextfw.web.application.component;
 
 import net.contextfw.web.application.internal.component.ComponentBuilder;
 
+/**
+ * Defines a javascript call invoked from server side.
+ * 
+ * <p>
+ *  This class is a convinience class to make calls in with correct convention.
+ * </p>
+ * <p>
+ *  The call will be in form: <code>functionName([args,...]);
+ * </p>
+ */
 public class FunctionCall extends Script {
 	
 	public FunctionCall(String function, Object... args) {

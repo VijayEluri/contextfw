@@ -6,6 +6,10 @@ import javax.servlet.http.HttpServletResponse;
 
 import net.contextfw.web.application.lifecycle.PageScoped;
 
+/**
+ * This class contains functionality to...
+ * 
+ */
 @PageScoped
 public class HttpContext {
 
@@ -19,11 +23,24 @@ public class HttpContext {
     private String errorMsg;
     private Integer errorCode;
     private boolean reload = false;
-    
+
+    /**
+     * Reloads current page
+     * 
+     * <p>
+     *  This method has effect only during page update.  
+     * </p>
+     */
     public void reload() {
         reload = true;
     }
     
+    /**
+     * Redirects page to new location
+     * 
+     * @param url
+     *  The new URL
+     */
     public void redirect(String url) {
         this.redirectUrl = url;
     }

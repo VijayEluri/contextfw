@@ -8,7 +8,7 @@ import net.contextfw.web.application.component.Component;
  * The base interface for handling delayed updates
  * 
  * <p>
- *  When an update handler is called it must make appropriate preparations to delay incocation.
+ *  When an update handler is called it must make appropriate preparations to delay invocation.
  *  It should be noted that the framework itself does note provide any delaying features because
  *  they are web container specific. That is for instance, Jetty works differently from Tomcat.
  * </p>
