@@ -19,8 +19,15 @@ import net.contextfw.web.application.component.Component;
  *  followed an intercepted by implementing an interface {@link ViewComponent}. 
  *  Implementing the interface is optional.
  * </p>
- * 
- * @see net.contextfw.web.application.annotations.PageScoped @PageScoped
+ * <p>
+ *  URL can be given in two formats: plain and regex. Plain urls follow <i>path-like</i>
+ *  convention where using <code>*</code> it is possible to match multiple paths
+ * </p>
+ * <p>
+ *  If URL is prefixed by <code>regex:</code> then path is matched as regular expression giving
+ *  more freedom.
+ * </p>
+ * @see net.contextfw.web.application.annotations.PageScoped
  * @see ViewComponent
  * 
  * @author marko
@@ -29,16 +36,14 @@ import net.contextfw.web.application.component.Component;
 @Target( { TYPE })
 @Retention(RUNTIME)
 public @interface View {
+    
     /**
-     * Maps view to given set of URLs. URLs are given as regular expressions.
+     * Maps view to given set of URLs.
      */
     String[] url() default "";
+    
     /**
      * Maps view to given set of URLs that are mapped to property keys.
-     * 
-     * <p>
-     *  The values of the properties are handled as regular expressions.
-     * </p>
      */
     String[] property() default "";
     /**

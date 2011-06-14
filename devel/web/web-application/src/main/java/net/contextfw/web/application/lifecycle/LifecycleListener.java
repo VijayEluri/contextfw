@@ -1,12 +1,35 @@
 package net.contextfw.web.application.lifecycle;
 
+/**
+ * This interface defines means to follow page lifecyle.
+ * 
+ * <p>
+ *  Using lifecycle listener is especially handy when possible database connections needs
+ *  to be opened and closed during the lifecycle of a request
+ * </p>
+ * 
+ * <p>
+ *  Can be set by <code>LIFECYCLE_LISTENER<code> by Properties
+ * </p>
+ * 
+ * @see net.contextfw.web.application.properties.Properties.LIFECYCLE_LISTENER
+ */
 public interface LifecycleListener {
 
+    /**
+     * Called by framework before page initialization begins
+     */
     void beforeInitialize();
     
+    /**
+     * Called by framework after page initialization has ended
+     */
     void afterInitialize();
     
     /**
+     * <p>
+     * 
+     * 
      * <p>
      *  This method is useful in two ways. First it can be used to initialize possible
      *  database connections etc.

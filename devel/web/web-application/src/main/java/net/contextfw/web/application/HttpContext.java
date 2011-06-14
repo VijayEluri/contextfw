@@ -7,7 +7,8 @@ import javax.servlet.http.HttpServletResponse;
 import net.contextfw.web.application.lifecycle.PageScoped;
 
 /**
- * This class contains functionality to...
+ * This class contains functionality to access basic servlet resources and make basic
+ * controls.
  * 
  */
 @PageScoped
@@ -17,7 +18,7 @@ public class HttpContext {
     private HttpServletRequest request;
     private HttpServletResponse response;
 
-    private final String requestUrl;
+    private final String requestURI;
     private final String queryString;
     private String redirectUrl;
     private String errorMsg;
@@ -44,9 +45,33 @@ public class HttpContext {
     public void redirect(String url) {
         this.redirectUrl = url;
     }
+    
+    /**
+     * Sends a server error.
+     * 
+     * <p>
+     *  Usable only on init phase
+     * </p>
+     * 
+     * @param code
+     *  Http response code
+     */
     public void sendError(int code) {
         sendError(code, null);
     }
+    
+    /**
+     * Sends a server error with a message.
+     * 
+     * <p>
+     *  Usable only on init phase
+     * </p>
+     * 
+     * @param code
+     *  Http response code
+     * @param msg
+     *  Message
+     */
     public void sendError(int code, String msg) {
         this.errorCode = code;
         this.errorMsg = msg;
@@ -56,6 +81,9 @@ public class HttpContext {
         this.servlet = servlet;
     }
 
+    /**
+     * Gets current servlet used for the request
+     */
     public HttpServlet getServlet() {
         return servlet;
     }
@@ -64,6 +92,9 @@ public class HttpContext {
         this.request = request;
     }
 
+    /**
+     * Gets current request
+     */
     public HttpServletRequest getRequest() {
         return request;
     }
@@ -71,7 +102,10 @@ public class HttpContext {
     public void setResponse(HttpServletResponse response) {
         this.response = response;
     }
-
+    
+    /**
+     * Gets current response for the request
+     */
     public HttpServletResponse getResponse() {
         return response;
     }
@@ -82,7 +116,7 @@ public class HttpContext {
         this.request = request;
         this.response = response;
 
-        requestUrl = request.getRequestURL().toString();
+        requestURI = request.getRequestURI();
         queryString = request.getQueryString();
     }
 
@@ -101,19 +135,25 @@ public class HttpContext {
         return reload;
     }
 
-    public String getRequestUrl() {
-        return requestUrl;
+    /**
+     * Returns the original request URI when page was initialized
+     * 
+     * @return
+     *   The original request URI
+     * 
+     */
+    public String getRequestURI() {
+        return requestURI;
     }
 
+    /**
+     * Returns the original query string when page was initialized
+     * 
+     * @return
+     *   The original query string
+     * 
+     */
     public String getQueryString() {
         return queryString;
-    }
-    
-    public String getFullUrl() {
-        if (queryString == null) {
-            return requestUrl;
-        } else {
-            return requestUrl + "?" + queryString;
-        }
     }
 }
