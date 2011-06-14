@@ -16,7 +16,6 @@ import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.component.DOMBuilder;
 import net.contextfw.web.application.internal.ComponentUpdateHandler;
 import net.contextfw.web.application.internal.ComponentUpdateHandlerFactory;
-import net.contextfw.web.application.internal.ContextPathProvider;
 import net.contextfw.web.application.internal.WebResponder;
 import net.contextfw.web.application.internal.WebResponder.Mode;
 import net.contextfw.web.application.internal.component.ComponentBuilder;
@@ -77,15 +76,14 @@ public class WebApplicationImpl implements WebApplication {
     @Inject
     private WebApplicationHandle webApplicationHandle;
 
-    private final String contextPath;
+    //private final String contextPath;
     
     private final String xmlParamName;
     
     private final boolean debugMode;
     
     @Inject
-    public WebApplicationImpl(Properties props, ContextPathProvider contextPathProvider) {
-        contextPath = contextPathProvider.getContextPath();
+    public WebApplicationImpl(Properties props) {
         xmlParamName = props.get(Properties.XML_PARAM_NAME);
         debugMode = props.get(Properties.DEVELOPMENT_MODE);
     }
@@ -108,7 +106,8 @@ public class WebApplicationImpl implements WebApplication {
                     httpContext.getResponse().sendError(httpContext.getErrorCode(), httpContext.getErrorMsg());
                     return true;
                 } else if (httpContext.isReload()) {
-                    httpContext.getResponse().sendRedirect(httpContext.getFullUrl());
+                    httpContext.getResponse().sendRedirect(httpContext.getRequestURI() 
+                            + httpContext.getQueryString() == null ? "" : "?" + httpContext.getQueryString());
                 }
             }
 
@@ -121,7 +120,11 @@ public class WebApplicationImpl implements WebApplication {
                     return false;
                 }
             } catch (Exception e) {
-                throw new WebApplicationException("Exception while trying to init state", e);
+                if (e instanceof WebApplicationException) {
+                    throw (WebApplicationException) e;
+                } else {
+                    throw new WebApplicationException("Exception while trying to init state", e);
+                }
             }
 
         } catch (IOException e) {
@@ -159,7 +162,7 @@ public class WebApplicationImpl implements WebApplication {
         }
 
         d.attr("handle", webApplicationHandle.getKey());
-        d.attr("contextPath", contextPath);
+        d.attr("contextPath", httpContext.getRequest().getContextPath());
 
         if (context.getLocale() != null) {
             d.attr("xml:lang", context.getLocale().toString());
@@ -225,7 +228,11 @@ public class WebApplicationImpl implements WebApplication {
                     return UpdateInvocation.NOT_DELAYED;
                 }
         } catch (Exception e) {
-            throw new WebApplicationException("Failed to update elements", e);
+            if (e instanceof WebApplicationException) {
+                throw (WebApplicationException) e;
+            } else {
+                throw new WebApplicationException("Failed to update elements", e);
+            }
         }
     }
 

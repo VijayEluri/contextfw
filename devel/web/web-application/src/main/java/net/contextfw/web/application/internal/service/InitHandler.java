@@ -15,7 +15,6 @@ import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.internal.LifecycleListeners;
-import net.contextfw.web.application.internal.initializer.InitializerProvider;
 import net.contextfw.web.application.internal.scope.WebApplicationScopedBeans;
 import net.contextfw.web.application.lifecycle.PageFlowFilter;
 import net.contextfw.web.application.properties.Properties;
@@ -30,53 +29,36 @@ import com.google.inject.Singleton;
 @Singleton
 public class InitHandler {
 
-    @SuppressWarnings("unused")
     private Logger logger = LoggerFactory.getLogger(InitHandler.class);
+    @Inject
+    private WebApplicationContextHandler handler;
 
-    private final WebApplicationContextHandler handler;
-
-    private final InitializerProvider initializers;
-
-    private final Provider<WebApplication> webApplicationProvider;
-
-    private final LifecycleListeners listeners;
-
-    private final PageFlowFilter pageFlowFilter;
+    //private final InitializerProvider initializers;
+    @Inject
+    private Provider<WebApplication> webApplicationProvider;
+    @Inject
+    private LifecycleListeners listeners;
+    @Inject
+    private PageFlowFilter pageFlowFilter;
     
     private final long initialMaxInactivity;
     
-    private final DirectoryWatcher watcher;
+    private DirectoryWatcher watcher;
     
-    private final ResourceCleaner cleaner;
+    private ResourceCleaner cleaner;
+    
+    private final boolean developmentMode;
 
-    @Inject
-    public InitHandler(WebApplicationContextHandler handler,
-                       Provider<WebApplication> webApplicationProvider,
-                       InitializerProvider initializers,
-                       LifecycleListeners listeners,
-                       Properties configuration,
-                       PageFlowFilter pageFlowFilter, 
-                       DirectoryWatcher watcher,
-                       ResourceCleaner cleaner) {
-
-        this.handler = handler;
-        this.webApplicationProvider = webApplicationProvider;
-        this.initializers = initializers;
-        this.listeners = listeners;
-        this.pageFlowFilter = pageFlowFilter;
-        initialMaxInactivity = configuration.get(Properties.INITIAL_MAX_INACTIVITY);
-        if (configuration.get(Properties.DEVELOPMENT_MODE)) {
-        	this.cleaner = cleaner;
-        	this.watcher = watcher;
-        } else {
-        	this.cleaner = null;
-        	this.watcher = null;
-        }
-        	
+    public InitHandler(Properties properties) {
+        initialMaxInactivity = properties.get(Properties.INITIAL_MAX_INACTIVITY);
+        developmentMode = properties.get(Properties.DEVELOPMENT_MODE);
     }
 
-    public final void handleRequest(HttpServlet servlet,
-            HttpServletRequest request, HttpServletResponse response)
+    public final void handleRequest(
+            List<Class<? extends Component>> chain, 
+            HttpServlet servlet,
+            HttpServletRequest request, 
+            HttpServletResponse response)
             throws ServletException, IOException {
         
     	if (watcher != null && watcher.hasChanged()) {
@@ -95,8 +77,6 @@ public class InitHandler {
         response.addHeader("Cache-Control", "no-store, no-cache, must-revalidate");
         response.addHeader("Cache-Control", "post-check=0, pre-check=0");
         response.addHeader("Pragma", "no-cache");
-
-        List<Class<? extends Component>> chain = initializers.findChain(request.getRequestURI());
 
         if (chain == null) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -135,7 +115,11 @@ public class InitHandler {
 
                 } catch (Exception e) {
                     listeners.onException(e);
-                    throw new WebApplicationException(e);
+                    if (e instanceof WebApplicationException) {
+                        throw (WebApplicationException) e;
+                    } else {
+                        throw new WebApplicationException(e);
+                    }
                 } finally {
                     context.getHttpContext().setServlet(null);
                     context.getHttpContext().setRequest(null);
@@ -157,5 +141,19 @@ public class InitHandler {
         beans.seed(HttpContext.class, httpContext);
         beans.seed(WebApplicationHandle.class, context.getHandle());
         return context;
+    }
+
+    @Inject
+    public void setWatcher(DirectoryWatcher watcher) {
+        if (!developmentMode) {
+            this.watcher = watcher;
+        }
+    }
+    
+    @Inject
+    public void setCleaner(ResourceCleaner cleaner) {
+        if (!developmentMode) {
+            this.cleaner = cleaner;
+        }
     }
 }

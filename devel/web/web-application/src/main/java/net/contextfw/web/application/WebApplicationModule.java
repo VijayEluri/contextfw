@@ -1,26 +1,20 @@
 package net.contextfw.web.application;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import net.contextfw.web.application.component.Component;
-import net.contextfw.web.application.internal.ContextPathProvider;
 import net.contextfw.web.application.internal.WebApplicationServletModule;
 import net.contextfw.web.application.internal.component.AutoRegisterListener;
-import net.contextfw.web.application.internal.initializer.InitializerProvider;
 import net.contextfw.web.application.internal.providers.HttpContextProvider;
 import net.contextfw.web.application.internal.providers.RequestProvider;
 import net.contextfw.web.application.internal.providers.WebApplicationHandleProvider;
 import net.contextfw.web.application.internal.scope.WebApplicationScope;
 import net.contextfw.web.application.internal.service.WebApplicationContextHandler;
 import net.contextfw.web.application.internal.util.AttributeHandler;
-import net.contextfw.web.application.internal.util.ClassScanner;
 import net.contextfw.web.application.internal.util.ObjectAttributeSerializer;
 import net.contextfw.web.application.lifecycle.PageFlowFilter;
 import net.contextfw.web.application.lifecycle.PageScoped;
-import net.contextfw.web.application.lifecycle.View;
 import net.contextfw.web.application.properties.KeyValue;
 import net.contextfw.web.application.properties.Properties;
 import net.contextfw.web.application.serialize.AttributeJsonSerializer;
@@ -47,10 +41,6 @@ public final class WebApplicationModule extends AbstractModule {
 
     private final Properties configuration;
     
-    private final ContextPathProvider contextPathProvider = new ContextPathProvider();
-    
-    private InitializerProvider initializerProvider;
-    
     private Logger logger = LoggerFactory.getLogger(WebApplicationModule.class);
 
     @SuppressWarnings("rawtypes")
@@ -74,10 +64,9 @@ public final class WebApplicationModule extends AbstractModule {
         bind(WebApplicationHandle.class).toProvider(
                 WebApplicationHandleProvider.class);
         bind(Request.class).toProvider(RequestProvider.class);
-        bind(InitializerProvider.class).toInstance(configureInitializers());
+        //bind(InitializerProvider.class).toInstance(configureInitializers());
         bind(Properties.class).toInstance(configuration);
-        bind(PropertyProvider.class).to(configuration.get(Properties.PROPERTY_PROVIDER));
-        bind(ContextPathProvider.class).toInstance(contextPathProvider);
+        bind(PropertyProvider.class).toInstance(configuration.get(Properties.PROPERTY_PROVIDER));
         
         this.bindListener(Matchers.any(), new TypeListener() {
             @SuppressWarnings("unchecked")
@@ -91,8 +80,10 @@ public final class WebApplicationModule extends AbstractModule {
             }
         });
         
-        WebApplicationServletModule servletModule = new WebApplicationServletModule(configuration);
-        requestInjection(servletModule);
+        WebApplicationServletModule servletModule = 
+            new WebApplicationServletModule(configuration,
+                    configuration.get(Properties.PROPERTY_PROVIDER));
+        
         install(servletModule);
     }
 
@@ -136,29 +127,4 @@ public final class WebApplicationModule extends AbstractModule {
         
         return handler;
     }
-
-    @SuppressWarnings("unchecked")
-    public void postInitialize(String contextPath) {
-    	contextPathProvider.setContextPath(contextPath);
-    	initializerProvider.setContextPath(contextPath);
-    	List<String> rootPackages = new ArrayList<String>();
-        rootPackages.addAll(configuration.get(Properties.VIEW_COMPONENT_ROOT_PACKAGE));
-        List<Class<?>> classes = ClassScanner.getClasses(rootPackages);
-
-        for (Class<?> cl : classes) {
-            if (Component.class.isAssignableFrom(cl)
-                    && cl.getAnnotation(View.class) != null) {
-                initializerProvider.addInitializer((Class<? extends Component>) cl);
-            }
-        }
-    }
-    
-    private InitializerProvider configureInitializers() {
-        initializerProvider = new InitializerProvider(configuration);
-        return initializerProvider;
-    }
-
-	public InitializerProvider getInitializerProvider() {
-		return initializerProvider;
-	}
 }
