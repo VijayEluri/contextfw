@@ -149,8 +149,6 @@ public class ComponentBuilderImpl implements ComponentBuilder {
 
             for (Method method : currentClass.getDeclaredMethods()) {
 
-                PropertyAccess<Object> propertyAccess = new MethodPropertyAccess(
-                        method);
                 String name = null;
                 Builder builder = null;
 
@@ -158,7 +156,8 @@ public class ComponentBuilderImpl implements ComponentBuilder {
                     Element annotation = method.getAnnotation(Element.class);
                     name = "".equals(annotation.name()) ? method.getName()
                             : annotation.name();
-                    builder = new ElementBuilder(this, propertyAccess,
+                    builder = new ElementBuilder(this, new MethodPropertyAccess(
+                            method),
                             annotation.wrap() ? name : null, method.getName());
                     addToBuilders(model, annotation.onCreate(),
                             annotation.onUpdate(), builder);
@@ -167,7 +166,8 @@ public class ComponentBuilderImpl implements ComponentBuilder {
                             .getAnnotation(Attribute.class);
                     name = "".equals(annotation.name()) ? method.getName()
                             : annotation.name();
-                    builder = new AttributeBuilder(propertyAccess, name,
+                    builder = new AttributeBuilder(new MethodPropertyAccess(
+                            method), name,
                             method.getName());
                     addToBuilders(model, annotation.onCreate(),
                             annotation.onUpdate(), builder);
@@ -185,7 +185,8 @@ public class ComponentBuilderImpl implements ComponentBuilder {
                             .getAnnotation(ScriptElement.class);
                     name = scriptElement.wrapper();
                     builder = new ScriptElementBuilder(this, gson,
-                            propertyAccess, name, method.getName());
+                            new MethodPropertyAccess(
+                                    method), name, method.getName());
                     addToBuilders(model, scriptElement.onCreate(),
                             scriptElement.onUpdate(), builder);
                 } else if (method.getAnnotation(AfterBuild.class) != null) {
