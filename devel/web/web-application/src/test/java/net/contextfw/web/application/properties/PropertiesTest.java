@@ -9,6 +9,7 @@ import static net.contextfw.web.application.properties.Properties.REMOVAL_SCHEDU
 import static net.contextfw.web.application.properties.Properties.RESOURCE_PATH;
 import static net.contextfw.web.application.properties.Properties.TRANSFORMER_COUNT;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
@@ -35,7 +36,7 @@ public class PropertiesTest {
         assertEquals(2, props.get(RESOURCE_PATH).size());
         assertTrue(props.get(RESOURCE_PATH).contains("net.contextfw.web"));
         assertTrue(props.get(RESOURCE_PATH).contains("templates.path"));
-        assertEquals(SystemPropertyProvider.class, props.get(PROPERTY_PROVIDER));
+        assertNotNull(props.get(PROPERTY_PROVIDER));
         assertEquals(DefaultLifecycleListener.class, props.get(LIFECYCLE_LISTENER));
         //assertEquals(((1*60 + 30) * 1000), props.get(ERROR_TIME).longValue());
         //assertEquals((70 * 1000), props.get(POLL_TIME).longValue());
