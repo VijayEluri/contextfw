@@ -91,7 +91,7 @@ public class Properties {
           .set(RESOURCES_PREFIX, "/resources")
           //.set(CONTEXT_PATH, "")
           .set(XML_PARAM_NAME, null)
-          .set(PROPERTY_PROVIDER, SystemPropertyProvider.class)
+          .set(PROPERTY_PROVIDER, new SystemPropertyProvider())
           .set(LIFECYCLE_LISTENER, DefaultLifecycleListener.class)
           .set(RESOURCE_PATH, new HashSet<String>())
           .set(VIEW_COMPONENT_ROOT_PACKAGE, new HashSet<String>())
@@ -192,8 +192,8 @@ public class Properties {
      *  Default: {@link SystemPropertyProvider}
      * </p>  
      */
-    public static final SettableProperty<Class<? extends PropertyProvider>> PROPERTY_PROVIDER = 
-        new ClassProperty<PropertyProvider>(KEY_PROPERTY_PROVIDER);
+    public static final SettableProperty<PropertyProvider> PROPERTY_PROVIDER = 
+        new ObjectProperty<PropertyProvider>(KEY_PROPERTY_PROVIDER);
     
     /**
      * Binds a lifecycle listener to the system
