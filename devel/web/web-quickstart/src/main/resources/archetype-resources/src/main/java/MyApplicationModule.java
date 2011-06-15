@@ -40,8 +40,4 @@ public class MyApplicationModule extends AbstractModule {
     public PageFlowFilter providePageFlowFilter() {
         return new DefaultPageFlowFilter();
     }
-    
-    public WebApplicationModule getWebApplicationModule() {
-        return webApplicationModule;
-    }
 }

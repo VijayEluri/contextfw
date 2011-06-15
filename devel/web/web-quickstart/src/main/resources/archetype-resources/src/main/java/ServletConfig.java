@@ -13,13 +13,6 @@ public class ServletConfig extends GuiceServletContextListener {
     private MyApplicationModule applicationModule;
     
     @Override
-    public void contextInitialized(ServletContextEvent servletContextEvent) {
-        super.contextInitialized(servletContextEvent);
-        applicationModule.getWebApplicationModule()
-            .postInitialize(servletContextEvent.getServletContext().getContextPath());
-    }
-
-    @Override
     protected Injector getInjector() {
         applicationModule = new MyApplicationModule();
         return Guice.createInjector(applicationModule);
