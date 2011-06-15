@@ -19,10 +19,18 @@ public class LifecycleListeners implements LifecycleListener {
         listeners.add(listener);
     }
     
+    @SuppressWarnings("unchecked")
     @Inject
     public LifecycleListeners(Injector injector, Properties configuration) {
         if (configuration.get(Properties.LIFECYCLE_LISTENER) != null) {
-            addListener(injector.getInstance(configuration.get(Properties.LIFECYCLE_LISTENER)));
+            LifecycleListener listener = null;
+            Object obj = configuration.get(Properties.LIFECYCLE_LISTENER);
+            if (obj instanceof LifecycleListener) {
+                listener = (LifecycleListener) obj;
+            } else {
+                listener = injector.getInstance((Class<LifecycleListener>) obj);
+            }
+            addListener(listener);
         }
     }
     

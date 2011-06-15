@@ -64,10 +64,9 @@ public final class WebApplicationModule extends AbstractModule {
         bind(WebApplicationHandle.class).toProvider(
                 WebApplicationHandleProvider.class);
         bind(Request.class).toProvider(RequestProvider.class);
-        //bind(InitializerProvider.class).toInstance(configureInitializers());
         bind(Properties.class).toInstance(configuration);
         bind(PropertyProvider.class).toInstance(configuration.get(Properties.PROPERTY_PROVIDER));
-        
+        handlePageFlowFilter();
         this.bindListener(Matchers.any(), new TypeListener() {
             @SuppressWarnings("unchecked")
             @Override
@@ -87,6 +86,16 @@ public final class WebApplicationModule extends AbstractModule {
         install(servletModule);
     }
 
+    @SuppressWarnings("unchecked")
+    private void handlePageFlowFilter() {
+        Object obj = configuration.get(Properties.PAGEFLOW_FILTER);
+        if (obj instanceof PageFlowFilter) {
+            bind(PageFlowFilter.class).toInstance((PageFlowFilter) obj);
+        } else {
+            bind(PageFlowFilter.class).to((Class<PageFlowFilter>) obj);
+        }
+    }
+    
     @Singleton
     @Provides
     public Gson provideGson(Injector injector) {

@@ -1,13 +1,10 @@
 package net.contextfw.web.application.internal.util;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 
-import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import net.contextfw.web.application.WebApplicationException;
 
@@ -51,7 +48,7 @@ public class ResourceScannerTest {
         paths.add("classpath:net/contextfw/web");
         
         List<ResourceEntry> rootFiles = AbstractScanner.findResourceEntries(paths);
-        assertEquals(355, rootFiles.size());
+        assertEquals(357, rootFiles.size());
         
 //        assertTrue(rootFiles.get(0).getAbsolutePath().endsWith("/target/test-classes/net/contextfw/web"));
 //        assertTrue(rootFiles.get(1).getAbsolutePath().endsWith("/target/classes/net/contextfw/web"));

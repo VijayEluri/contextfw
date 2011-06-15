@@ -8,15 +8,12 @@ import static net.contextfw.web.application.properties.Properties.PROPERTY_PROVI
 import static net.contextfw.web.application.properties.Properties.REMOVAL_SCHEDULE_PERIOD;
 import static net.contextfw.web.application.properties.Properties.RESOURCE_PATH;
 import static net.contextfw.web.application.properties.Properties.TRANSFORMER_COUNT;
+import static net.contextfw.web.application.properties.Properties.PAGEFLOW_FILTER;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
-
-import net.contextfw.web.application.SystemPropertyProvider;
-import net.contextfw.web.application.lifecycle.DefaultLifecycleListener;
-
 import org.junit.Test;
 
 public class PropertiesTest {
@@ -37,7 +34,8 @@ public class PropertiesTest {
         assertTrue(props.get(RESOURCE_PATH).contains("net.contextfw.web"));
         assertTrue(props.get(RESOURCE_PATH).contains("templates.path"));
         assertNotNull(props.get(PROPERTY_PROVIDER));
-        assertEquals(DefaultLifecycleListener.class, props.get(LIFECYCLE_LISTENER));
+        assertNotNull(props.get(LIFECYCLE_LISTENER));
+        assertNotNull(props.get(PAGEFLOW_FILTER));
         //assertEquals(((1*60 + 30) * 1000), props.get(ERROR_TIME).longValue());
         //assertEquals((70 * 1000), props.get(POLL_TIME).longValue());
         assertEquals((60000), props.get(REMOVAL_SCHEDULE_PERIOD).longValue());

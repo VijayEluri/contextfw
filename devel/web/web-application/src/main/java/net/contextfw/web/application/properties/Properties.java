@@ -10,7 +10,9 @@ import net.contextfw.web.application.DocumentProcessor;
 import net.contextfw.web.application.PropertyProvider;
 import net.contextfw.web.application.SystemPropertyProvider;
 import net.contextfw.web.application.lifecycle.DefaultLifecycleListener;
+import net.contextfw.web.application.lifecycle.DefaultPageFlowFilter;
 import net.contextfw.web.application.lifecycle.LifecycleListener;
+import net.contextfw.web.application.lifecycle.PageFlowFilter;
 import net.contextfw.web.application.serialize.AttributeJsonSerializer;
 import net.contextfw.web.application.serialize.AttributeSerializer;
 
@@ -61,6 +63,8 @@ public class Properties {
     private static final String KEY_TRANSFORMER_COUNT = "contextfw.transformerCount";
 
     private static final String KEY_LIFECYCLE_LISTENER = "contextfw.lifecycleListener";
+    
+    private static final String KEY_PAGEFLOW_FILTER = "contextfw.pageFlowFilter";
 
     private static final String KEY_PROPERTY_PROVIDER = "contextfw.propertyProvider";
     
@@ -92,7 +96,8 @@ public class Properties {
           //.set(CONTEXT_PATH, "")
           .set(XML_PARAM_NAME, null)
           .set(PROPERTY_PROVIDER, new SystemPropertyProvider())
-          .set(LIFECYCLE_LISTENER, DefaultLifecycleListener.class)
+          .set(LIFECYCLE_LISTENER.as(DefaultLifecycleListener.class))
+          .set(PAGEFLOW_FILTER.as(DefaultPageFlowFilter.class))
           .set(RESOURCE_PATH, new HashSet<String>())
           .set(VIEW_COMPONENT_ROOT_PACKAGE, new HashSet<String>())
           // .set(ERROR_TIME.inMinsAndSecs(1, 30))
@@ -198,8 +203,14 @@ public class Properties {
     /**
      * Binds a lifecycle listener to the system
      */
-    public static final SettableProperty<Class<? extends LifecycleListener>> LIFECYCLE_LISTENER = 
-        new ClassProperty<LifecycleListener>(KEY_LIFECYCLE_LISTENER);
+    public static final BindableProperty<LifecycleListener> LIFECYCLE_LISTENER = 
+        new BindableProperty<LifecycleListener>(KEY_LIFECYCLE_LISTENER);
+    
+    /**
+     * Binds a lifecycle listener to the system
+     */
+    public static final BindableProperty<PageFlowFilter> PAGEFLOW_FILTER = 
+        new BindableProperty<PageFlowFilter>(KEY_PAGEFLOW_FILTER);
     
     /**
      * Binds a XSL-postprocessor to the system
@@ -386,6 +397,7 @@ public class Properties {
     public <T> T get(Property<T> property) {
         return property.validate((T) values.get(property.getKey()));
     }
+    
     /**
      * Set a new property.
      * 

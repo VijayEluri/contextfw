@@ -4,7 +4,8 @@ package net.contextfw.web.application.lifecycle;
  * This interface defines means to follow page lifecyle.
  * 
  * <p>
- *  Using lifecycle listener is especially handy when possible database connections needs
+ *  This listener is meant to be used to follow and to react page lifecycle. Using lifecycle listener 
+ *  is especially handy when possible database connections needs
  *  to be opened and closed during the lifecycle of a request
  * </p>
  * 
@@ -13,6 +14,7 @@ package net.contextfw.web.application.lifecycle;
  * </p>
  * 
  * @see net.contextfw.web.application.properties.Properties.LIFECYCLE_LISTENER
+ * @see PageFlowFilter
  */
 public interface LifecycleListener {
 

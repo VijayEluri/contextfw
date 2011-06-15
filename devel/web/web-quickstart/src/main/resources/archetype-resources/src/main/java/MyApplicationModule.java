@@ -34,10 +34,4 @@ public class MyApplicationModule extends AbstractModule {
         install(webApplicationModule);
         install(Jsr250.newJsr250Module());
     }
-    
-    @Provides
-    @Singleton
-    public PageFlowFilter providePageFlowFilter() {
-        return new DefaultPageFlowFilter();
-    }
 }
