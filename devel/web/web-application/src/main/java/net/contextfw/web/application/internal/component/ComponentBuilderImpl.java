@@ -68,19 +68,22 @@ public class ComponentBuilderImpl implements ComponentBuilder {
         }
         return model;
     }
+    
+    private Buildable findBuildable(final Class<?> cl) {
+        Class<?> current = cl;
+        while (current instanceof Object) {
+            if (current.isAnnotationPresent(Buildable.class)) {
+                return current.getAnnotation(Buildable.class);
+            }
+            current = current.getSuperclass();
+        }
+        return null;
+    }
 
     private MetaModel createMetaModel(final Class<?> cl) {
         try {
             MetaModel model = new MetaModel();
-            Class<?> current = cl;
-
-            while (current instanceof Object) {
-                if (current.isAnnotationPresent(Buildable.class)) {
-                    model.annotation = current.getAnnotation(Buildable.class);
-                }
-                current = current.getSuperclass();
-            }
-
+            model.annotation = findBuildable(cl);
             if (model.annotation != null) {
                 if (model.annotation.wrap()) {
                     model.buildName = ("".equals(model.annotation.name()) ? cl

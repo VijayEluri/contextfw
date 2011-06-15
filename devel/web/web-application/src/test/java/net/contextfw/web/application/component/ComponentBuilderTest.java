@@ -120,6 +120,22 @@ public class ComponentBuilderTest extends BaseComponentTest {
         public String foo = "bar";
     }
     
+    @Buildable(name="Eeg")
+    public static class Gee extends Component {
+        @Attribute
+        public String foo = "bar";
+    }
+    
+    @Test
+    public void testName() {
+        Gee comp = new Gee();
+        webApplicationComponent.registerChild(comp);
+        assertEquals("el1", comp.getId());
+        webApplicationComponent.buildChild(domBuilder);
+        logXML(domBuilder);
+        assertDom("//WebApplication/Eeg").exists();
+    }
+    
     @Test
     public void testId() {
         Aa comp = new Aa();
