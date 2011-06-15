@@ -42,12 +42,4 @@ public class DefaultLifecycleListener implements LifecycleListener {
     @Override
     public void afterRender() {
     }
-
-    @Override
-    public void onRefresh(String handle) {
-    }
-
-    @Override
-    public void onRemove(String handle) {
-    }
 }

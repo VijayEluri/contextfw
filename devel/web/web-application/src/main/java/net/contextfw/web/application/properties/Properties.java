@@ -207,7 +207,7 @@ public class Properties {
         new BindableProperty<LifecycleListener>(KEY_LIFECYCLE_LISTENER);
     
     /**
-     * Binds a lifecycle listener to the system
+     * Binds a pageflow filter to the system
      */
     public static final BindableProperty<PageFlowFilter> PAGEFLOW_FILTER = 
         new BindableProperty<PageFlowFilter>(KEY_PAGEFLOW_FILTER);

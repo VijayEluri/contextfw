@@ -129,7 +129,6 @@ public class UpdateHandler {
                 synchronized (app) {
 
                     if (CONTEXTFW_REMOVE.equals(command)) {
-                        listeners.onRemove(handlerStr);
                         handler.removeApplication(app.getHandle());
 
                         pageFlowFilter.pageRemoved(
@@ -172,7 +171,6 @@ public class UpdateHandler {
                                     listeners.afterRender();
                                 }
                             } else if (CONTEXTFW_REFRESH.equals(command)) {
-                                listeners.onRefresh(handlerStr);
                                 response.setStatus(HttpServletResponse.SC_NO_CONTENT);
                             }
                         } catch (Exception e) {
