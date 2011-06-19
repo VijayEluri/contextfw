@@ -24,9 +24,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
-import com.google.inject.Singleton;
 
-@Singleton
 public class InitHandler {
 
     private Logger logger = LoggerFactory.getLogger(InitHandler.class);
@@ -145,14 +143,14 @@ public class InitHandler {
 
     @Inject
     public void setWatcher(DirectoryWatcher watcher) {
-        if (!developmentMode) {
+        if (developmentMode) {
             this.watcher = watcher;
         }
     }
     
     @Inject
     public void setCleaner(ResourceCleaner cleaner) {
-        if (!developmentMode) {
+        if (developmentMode) {
             this.cleaner = cleaner;
         }
     }
