@@ -195,6 +195,7 @@ public class WebResponder {
                             }
                         }
                     } catch (DocumentException de) {
+                        transformers = null;
                         throw new WebApplicationException("Xsl-file " + file.getPath() + " contains errors", de);
                     } finally {
                         stream.close();
