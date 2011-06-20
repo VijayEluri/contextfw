@@ -14,10 +14,10 @@ import net.contextfw.web.application.ResourceCleaner;
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.component.Component;
+import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.internal.LifecycleListeners;
 import net.contextfw.web.application.internal.scope.WebApplicationScopedBeans;
 import net.contextfw.web.application.lifecycle.PageFlowFilter;
-import net.contextfw.web.application.properties.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,9 +47,9 @@ public class InitHandler {
     
     private final boolean developmentMode;
 
-    public InitHandler(Properties properties) {
-        initialMaxInactivity = properties.get(Properties.INITIAL_MAX_INACTIVITY);
-        developmentMode = properties.get(Properties.DEVELOPMENT_MODE);
+    public InitHandler(Configuration properties) {
+        initialMaxInactivity = properties.get(Configuration.INITIAL_MAX_INACTIVITY);
+        developmentMode = properties.get(Configuration.DEVELOPMENT_MODE);
     }
 
     public final void handleRequest(

@@ -6,6 +6,7 @@ import java.util.List;
 import net.contextfw.web.application.PropertyProvider;
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.component.Component;
+import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.internal.initializer.InitializerProvider;
 import net.contextfw.web.application.internal.service.InitHandler;
 import net.contextfw.web.application.internal.servlet.CSSServlet;
@@ -14,7 +15,6 @@ import net.contextfw.web.application.internal.servlet.ScriptServlet;
 import net.contextfw.web.application.internal.servlet.UpdateServlet;
 import net.contextfw.web.application.internal.util.ClassScanner;
 import net.contextfw.web.application.lifecycle.View;
-import net.contextfw.web.application.properties.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,11 +32,11 @@ public class WebApplicationServletModule extends ServletModule {
     
     private final List<String> rootPackages = new ArrayList<String>();
     
-    private final Properties configuration;
+    private final Configuration configuration;
     
-    public WebApplicationServletModule(Properties configuration, PropertyProvider propertyProvider) {
-        resourcePrefix = configuration.get(Properties.RESOURCES_PREFIX);
-        rootPackages.addAll(configuration.get(Properties.VIEW_COMPONENT_ROOT_PACKAGE));
+    public WebApplicationServletModule(Configuration configuration, PropertyProvider propertyProvider) {
+        resourcePrefix = configuration.get(Configuration.RESOURCES_PREFIX);
+        rootPackages.addAll(configuration.get(Configuration.VIEW_COMPONENT_ROOT_PACKAGE));
         this.configuration = configuration;
         this.properties = propertyProvider;
     }

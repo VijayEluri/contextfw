@@ -9,9 +9,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import net.contextfw.web.application.ResourceCleaner;
+import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.internal.LifecycleListeners;
 import net.contextfw.web.application.lifecycle.PageFlowFilter;
-import net.contextfw.web.application.properties.Properties;
 import net.contextfw.web.application.remote.ResourceResponse;
 
 import org.slf4j.Logger;
@@ -53,13 +53,13 @@ public class UpdateHandler {
             PageFlowFilter pageFlowFilter,
             DirectoryWatcher watcher,
             ResourceCleaner cleaner,
-            Properties configuration) {
+            Configuration configuration) {
     	
         this.handler = handler;
         this.listeners = listeners;
         this.pageFlowFilter = pageFlowFilter;
         
-        if (configuration.get(Properties.DEVELOPMENT_MODE)) {
+        if (configuration.get(Configuration.DEVELOPMENT_MODE)) {
         	this.cleaner = cleaner;
         	this.watcher = watcher;
         } else {

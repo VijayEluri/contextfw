@@ -4,6 +4,8 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import net.contextfw.web.application.component.Component;
+import net.contextfw.web.application.configuration.KeyValue;
+import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.internal.WebApplicationServletModule;
 import net.contextfw.web.application.internal.component.AutoRegisterListener;
 import net.contextfw.web.application.internal.providers.HttpContextProvider;
@@ -15,8 +17,6 @@ import net.contextfw.web.application.internal.util.AttributeHandler;
 import net.contextfw.web.application.internal.util.ObjectAttributeSerializer;
 import net.contextfw.web.application.lifecycle.PageFlowFilter;
 import net.contextfw.web.application.lifecycle.PageScoped;
-import net.contextfw.web.application.properties.KeyValue;
-import net.contextfw.web.application.properties.Properties;
 import net.contextfw.web.application.serialize.AttributeJsonSerializer;
 import net.contextfw.web.application.util.Request;
 
@@ -39,14 +39,14 @@ import com.google.inject.spi.TypeListener;
 
 public final class WebApplicationModule extends AbstractModule {
 
-    private final Properties configuration;
+    private final Configuration configuration;
     
     private Logger logger = LoggerFactory.getLogger(WebApplicationModule.class);
 
     @SuppressWarnings("rawtypes")
     private AutoRegisterListener autoRegisterListener = new AutoRegisterListener();
 
-    public WebApplicationModule(Properties configuration) {
+    public WebApplicationModule(Configuration configuration) {
         this.configuration = configuration;
     }
 
@@ -64,8 +64,8 @@ public final class WebApplicationModule extends AbstractModule {
         bind(WebApplicationHandle.class).toProvider(
                 WebApplicationHandleProvider.class);
         bind(Request.class).toProvider(RequestProvider.class);
-        bind(Properties.class).toInstance(configuration);
-        bind(PropertyProvider.class).toInstance(configuration.get(Properties.PROPERTY_PROVIDER));
+        bind(Configuration.class).toInstance(configuration);
+        bind(PropertyProvider.class).toInstance(configuration.get(Configuration.PROPERTY_PROVIDER));
         handlePageFlowFilter();
         this.bindListener(Matchers.any(), new TypeListener() {
             @SuppressWarnings("unchecked")
@@ -81,14 +81,14 @@ public final class WebApplicationModule extends AbstractModule {
         
         WebApplicationServletModule servletModule = 
             new WebApplicationServletModule(configuration,
-                    configuration.get(Properties.PROPERTY_PROVIDER));
+                    configuration.get(Configuration.PROPERTY_PROVIDER));
         
         install(servletModule);
     }
 
     @SuppressWarnings("unchecked")
     private void handlePageFlowFilter() {
-        Object obj = configuration.get(Properties.PAGEFLOW_FILTER);
+        Object obj = configuration.get(Configuration.PAGEFLOW_FILTER);
         if (obj instanceof PageFlowFilter) {
             bind(PageFlowFilter.class).toInstance((PageFlowFilter) obj);
         } else {
@@ -103,17 +103,17 @@ public final class WebApplicationModule extends AbstractModule {
         GsonBuilder builder = new GsonBuilder();
         
         for (KeyValue<Class<?>, Class<? extends JsonSerializer<?>>> entry : configuration
-                .get(Properties.JSON_SERIALIZER)) {
+                .get(Configuration.JSON_SERIALIZER)) {
             builder.registerTypeAdapter(entry.getKey(), injector.getInstance(entry.getValue()));
         }
         
         for (KeyValue<Class<?>, Class<? extends JsonDeserializer<?>>> entry : configuration
-                .get(Properties.JSON_DESERIALIZER)) {
+                .get(Configuration.JSON_DESERIALIZER)) {
             builder.registerTypeAdapter(entry.getKey(), injector.getInstance(entry.getValue()));
         }
         
         for (KeyValue<Class<?>, Class<? extends AttributeJsonSerializer<?>>> entry : configuration
-                .get(Properties.ATTRIBUTE_JSON_SERIALIZER)) {
+                .get(Configuration.ATTRIBUTE_JSON_SERIALIZER)) {
             builder.registerTypeAdapter(entry.getKey(), injector.getInstance(entry.getValue()));
         }
         
@@ -131,8 +131,8 @@ public final class WebApplicationModule extends AbstractModule {
             public void run() {
                 handler.removeExpiredApplications();
             }
-        }, configuration.get(Properties.REMOVAL_SCHEDULE_PERIOD), 
-        configuration.get(Properties.REMOVAL_SCHEDULE_PERIOD)); 
+        }, configuration.get(Configuration.REMOVAL_SCHEDULE_PERIOD), 
+        configuration.get(Configuration.REMOVAL_SCHEDULE_PERIOD)); 
         
         return handler;
     }

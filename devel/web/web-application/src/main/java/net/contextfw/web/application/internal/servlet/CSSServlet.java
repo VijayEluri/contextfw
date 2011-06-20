@@ -4,8 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.regex.Pattern;
 
+import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.internal.service.DirectoryWatcher;
-import net.contextfw.web.application.properties.Properties;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -22,9 +22,9 @@ public class CSSServlet extends ResourceServlet {
     private final DirectoryWatcher watcher;
     
     @Inject
-    public CSSServlet(Properties configuration, DirectoryWatcher watcher) {
-        this.debugMode = configuration.get(Properties.DEVELOPMENT_MODE);
-        this.resourcePaths.addAll(configuration.get(Properties.RESOURCE_PATH));
+    public CSSServlet(Configuration configuration, DirectoryWatcher watcher) {
+        this.debugMode = configuration.get(Configuration.DEVELOPMENT_MODE);
+        this.resourcePaths.addAll(configuration.get(Configuration.RESOURCE_PATH));
         this.watcher = watcher;
     }
     

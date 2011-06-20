@@ -14,8 +14,8 @@ import java.util.Map;
 import java.util.Set;
 
 import net.contextfw.web.application.WebApplicationException;
+import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.internal.util.ResourceScanner;
-import net.contextfw.web.application.properties.Properties;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,16 +28,16 @@ public class DirectoryWatcher {
 
 	private Logger logger = LoggerFactory.getLogger(DirectoryWatcher.class);
 	
-	private final Properties props;
+	private final Configuration props;
 	
 	@Inject
-	public DirectoryWatcher(Properties props) {
+	public DirectoryWatcher(Configuration props) {
 		this.props = props;
 		
-		if(props.get(Properties.DEVELOPMENT_MODE)) {
+		if(props.get(Configuration.DEVELOPMENT_MODE)) {
 			logger.info("Tracking resources for changes");
 			List<String> paths = new ArrayList<String>();
-			paths.addAll(props.get(Properties.RESOURCE_PATH));
+			paths.addAll(props.get(Configuration.RESOURCE_PATH));
 			
 			List<URI> uris = ResourceScanner.toURIs(paths);
 			for (URI uri : uris) {

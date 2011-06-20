@@ -3,8 +3,8 @@ package net.contextfw.web.application.internal;
 import java.util.HashSet;
 import java.util.Set;
 
+import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.lifecycle.LifecycleListener;
-import net.contextfw.web.application.properties.Properties;
 
 import com.google.inject.Inject;
 import com.google.inject.Injector;
@@ -21,10 +21,10 @@ public class LifecycleListeners implements LifecycleListener {
     
     @SuppressWarnings("unchecked")
     @Inject
-    public LifecycleListeners(Injector injector, Properties configuration) {
-        if (configuration.get(Properties.LIFECYCLE_LISTENER) != null) {
+    public LifecycleListeners(Injector injector, Configuration configuration) {
+        if (configuration.get(Configuration.LIFECYCLE_LISTENER) != null) {
             LifecycleListener listener = null;
-            Object obj = configuration.get(Properties.LIFECYCLE_LISTENER);
+            Object obj = configuration.get(Configuration.LIFECYCLE_LISTENER);
             if (obj instanceof LifecycleListener) {
                 listener = (LifecycleListener) obj;
             } else {

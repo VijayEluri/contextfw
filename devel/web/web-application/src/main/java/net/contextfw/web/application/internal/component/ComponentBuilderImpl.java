@@ -19,10 +19,10 @@ import net.contextfw.web.application.component.CustomBuild;
 import net.contextfw.web.application.component.DOMBuilder;
 import net.contextfw.web.application.component.Element;
 import net.contextfw.web.application.component.ScriptElement;
+import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.internal.util.AttributeHandler;
 import net.contextfw.web.application.lifecycle.AfterBuild;
 import net.contextfw.web.application.lifecycle.BeforeBuild;
-import net.contextfw.web.application.properties.Properties;
 
 import com.google.gson.Gson;
 import com.google.inject.Inject;
@@ -50,7 +50,7 @@ public class ComponentBuilderImpl implements ComponentBuilder {
 
     @Inject
     public ComponentBuilderImpl(AttributeHandler attributeHandler, Gson gson,
-            Properties properties) {
+            Configuration properties) {
         this.attributeHandler = attributeHandler;
         this.gson = gson;
     }

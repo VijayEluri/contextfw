@@ -13,10 +13,10 @@ import org.dom4j.Document;
  * 
  * <p>
  *  An XSL-post-processor can be set through 
- *  {@link net.contextfw.web.application.properties.Properties}.
+ *  {@link net.contextfw.web.application.configuration.Configuration}.
  * </p>
  * 
- * @see net.contextfw.web.application.properties.Properties#XSL_POST_PROCESSOR
+ * @see net.contextfw.web.application.configuration.Configuration#XSL_POST_PROCESSOR
  */
 public interface DocumentProcessor {
 	

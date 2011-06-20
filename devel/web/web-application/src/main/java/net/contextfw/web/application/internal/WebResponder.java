@@ -20,11 +20,11 @@ import javax.xml.transform.stream.StreamSource;
 
 import net.contextfw.web.application.DocumentProcessor;
 import net.contextfw.web.application.WebApplicationException;
+import net.contextfw.web.application.configuration.KeyValue;
+import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.internal.service.DirectoryWatcher;
 import net.contextfw.web.application.internal.util.ResourceEntry;
 import net.contextfw.web.application.internal.util.ResourceScanner;
-import net.contextfw.web.application.properties.KeyValue;
-import net.contextfw.web.application.properties.Properties;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -46,246 +46,252 @@ import com.google.inject.Singleton;
 @Singleton
 public class WebResponder {
 
-	private static final Pattern XSL_ACCEPTOR = Pattern.compile(".*\\.xsl",
-			Pattern.CASE_INSENSITIVE);
+    private static final Pattern XSL_ACCEPTOR = Pattern.compile(".*\\.xsl",
+            Pattern.CASE_INSENSITIVE);
 
-	private Logger logger = LoggerFactory.getLogger(WebResponder.class);
+    private Logger logger = LoggerFactory.getLogger(WebResponder.class);
 
-	private List<String> rootResourcePaths = new ArrayList<String>();
-	private final List<String> resourcePaths = new ArrayList<String>();
-	private final List<KeyValue<String, String>> namespaces = 
-	    new ArrayList<KeyValue<String, String>>();
-	
-	private int currentTransformer = 0;
-	private List<Transformer> transformers;
-	
-	private final int transformerCount;
-	private final boolean debugMode;
-	private final boolean logXml;
-	private final DocumentProcessor xslPostProcessor;
-	
-	public enum Mode {
+    private List<String> rootResourcePaths = new ArrayList<String>();
+    private final List<String> resourcePaths = new ArrayList<String>();
+    private final List<KeyValue<String, String>> namespaces =
+            new ArrayList<KeyValue<String, String>>();
 
-		INIT("text/html;charset=UTF-8"), UPDATE("text/xml;charset=UTF-8"), XML(
-				"text/xml;charset=UTF-8");
+    private int currentTransformer = 0;
+    private List<Transformer> transformers;
 
-		private final String contentType;
+    private final int transformerCount;
+    private final boolean debugMode;
+    private final boolean logXml;
+    private final DocumentProcessor xslPostProcessor;
 
-		private Mode(String contentType) {
-			this.contentType = contentType;
-		}
+    public enum Mode {
 
-		public String getContentType() {
-			return contentType;
-		}
-	}
+        INIT("text/html;charset=UTF-8"), UPDATE("text/xml;charset=UTF-8"), XML(
+                "text/xml;charset=UTF-8");
 
-	@Inject
-	public WebResponder(Properties configuration, Injector injector, DirectoryWatcher watcher) {
-		rootResourcePaths.add("net.contextfw.web.application");
-		transformerCount = configuration.get(Properties.TRANSFORMER_COUNT);
-		debugMode = configuration.get(Properties.DEVELOPMENT_MODE);
-		logXml = configuration.get(Properties.LOG_XML);
-		resourcePaths.addAll(configuration.get(Properties.RESOURCE_PATH));
-		namespaces.addAll(configuration.get(Properties.NAMESPACE));
-		if (configuration.get(Properties.XSL_POST_PROCESSOR) != null) {
-			xslPostProcessor = injector.getInstance(
-					configuration.get(Properties.XSL_POST_PROCESSOR));
-		} else {
-			xslPostProcessor = null;
-		}
-	}
+        private final String contentType;
 
-	private final static TransformerFactory factory = TransformerFactory
-			.newInstance();
+        private Mode(String contentType) {
+            this.contentType = contentType;
+        }
 
-	public void logXML(Document d) {
-		try {
-			OutputFormat format = OutputFormat.createPrettyPrint();
-			XMLWriter writer;
+        public String getContentType() {
+            return contentType;
+        }
+    }
 
-			StringWriter xml = new StringWriter();
-			writer = new XMLWriter(xml, format);
-			writer.write(d);
+    @Inject
+    public WebResponder(Configuration configuration, Injector injector, DirectoryWatcher watcher) {
+        rootResourcePaths.add("net.contextfw.web.application");
+        transformerCount = configuration.get(Configuration.TRANSFORMER_COUNT);
+        debugMode = configuration.get(Configuration.DEVELOPMENT_MODE);
+        logXml = configuration.get(Configuration.LOG_XML);
+        resourcePaths.addAll(configuration.get(Configuration.RESOURCE_PATH));
+        namespaces.addAll(configuration.get(Configuration.NAMESPACE));
+        if (configuration.get(Configuration.XSL_POST_PROCESSOR) != null) {
+            xslPostProcessor = injector.getInstance(
+                    configuration.get(Configuration.XSL_POST_PROCESSOR));
+        } else {
+            xslPostProcessor = null;
+        }
+    }
 
-			logger.info("Logged xml-response:\n{}", xml.toString());
+    private final static TransformerFactory factory = TransformerFactory
+            .newInstance();
 
-		} catch (Exception e) {
-			throw new WebApplicationException(e);
-		}
-	}
+    public void logXML(Document d) {
+        try {
+            OutputFormat format = OutputFormat.createPrettyPrint();
+            XMLWriter writer;
 
-	private Transformer getTransformer() {
-		List<Transformer> transformers = this.transformers;
-		if (transformers == null) {
-			synchronized (this) {
-				if (transformers == null) {
-					logger.info("Reloading resources");
-					clean();
-					transformers = this.transformers;
-				}
-			}
-		}
-		currentTransformer = (currentTransformer + 1) % transformerCount;
-		return transformers.get(currentTransformer);
-	}
+            StringWriter xml = new StringWriter();
+            writer = new XMLWriter(xml, format);
+            writer.write(d);
 
-	public synchronized void clean() {
-		transformers = new ArrayList<Transformer>(transformerCount);
+            logger.info("Logged xml-response:\n{}", xml.toString());
 
-		String xslDocumenContent = getXSLDocumentContent();
+        } catch (Exception e) {
+            throw new WebApplicationException(e);
+        }
+    }
 
-		for (int i = 0; i < transformerCount; i++) {
-			try {
-				transformers.add(factory.newTransformer(new StreamSource(
-						new StringReader(xslDocumenContent))));
-			} catch (TransformerConfigurationException e) {
-				throw new WebApplicationException("Could not get transformer",
-						e);
-			}
-		}
-	}
+    private Transformer getTransformer() {
+        List<Transformer> transformers = this.transformers;
+        if (transformers == null) {
+            synchronized (this) {
+                if (transformers == null) {
+                    logger.info("Reloading resources");
+                    clean();
+                    transformers = this.transformers;
+                }
+            }
+        }
+        currentTransformer = (currentTransformer + 1) % transformerCount;
+        return transformers.get(currentTransformer);
+    }
 
-	protected String getXSLDocumentContent() {
+    public synchronized void clean() {
+        transformers = new ArrayList<Transformer>(transformerCount);
 
-		List<ResourceEntry> rootResources = ResourceScanner.findResources(
-				rootResourcePaths, XSL_ACCEPTOR);
+        String xslDocumenContent = getXSLDocumentContent();
 
-		ResourceEntry root = null;
+        for (int i = 0; i < transformerCount; i++) {
+            try {
+                transformers.add(factory.newTransformer(new StreamSource(
+                        new StringReader(xslDocumenContent))));
+            } catch (TransformerConfigurationException e) {
+                throw new WebApplicationException("Could not get transformer",
+                        e);
+            }
+        }
+    }
 
-		Iterator<ResourceEntry> iter = rootResources.iterator();
+    protected String getXSLDocumentContent() {
 
-		while (iter.hasNext()) {
-			ResourceEntry next = iter.next();
-			if (next.getPath().endsWith("root.xsl")) {
-				iter.remove();
-				root = next;
-				break;
-			}
-		}
+        List<ResourceEntry> rootResources = ResourceScanner.findResources(
+                rootResourcePaths, XSL_ACCEPTOR);
 
-		List<ResourceEntry> resources = ResourceScanner.findResources(resourcePaths, XSL_ACCEPTOR);
+        ResourceEntry root = null;
 
-		InputStream stream;
-		SAXReader reader = new SAXReader();
-		try {
-			stream = root.getInputStream();
-			Document document = reader.read(stream);
-			stream.close();
-			for (KeyValue<String, String> entry : namespaces) {
-				document.getRootElement().addNamespace(entry.getKey(),
-						entry.getValue());
-			}
+        Iterator<ResourceEntry> iter = rootResources.iterator();
 
-			Element stylesheet = (Element) document
-					.selectSingleNode("//stylesheet");
+        while (iter.hasNext()) {
+            ResourceEntry next = iter.next();
+            if (next.getPath().endsWith("root.xsl")) {
+                iter.remove();
+                root = next;
+                break;
+            }
+        }
 
-			// Adding other stylesheets
+        List<ResourceEntry> resources = ResourceScanner.findResources(resourcePaths, XSL_ACCEPTOR);
 
-			for (ResourceEntry file : resources) {
-				if (file.getPath().endsWith(".xsl")) {
-					reader = new SAXReader();
-					stream = file.getInputStream();
-					Document child = reader.read(stream);
-					stream.close();
+        InputStream stream;
+        SAXReader reader = new SAXReader();
+        try {
+            stream = root.getInputStream();
+            Document document = reader.read(stream);
+            stream.close();
+            for (KeyValue<String, String> entry : namespaces) {
+                document.getRootElement().addNamespace(entry.getKey(),
+                        entry.getValue());
+            }
 
-					for (Object el : child.getRootElement().elements()) {
-						if (el instanceof Node) {
-							stylesheet.add(((Node) el).detach());
-						}
-					}
-				}
-			}
-			
-			if (xslPostProcessor != null) {
-				xslPostProcessor.process(document);
-			}
-			
-			StringWriter content = new StringWriter();
-			OutputFormat format = OutputFormat.createCompactFormat();
-			format.setXHTML(true);
-			format.setTrimText(false);
-			format.setPadText(true);
-			format.setNewlines(false);
-			XMLWriter writer = new XMLWriter(content, format);
-			writer.write(document);
-			return content.toString();
-		} catch (DocumentException e) {
-			throw new WebApplicationException(e);
-		} catch (UnsupportedEncodingException e) {
-			throw new WebApplicationException(e);
-		} catch (IOException e) {
-			throw new WebApplicationException(e);
-		}
-	}
+            Element stylesheet = (Element) document
+                    .selectSingleNode("//stylesheet");
 
-	// public Reader getXSLDocument() {
-	// return new StringReader(getXSLDocumentContent());
-	// }
+            // Adding other stylesheets
 
-	public void sendResponse(Document document, HttpServletResponse resp,
-			Mode mode) throws ServletException, IOException {
-		if (logXml) {
-			logXML(document);
-		}
-		if (mode != Mode.XML) {
-			sendHTMLResponse(document, resp, mode);
-		} else {
-			sendXMLResponse(document, resp);
-		}
-	}
+            for (ResourceEntry file : resources) {
+                if (file.getPath().endsWith(".xsl")) {
+                    reader = new SAXReader();
+                    stream = file.getInputStream();
 
-	private void sendXMLResponse(Document document, HttpServletResponse resp)
-			throws IOException {
-		resp.setContentType(Mode.XML.getContentType());
-		resp.setHeader("Expires", "-1");
-		resp.setHeader("Pragma", "no-cache");
-		resp.setHeader("Cache-Control", "no-cache, no-store");
-		OutputFormat format = OutputFormat.createPrettyPrint();
-		new XMLWriter(resp.getWriter(), format).write(document);
-	}
+                    try {
+                        Document child = reader.read(stream);
+                        for (Object el : child.getRootElement().elements()) {
+                            if (el instanceof Node) {
+                                stylesheet.add(((Node) el).detach());
+                            }
+                        }
+                    } catch (DocumentException de) {
+                        throw new WebApplicationException("Xsl-file " + file.getPath() + " contains errors", de);
+                    } finally {
+                        stream.close();
+                    }
 
-	public void sendHTMLResponse(Document document, HttpServletResponse resp,
-			Mode mode) throws ServletException, IOException {
+                }
+            }
 
-		resp.setContentType(mode.getContentType());
-		resp.setHeader("Expires", "-1");
-		resp.setHeader("Pragma", "no-cache");
-		resp.setHeader("Cache-Control", "no-cache, no-store");
+            if (xslPostProcessor != null) {
+                xslPostProcessor.process(document);
+            }
 
-		DocumentSource source = new DocumentSource(document);
-		DocumentResult result = new DocumentResult();
+            StringWriter content = new StringWriter();
+            OutputFormat format = OutputFormat.createCompactFormat();
+            format.setXHTML(true);
+            format.setTrimText(false);
+            format.setPadText(true);
+            format.setNewlines(false);
+            XMLWriter writer = new XMLWriter(content, format);
+            writer.write(document);
+            return content.toString();
+        } catch (DocumentException e) {
+            throw new WebApplicationException(e);
+        } catch (UnsupportedEncodingException e) {
+            throw new WebApplicationException(e);
+        } catch (IOException e) {
+            throw new WebApplicationException(e);
+        }
+    }
 
-		try {
-			Transformer tr = getTransformer();
-			synchronized (tr) {
-				String lang = document.getRootElement().attributeValue(
-						"xml:lang");
-				if (lang != null) {
-					tr.setParameter("xml:lang", lang);
-				}
-				tr.transform(source, result);
-			}
-			Document rDocument = result.getDocument();
+    // public Reader getXSLDocument() {
+    // return new StringReader(getXSLDocumentContent());
+    // }
 
-			OutputFormat format = OutputFormat.createCompactFormat();
-			format.setXHTML(true);
-			format.setTrimText(false);
-			format.setPadText(true);
-			format.setNewlines(false);
-			format.setExpandEmptyElements(true);
+    public void sendResponse(Document document, HttpServletResponse resp,
+            Mode mode) throws ServletException, IOException {
+        if (logXml) {
+            logXML(document);
+        }
+        if (mode != Mode.XML) {
+            sendHTMLResponse(document, resp, mode);
+        } else {
+            sendXMLResponse(document, resp);
+        }
+    }
 
-			if (mode == Mode.INIT) {
-				rDocument
-						.addDocType("html",
-								"-//W3C//DTD XHTML 1.0 Transitional//EN",
-								"http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd");
-				new HTMLWriter(resp.getWriter(), format).write(rDocument);
-			} else {
-				new HTMLWriter(resp.getWriter(), format).write(rDocument);
-			}
-		} catch (TransformerException e) {
-			e.printStackTrace();
-		}
-	}
+    private void sendXMLResponse(Document document, HttpServletResponse resp)
+            throws IOException {
+        resp.setContentType(Mode.XML.getContentType());
+        resp.setHeader("Expires", "-1");
+        resp.setHeader("Pragma", "no-cache");
+        resp.setHeader("Cache-Control", "no-cache, no-store");
+        OutputFormat format = OutputFormat.createPrettyPrint();
+        new XMLWriter(resp.getWriter(), format).write(document);
+    }
+
+    public void sendHTMLResponse(Document document, HttpServletResponse resp,
+            Mode mode) throws ServletException, IOException {
+
+        resp.setContentType(mode.getContentType());
+        resp.setHeader("Expires", "-1");
+        resp.setHeader("Pragma", "no-cache");
+        resp.setHeader("Cache-Control", "no-cache, no-store");
+
+        DocumentSource source = new DocumentSource(document);
+        DocumentResult result = new DocumentResult();
+
+        try {
+            Transformer tr = getTransformer();
+            synchronized (tr) {
+                String lang = document.getRootElement().attributeValue(
+                        "xml:lang");
+                if (lang != null) {
+                    tr.setParameter("xml:lang", lang);
+                }
+                tr.transform(source, result);
+            }
+            Document rDocument = result.getDocument();
+
+            OutputFormat format = OutputFormat.createCompactFormat();
+            format.setXHTML(true);
+            format.setTrimText(false);
+            format.setPadText(true);
+            format.setNewlines(false);
+            format.setExpandEmptyElements(true);
+
+            if (mode == Mode.INIT) {
+                rDocument
+                        .addDocType("html",
+                                "-//W3C//DTD XHTML 1.0 Transitional//EN",
+                                "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd");
+                new HTMLWriter(resp.getWriter(), format).write(rDocument);
+            } else {
+                new HTMLWriter(resp.getWriter(), format).write(rDocument);
+            }
+        } catch (TransformerException e) {
+            e.printStackTrace();
+        }
+    }
 }

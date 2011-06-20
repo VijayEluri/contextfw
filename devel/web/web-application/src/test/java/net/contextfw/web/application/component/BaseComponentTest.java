@@ -3,12 +3,12 @@ package net.contextfw.web.application.component;
 import java.io.StringWriter;
 
 import net.contextfw.web.application.WebApplicationException;
+import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.internal.ToStringSerializer;
 import net.contextfw.web.application.internal.component.ComponentBuilder;
 import net.contextfw.web.application.internal.component.ComponentBuilderImpl;
 import net.contextfw.web.application.internal.component.ComponentRegister;
 import net.contextfw.web.application.internal.component.WebApplicationComponent;
-import net.contextfw.web.application.properties.Properties;
 import net.contextfw.web.application.serialize.AttributeSerializer;
 
 import org.dom4j.Node;
@@ -42,7 +42,7 @@ public abstract class BaseComponentTest {
     @Before
     public void before() {
         componentRegister = new ComponentRegister();
-        Properties configuration = Properties.getDefaults();
+        Configuration configuration = Configuration.getDefaults();
         Gson gson = new Gson();
         componentBuilder = new ComponentBuilderImpl(null, gson, configuration);
         domBuilder = new DOMBuilder("WebApplication", serializer, componentBuilder);

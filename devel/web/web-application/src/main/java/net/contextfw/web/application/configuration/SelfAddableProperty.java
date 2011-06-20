@@ -1,4 +1,4 @@
-package net.contextfw.web.application.properties;
+package net.contextfw.web.application.configuration;
 
 import java.util.Collection;
 

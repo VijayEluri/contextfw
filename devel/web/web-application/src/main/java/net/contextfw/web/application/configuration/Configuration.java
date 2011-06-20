@@ -1,4 +1,4 @@
-package net.contextfw.web.application.properties;
+package net.contextfw.web.application.configuration;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -26,11 +26,11 @@ import com.google.gson.JsonSerializer;
  * 
  * <p>
  *  This class is immutable thus modifying or adding properties returns always a new instance
- *  of <code>Properties</code>.
+ *  of <code>Configuration</code>.
  * </p>
  *
  */
-public class Properties {
+public class Configuration {
     
     private static final String KEY_NAMESPACE = "contextfw.namespace";
     
@@ -87,8 +87,8 @@ public class Properties {
      *  This is the recommended way to initialize properties.
      * </p>
      */
-    public static Properties getDefaults() {
-        return new Properties()
+    public static Configuration getDefaults() {
+        return new Configuration()
           .set(DEVELOPMENT_MODE, true)
           .set(LOG_XML, true)
           .set(TRANSFORMER_COUNT, 1)
@@ -380,11 +380,11 @@ public class Properties {
     /**
      * Constructs a new property. Not recommended for normal usage.
      */
-    public Properties() {
+    public Configuration() {
         values = new HashMap<String, Object>();
     }
     
-    private <T> Properties(Map<String, Object> values, Property<T> property, T value) {
+    private <T> Configuration(Map<String, Object> values, Property<T> property, T value) {
         this.values = new HashMap<String, Object>();
         this.values.putAll(values);
         this.values.put(property.getKey(), property.validate(value));
@@ -405,8 +405,8 @@ public class Properties {
      *  Previosly set property get overriden.
      * </p>
      */
-    public <T> Properties set(SettableProperty<T> property, T value) {
-        return new Properties(values, property, value);
+    public <T> Configuration set(SettableProperty<T> property, T value) {
+        return new Configuration(values, property, value);
     }
     
     /**
@@ -416,8 +416,8 @@ public class Properties {
      *  Previosly set property get overriden.
      * </p>
      */
-    public <T extends Collection<V>, V> Properties set(AddableProperty<T, V> property, T value) {
-        return new Properties(values, property, value);
+    public <T extends Collection<V>, V> Configuration set(AddableProperty<T, V> property, T value) {
+        return new Configuration(values, property, value);
     }
     
     /**
@@ -427,8 +427,8 @@ public class Properties {
      *  Previosly set property get overriden.
      * </p>
      */
-    public <T extends Collection<V>, V> Properties set(SelfAddableProperty<T, V> property, T value) {
-        return new Properties(values, property, value);
+    public <T extends Collection<V>, V> Configuration set(SelfAddableProperty<T, V> property, T value) {
+        return new Configuration(values, property, value);
     }
     
     /**
@@ -438,26 +438,26 @@ public class Properties {
      *  Previosly set property get overriden.
      * </p>
      */
-    public <T> Properties set(SelfSettableProperty<T> property) {
-        return new Properties(values, property, property.getValue());
+    public <T> Configuration set(SelfSettableProperty<T> property) {
+        return new Configuration(values, property, property.getValue());
     }
     
     /**
      * Adds a new property
      */
-    public <T extends Collection<V>, V> Properties add(AddableProperty<T, V> property, V value) {
-        return new Properties(values, property, property.add(get(property), value));
+    public <T extends Collection<V>, V> Configuration add(AddableProperty<T, V> property, V value) {
+        return new Configuration(values, property, property.add(get(property), value));
     }
     
     /**
      * Adds a new property
      */
-    public <T extends Collection<V>, V> Properties add(SelfAddableProperty<T, V> property) {
-        return new Properties(values, property, property.add(get(property), property.getValue()));
+    public <T extends Collection<V>, V> Configuration add(SelfAddableProperty<T, V> property) {
+        return new Configuration(values, property, property.add(get(property), property.getValue()));
     }
     
-//    public <K, V> Properties add(KeyValueSetProperty<K, V> property) {
-//        return new Properties(values, property, property.append(
+//    public <K, V> Configuration add(KeyValueSetProperty<K, V> property) {
+//        return new Configuration(values, property, property.append(
 //                get(property), property.getValue()));
 //    }
 }

@@ -1,4 +1,4 @@
-package net.contextfw.web.application.properties;
+package net.contextfw.web.application.configuration;
 
 public class BooleanProperty extends BaseProperty<Boolean> 
    implements SettableProperty<Boolean> {

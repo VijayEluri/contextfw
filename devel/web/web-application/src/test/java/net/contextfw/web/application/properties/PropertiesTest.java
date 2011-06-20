@@ -1,19 +1,22 @@
 package net.contextfw.web.application.properties;
 
-import static net.contextfw.web.application.properties.Properties.ATTRIBUTE_JSON_SERIALIZER;
-import static net.contextfw.web.application.properties.Properties.DEVELOPMENT_MODE;
-import static net.contextfw.web.application.properties.Properties.LIFECYCLE_LISTENER;
-import static net.contextfw.web.application.properties.Properties.NAMESPACE;
-import static net.contextfw.web.application.properties.Properties.PROPERTY_PROVIDER;
-import static net.contextfw.web.application.properties.Properties.REMOVAL_SCHEDULE_PERIOD;
-import static net.contextfw.web.application.properties.Properties.RESOURCE_PATH;
-import static net.contextfw.web.application.properties.Properties.TRANSFORMER_COUNT;
-import static net.contextfw.web.application.properties.Properties.PAGEFLOW_FILTER;
+import static net.contextfw.web.application.configuration.Configuration.ATTRIBUTE_JSON_SERIALIZER;
+import static net.contextfw.web.application.configuration.Configuration.DEVELOPMENT_MODE;
+import static net.contextfw.web.application.configuration.Configuration.LIFECYCLE_LISTENER;
+import static net.contextfw.web.application.configuration.Configuration.NAMESPACE;
+import static net.contextfw.web.application.configuration.Configuration.PAGEFLOW_FILTER;
+import static net.contextfw.web.application.configuration.Configuration.PROPERTY_PROVIDER;
+import static net.contextfw.web.application.configuration.Configuration.REMOVAL_SCHEDULE_PERIOD;
+import static net.contextfw.web.application.configuration.Configuration.RESOURCE_PATH;
+import static net.contextfw.web.application.configuration.Configuration.TRANSFORMER_COUNT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.util.Date;
+
+import net.contextfw.web.application.configuration.Configuration;
+
 import org.junit.Test;
 
 public class PropertiesTest {
@@ -21,7 +24,7 @@ public class PropertiesTest {
     @Test
     public void test() {
         
-        Properties props = Properties.getDefaults()
+        Configuration props = Configuration.getDefaults()
           .add(RESOURCE_PATH, "net.contextfw.web")
           .add(RESOURCE_PATH, "templates.path")
           .add(NAMESPACE.as("foo", "bar"))

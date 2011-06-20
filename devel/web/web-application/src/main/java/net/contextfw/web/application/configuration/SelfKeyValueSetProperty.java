@@ -1,4 +1,4 @@
-package net.contextfw.web.application.properties;
+package net.contextfw.web.application.configuration;
 
 
 public class SelfKeyValueSetProperty<K, V> extends SelfSetProperty<KeyValue<K, V>> {

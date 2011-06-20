@@ -14,6 +14,7 @@ import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.component.DOMBuilder;
+import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.internal.ComponentUpdateHandler;
 import net.contextfw.web.application.internal.ComponentUpdateHandlerFactory;
 import net.contextfw.web.application.internal.WebResponder;
@@ -25,7 +26,6 @@ import net.contextfw.web.application.internal.initializer.InitializerContextImpl
 import net.contextfw.web.application.internal.util.AttributeHandler;
 import net.contextfw.web.application.lifecycle.PageScoped;
 import net.contextfw.web.application.lifecycle.ResourceView;
-import net.contextfw.web.application.properties.Properties;
 import net.contextfw.web.application.remote.ResourceResponse;
 import net.contextfw.web.application.util.Request;
 
@@ -83,9 +83,9 @@ public class WebApplicationImpl implements WebApplication {
     private final boolean debugMode;
     
     @Inject
-    public WebApplicationImpl(Properties props) {
-        xmlParamName = props.get(Properties.XML_PARAM_NAME);
-        debugMode = props.get(Properties.DEVELOPMENT_MODE);
+    public WebApplicationImpl(Configuration props) {
+        xmlParamName = props.get(Configuration.XML_PARAM_NAME);
+        debugMode = props.get(Configuration.DEVELOPMENT_MODE);
     }
 
     @Override

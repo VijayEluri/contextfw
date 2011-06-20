@@ -6,8 +6,8 @@ import java.util.Map;
 import java.util.UUID;
 
 import net.contextfw.web.application.WebApplicationHandle;
+import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.lifecycle.PageFlowFilter;
-import net.contextfw.web.application.properties.Properties;
 
 public class WebApplicationContextHandler {
 
@@ -15,9 +15,9 @@ public class WebApplicationContextHandler {
     
     private final long maxInactivity;
     
-    public WebApplicationContextHandler(Properties configuration, 
+    public WebApplicationContextHandler(Configuration configuration, 
             PageFlowFilter pageFlowFilter) {
-        maxInactivity = configuration.get(Properties.MAX_INACTIVITY);
+        maxInactivity = configuration.get(Configuration.MAX_INACTIVITY);
         this.pageFlowFilter = pageFlowFilter;
     }
 

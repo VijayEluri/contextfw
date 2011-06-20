@@ -10,11 +10,8 @@ import com.google.inject.servlet.GuiceServletContextListener;
 
 public class ServletConfig extends GuiceServletContextListener {
 
-    private MyApplicationModule applicationModule;
-    
     @Override
     protected Injector getInjector() {
-        applicationModule = new MyApplicationModule();
-        return Guice.createInjector(applicationModule);
+        return Guice.createInjector(new MyApplicationModule());
     }
 }

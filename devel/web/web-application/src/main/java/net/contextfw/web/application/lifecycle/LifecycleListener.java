@@ -10,7 +10,7 @@ package net.contextfw.web.application.lifecycle;
  * </p>
  * 
  * <p>
- *  Can be set by <code>LIFECYCLE_LISTENER</code> by Properties
+ *  Can be set by <code>LIFECYCLE_LISTENER</code> by Configuration
  * </p>
  * 
  * <p>
@@ -19,7 +19,7 @@ package net.contextfw.web.application.lifecycle;
  *  requests if needed.
  * </p>
  * 
- * @see net.contextfw.web.application.properties.Properties.LIFECYCLE_LISTENER
+ * @see net.contextfw.web.application.configuration.Configuration.LIFECYCLE_LISTENER
  * @see PageFlowFilter
  */
 public interface LifecycleListener {
