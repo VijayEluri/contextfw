@@ -49,6 +49,29 @@ contextfw = {
 		}
 		this._call(elId, method, args);
 	},
+	
+	/*
+	 * getResource(elementId, method, [args...], callback)
+	 */
+	getJson: function(elId, method) {
+
+		var params = {}
+		for(var i=2; i< arguments.length - 1; i++) {
+	      if (arguments[i] != null && typeof(arguments[i]) == "object") {
+	    	  params["p"+(i-2)] = JSON.serialize(arguments[i]);
+	      }
+	      else {
+	    	  params["p"+(i-2)] = arguments[i];
+	      }
+		}
+
+		var callback = arguments[arguments.length - 1];
+		
+		jQuery.post(this.updateUrl+"/"+elId+"/"+method, params, function(data, textStatus) {
+			callback(JSON.parse(data));
+	    }, "text");
+	},
+	
 
 	_parseUpdate: function(data, tagName, callback) {
 		  var current = data;
