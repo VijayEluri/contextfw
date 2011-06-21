@@ -34,12 +34,20 @@ public class FunctionCall extends Script {
 
     @Override
     public String getScript(ScriptContext scriptContext) {
-        return FunctionCall.toScript(function,
+        return FunctionCall.toScript(getFunctionName(scriptContext),
                 args == null ? 0 : args.length);
     }
 
     @Override
     public Object[] getArguments(ScriptContext scriptContext) {
         return args;
+    }
+
+    /**
+     * Override this, if function name is determined lazily.
+     * @return
+     */
+    protected String getFunctionName(ScriptContext scriptContext) {
+        return function;
     }
 }
