@@ -28,6 +28,8 @@ public abstract class BaseComponentTest {
     
     protected ComponentBuilder componentBuilder;
     
+    protected ScriptContext scriptContext;
+    
     protected WebApplicationComponent webApplicationComponent;
     
     protected DOMBuilder domBuilder;
@@ -45,6 +47,7 @@ public abstract class BaseComponentTest {
         Configuration configuration = Configuration.getDefaults();
         Gson gson = new Gson();
         componentBuilder = new ComponentBuilderImpl(null, gson, configuration);
+        scriptContext = (ScriptContext) componentBuilder;
         domBuilder = new DOMBuilder("WebApplication", serializer, componentBuilder);
         webApplicationComponent = new WebApplicationComponent(componentRegister);
     }

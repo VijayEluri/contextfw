@@ -18,6 +18,7 @@ import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.component.CustomBuild;
 import net.contextfw.web.application.component.DOMBuilder;
 import net.contextfw.web.application.component.Element;
+import net.contextfw.web.application.component.ScriptContext;
 import net.contextfw.web.application.component.ScriptElement;
 import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.internal.util.AttributeHandler;
@@ -29,7 +30,7 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 @Singleton
-public class ComponentBuilderImpl implements ComponentBuilder {
+public class ComponentBuilderImpl implements ComponentBuilder, ScriptContext {
 
     private static class MetaModel {
         public List<Method> beforeBuilds = new ArrayList<Method>();
