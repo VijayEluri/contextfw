@@ -33,7 +33,8 @@ limitations under the License.
 	<modules>
 		<module>web-application</module>
 		<module>web-quickstart</module>
-	</modules>
+		<!--<module>web-commons</module> -->
+    </modules>
 
 	<dependencies>
 		<dependency>
