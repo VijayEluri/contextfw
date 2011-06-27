@@ -27,7 +27,7 @@ import net.contextfw.web.application.component.Component;
  *  If URL is prefixed by <code>regex:</code> then path is matched as regular expression giving
  *  more freedom.
  * </p>
- * @see net.contextfw.web.application.annotations.PageScoped
+ * @see PageScoped
  * @see ViewComponent
  * 
  * @author marko

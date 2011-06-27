@@ -48,6 +48,8 @@ public final class DOMBuilder {
 //    }
     
     /**
+     * Adds an attribute to current element 
+     * 
      * @param name
      *      Name of the attribute
      * @param value

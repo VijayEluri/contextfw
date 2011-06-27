@@ -9,7 +9,7 @@ package net.contextfw.web.application.component;
  * correct convention.
  * </p>
  * <p>
- * The call will be in form: <code>ComponentName.methodName([args,...]);
+ * The call will be in form: <code>ComponentName('id').methodName([args,...]);
  * </p>
  */
 public class ComponentFunctionCall extends Script {
