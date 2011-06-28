@@ -45,18 +45,6 @@ public class MyLifecycleListener implements LifecycleListener {
 	}
 
 	@Override
-	public void onRefresh(String handle) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void onRemove(String handle) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
 	public void beforeRender() {
 		log("Before render");
 	}
