@@ -52,8 +52,6 @@ public class ClassScanner extends AbstractScanner {
                         classes.add(_class);
                     }
                 }
-                return classes;
-                
             }
         } catch (ClassNotFoundException e) {
             throw new WebApplicationException(e);
