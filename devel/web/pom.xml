@@ -21,14 +21,14 @@ limitations under the License.
 	<parent>
 		<artifactId>context</artifactId>
 		<groupId>net.contextfw</groupId>
-		<version>0.8.1</version>
+		<version>0.8.1-snapshot</version>
 	</parent>
 
 	<groupId>net.contextfw</groupId>
 	<artifactId>web</artifactId>
 	<packaging>pom</packaging>
 	<name>Context :: Web</name>
-	<version>0.8.1</version>
+	<version>0.8.1-snapshot</version>
 
 	<modules>
 		<module>web-application</module>
