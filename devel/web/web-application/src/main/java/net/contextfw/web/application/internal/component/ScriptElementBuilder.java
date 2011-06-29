@@ -12,7 +12,12 @@ class ScriptElementBuilder extends NamedBuilder {
     private final ScriptContext scriptContext;
     private final Gson gson;
     
-    protected ScriptElementBuilder(ScriptContext scriptContext, Gson gson, PropertyAccess<Object> propertyAccess, String name, String accessName) {
+    protected ScriptElementBuilder(
+            ScriptContext scriptContext, 
+            Gson gson, 
+            PropertyAccess<Object> propertyAccess, 
+            String name, 
+            String accessName) {
         super(propertyAccess, name, accessName);
         this.scriptContext = scriptContext;
         this.gson = gson;
@@ -23,9 +28,16 @@ class ScriptElementBuilder extends NamedBuilder {
         if (value != null) {
         	if (value instanceof Script) {
         		((Script) value).build(b.descend(name), gson, scriptContext);
-        	}
-        	else {
-        		throw new WebApplicationException("Instance of '"+value.getClass().getName()+"' is not a subclass of Script");
+        	} else if (value instanceof Iterable) {
+                for (Object i : ((Iterable<?>) value)) {
+                    ((Script) i).build(b.descend(name), gson, scriptContext);
+                }
+        	} else if (value instanceof Object[]) {
+        	    for (Object i : ((Object[]) value)) {
+        	        ((Script) i).build(b.descend(name), gson, scriptContext);
+        	    }
+        	}  else {
+        	    throw new WebApplicationException("Instance of '"+value.getClass().getName()+"' is not a subclass of Script");
         	}
         }
     }

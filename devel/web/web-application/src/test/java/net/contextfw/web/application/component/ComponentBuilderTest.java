@@ -2,6 +2,11 @@ package net.contextfw.web.application.component;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
 import net.contextfw.web.application.lifecycle.AfterBuild;
 import net.contextfw.web.application.lifecycle.BeforeBuild;
 
@@ -25,6 +30,19 @@ public class ComponentBuilderTest extends BaseComponentTest {
         @Element(wrap=false)
         public MethodEmbed methodEmbedded() {
             return new MethodEmbed();
+        }
+        
+        @Element
+        public List<MethodEmbed> listOfEmbeddeds() {
+            List<MethodEmbed> embeds = new ArrayList<MethodEmbed>();
+            embeds.add(new MethodEmbed());
+            embeds.add(new MethodEmbed());
+            return embeds;
+        }
+        
+        @Element
+        public MethodEmbed[] arrayOfEmbeddeds() {
+            return new MethodEmbed[] { new MethodEmbed(), new MethodEmbed() };
         }
         
         @CustomBuild
@@ -51,6 +69,22 @@ public class ComponentBuilderTest extends BaseComponentTest {
         @ScriptElement
         public Script init() {
         	return new ComponentFunctionCall(this, "init", "a");
+        }
+        
+        @ScriptElement
+        public Collection<Script> listOfInits() {
+            List<Script> inits = new ArrayList<Script>();
+            inits.add(new ComponentFunctionCall(this, "init", "a"));
+            inits.add(new ComponentFunctionCall(this, "init", "a"));
+            return inits;
+        }
+        
+        @ScriptElement
+        public Script[] arrayOfInits() {
+            List<Script> inits = new ArrayList<Script>();
+            return new Script[] {
+              new ComponentFunctionCall(this, "init", "a"),
+              new ComponentFunctionCall(this, "init", "a") };
         }
 
         @ScriptElement
@@ -151,6 +185,8 @@ public class ComponentBuilderTest extends BaseComponentTest {
         assertDom("//WebApplication/Aa").hasAttribute("id", "el1");
         assertDom("//WebApplication/Aa/custom/barFoo").hasAttribute("fooBar", "true");
         assertDom("//WebApplication/Aa/barFoo1").hasAttribute("fooBar1", "true");
+        assertDom("//WebApplication/Aa/listOfEmbeddeds//MethodEmbed").exists();
+        assertDom("//WebApplication/Aa/arrayOfEmbeddeds//MethodEmbed").exists();
         assertEquals("before.custom.after", comp.order);
     }
     
