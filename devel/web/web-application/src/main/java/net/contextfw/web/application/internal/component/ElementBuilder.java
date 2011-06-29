@@ -21,6 +21,11 @@ class ElementBuilder extends NamedBuilder {
                 for (Object i : ((Iterable<?>) value)) {
                     componentBuilder.build(child, i);
                 }
+            } else if (value instanceof Object[]) {
+                DOMBuilder child = b.descend(name);
+                for (Object i : ((Object[]) value)) {
+                    componentBuilder.build(child, i);
+                }
             } else {
                 b.descend(name).text(value);
             }
