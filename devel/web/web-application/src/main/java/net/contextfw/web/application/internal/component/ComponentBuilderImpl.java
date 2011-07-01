@@ -6,6 +6,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -33,6 +34,7 @@ import com.google.inject.Singleton;
 public class ComponentBuilderImpl implements ComponentBuilder, ScriptContext {
 
     private static class MetaModel {
+        public Set<String> registeredNames = new HashSet<String>();
         public List<Method> beforeBuilds = new ArrayList<Method>();
         public List<Method> afterBuilds = new ArrayList<Method>();
         public List<Builder> builders = new ArrayList<Builder>();
@@ -130,7 +132,7 @@ public class ComponentBuilderImpl implements ComponentBuilder, ScriptContext {
                             : element.name();
                     builder = new ElementBuilder(this, propertyAccess,
                             element.wrap() ? name : null, field.getName());
-                    addToBuilders(model, element.onCreate(),
+                    addToBuilders(model, field.getName(), element.onCreate(),
                             element.onUpdate(), builder);
                 } else if (field.getAnnotation(Attribute.class) != null) {
                     Attribute attribute = field.getAnnotation(Attribute.class);
@@ -138,7 +140,7 @@ public class ComponentBuilderImpl implements ComponentBuilder, ScriptContext {
                             : attribute.name();
                     builder = new AttributeBuilder(propertyAccess, name,
                             field.getName());
-                    addToBuilders(model, attribute.onCreate(),
+                    addToBuilders(model, field.getName(), attribute.onCreate(),
                             attribute.onUpdate(), builder);
                 } else if (field.getAnnotation(ScriptElement.class) != null) {
                     ScriptElement scriptElement = field
@@ -146,7 +148,7 @@ public class ComponentBuilderImpl implements ComponentBuilder, ScriptContext {
                     name = scriptElement.wrapper();
                     builder = new ScriptElementBuilder(this, gson,
                             propertyAccess, name, field.getName());
-                    addToBuilders(model, scriptElement.onCreate(),
+                    addToBuilders(model, field.getName(), scriptElement.onCreate(),
                             scriptElement.onUpdate(), builder);
                 }
             }
@@ -163,7 +165,7 @@ public class ComponentBuilderImpl implements ComponentBuilder, ScriptContext {
                     builder = new ElementBuilder(this, new MethodPropertyAccess(
                             method),
                             annotation.wrap() ? name : null, method.getName());
-                    addToBuilders(model, annotation.onCreate(),
+                    addToBuilders(model, method.getName(), annotation.onCreate(),
                             annotation.onUpdate(), builder);
                 } else if (method.getAnnotation(Attribute.class) != null) {
                     Attribute annotation = method
@@ -173,7 +175,7 @@ public class ComponentBuilderImpl implements ComponentBuilder, ScriptContext {
                     builder = new AttributeBuilder(new MethodPropertyAccess(
                             method), name,
                             method.getName());
-                    addToBuilders(model, annotation.onCreate(),
+                    addToBuilders(model, method.getName(), annotation.onCreate(),
                             annotation.onUpdate(), builder);
                 } else if (method.getAnnotation(CustomBuild.class) != null) {
                     CustomBuild annotation = method
@@ -182,7 +184,7 @@ public class ComponentBuilderImpl implements ComponentBuilder, ScriptContext {
                             : annotation.name();
                     builder = new MethodCustomBuilder(method,
                             annotation.wrap() ? name : null);
-                    addToBuilders(model, annotation.onCreate(),
+                    addToBuilders(model, method.getName(), annotation.onCreate(),
                             annotation.onUpdate(), builder);
                 } else if (method.getAnnotation(ScriptElement.class) != null) {
                     ScriptElement scriptElement = method
@@ -191,7 +193,7 @@ public class ComponentBuilderImpl implements ComponentBuilder, ScriptContext {
                     builder = new ScriptElementBuilder(this, gson,
                             new MethodPropertyAccess(
                                     method), name, method.getName());
-                    addToBuilders(model, scriptElement.onCreate(),
+                    addToBuilders(model, method.getName(), scriptElement.onCreate(),
                             scriptElement.onUpdate(), builder);
                 } else if (method.getAnnotation(AfterBuild.class) != null) {
                     addAfterBuild(model, method);
@@ -211,8 +213,18 @@ public class ComponentBuilderImpl implements ComponentBuilder, ScriptContext {
         model.beforeBuilds.add(method);
     }
 
-    private void addToBuilders(MetaModel model, boolean onCreate,
-            boolean onUpdate, Builder builder) {
+    private void addToBuilders(MetaModel model, 
+                               String actualName, 
+                               boolean onCreate,
+                               boolean onUpdate, 
+                               Builder builder) {
+        
+        if (model.registeredNames.contains(actualName)) {
+            return;
+        } else {
+            model.registeredNames.add(actualName);
+        }
+        
         if (onCreate) {
             model.builders.add(builder);
         }
