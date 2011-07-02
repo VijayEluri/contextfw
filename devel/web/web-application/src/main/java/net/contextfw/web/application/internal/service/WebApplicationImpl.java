@@ -26,6 +26,7 @@ import net.contextfw.web.application.internal.initializer.InitializerContextImpl
 import net.contextfw.web.application.internal.util.AttributeHandler;
 import net.contextfw.web.application.lifecycle.PageScoped;
 import net.contextfw.web.application.lifecycle.ResourceView;
+import net.contextfw.web.application.remote.ResourceBody;
 import net.contextfw.web.application.remote.ResourceResponse;
 import net.contextfw.web.application.util.Request;
 
@@ -112,9 +113,8 @@ public class WebApplicationImpl implements WebApplication {
             }
 
             try {
-                if (context.getLeaf() instanceof ResourceView) {
-                    sendResourceResponse();
-                    return true;
+                if (mode == Mode.INIT && context.getLeaf() instanceof ResourceView) {
+                    return sendResourceResponse();
                 } else {
                     sendNormalResponse();
                     return false;
@@ -132,10 +132,26 @@ public class WebApplicationImpl implements WebApplication {
         }
     }
 
-    private void sendResourceResponse() throws IOException {
-        Object retVal = ((ResourceView) context.getLeaf()).getResponse();
+    private boolean sendResourceResponse() throws IOException {
+        boolean expire = true;
+        
+        ResourceView leaf = (ResourceView) context.getLeaf();
+        try {
+            ResourceBody annotation = leaf.getClass().getMethod("getResponse")
+                .getAnnotation(ResourceBody.class);
+            
+            if (annotation != null) {
+                expire = annotation.expire();
+            }
+        } catch (SecurityException e) {
+            throw new WebApplicationException(e);
+        } catch (NoSuchMethodException e) {
+            throw new WebApplicationException(e);
+        }
+        
+        Object retVal = leaf.getResponse();
         if (retVal == null) {
-            return;
+            return expire;
         }
         if (retVal instanceof ResourceResponse) {
             ((ResourceResponse) retVal).serve(
@@ -147,7 +163,7 @@ public class WebApplicationImpl implements WebApplication {
             response.setContentType("application/json; charset=UTF-8");
             gson.toJson(retVal, response.getWriter());
         }
-        
+        return expire;
     }
 
     private void sendNormalResponse() throws ServletException, IOException {

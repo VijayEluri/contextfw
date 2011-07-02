@@ -20,12 +20,35 @@ import java.lang.annotation.Target;
  *  <code>ResourceResponse</code>, sending the response is delegated to it. In
  *  other cases the return value is returned as JSON.
  * </p>
+ * 
+ * <p>
+ *  This annotation can also be used with ResourceView-interface. If method getResponse()
+ *  and the ResourceBody.expire() is set to <code>false</code>. Page scope will not be
+ *  expired immediately.
+ * </p>
  *
  * @see Remoted
  * @see ResourceResponse
+ * @see ResourceView
  *
  */
 @Target( { METHOD })
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ResourceBody {
+    
+    /**
+     * <p>
+     *  Defines if page scope should be expired immediately after
+     *  response. 
+     * </p>
+     * <p>
+     *  If page is responding in case where application
+     *  is to be embedded in another page, then this must be changed
+     *  to <code>false</code>
+     * </p>
+     * <p>
+     *  This value has no effect when using as component resource.
+     * </p>
+     */
+    public boolean expire() default false;
 }

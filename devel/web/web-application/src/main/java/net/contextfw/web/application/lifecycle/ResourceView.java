@@ -1,13 +1,23 @@
 package net.contextfw.web.application.lifecycle;
 
 /**
- * Defines that page view should respond with resource.
+ * <p>
+ *  Defines that page view should respond with resource.
+ * </p>
  * 
  * <p>
  *  If a view component is implementing this interface, it is considered
  *  being returning resources rather than normal web page. Resource can  
  *  be anything from JSON to plain text-files or images.
  * </p>
+ * 
+ * <p>
+ *  Normally page scope regarding to this view is immediately expired, becuse
+ *  it has no purpose. However, using ResourceBody-annotation the expiration can
+ *  be disabled. Is needed if system is used in embedded mode.
+ * </p>
+ * 
+ * @see ResourceBody
  */
 public interface ResourceView {
 
