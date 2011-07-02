@@ -11,6 +11,10 @@ contextfw = {
 		this.removeUrl = context + "/contextfw-remove/"+handle;
 		this.refresh();
 		setInterval(function() {contextfw.refresh()}, 1000*30);
+		jQuery.ajaxSetup({ scriptCharset: "utf-8" ,contentType: "application/x-www-form-urlencoded; charset=UTF-8" });
+		jQuery(window).unload( function () {
+		    contextfw.unload(); 
+		});
 	},
 
 	refresh: function() {
@@ -156,19 +160,6 @@ contextfw = {
 			//alert(err);
 		}
 	},
-
-	_handleScripts: function(domDocument) {
-		nodes = domDocument.selectNodes("//script");
-		if (nodes.length > 0) {
-			for (c = 0; c < nodes.length; c++) {
-				txt = this._toHtml(nodes[c]);
-				txt = txt.replace(/&gt;/g, '>');
-				txt = txt.replace(/&lt;/g, '<');
-				txt = txt.replace(/&amp;/g, '&');
-				eval(txt);
-			}
-		}
-	}
 };
 
 /**
