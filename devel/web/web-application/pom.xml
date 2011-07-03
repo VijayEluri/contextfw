@@ -16,12 +16,12 @@
 	<parent>
 		<artifactId>web</artifactId>
 		<groupId>net.contextfw</groupId>
-		<version>0.8.2</version>
+		<version>0.8.2-snapshot</version>
 	</parent>
 
 	<groupId>net.contextfw</groupId>
 	<artifactId>web-application</artifactId>
-	<version>0.8.2</version>
+	<version>0.8.2-snapshot</version>
 	<name>Context :: Web :: Application</name>
 	<packaging>jar</packaging>
 
