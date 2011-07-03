@@ -17,7 +17,7 @@ package net.contextfw.web.application.lifecycle;
  *  be disabled. Is needed if system is used in embedded mode.
  * </p>
  * 
- * @see ResourceBody
+ * @see net.contextfw.web.application.remote.ResourceBody
  */
 public interface ResourceView {
 

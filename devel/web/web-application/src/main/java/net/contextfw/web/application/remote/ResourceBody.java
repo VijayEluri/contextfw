@@ -29,7 +29,7 @@ import java.lang.annotation.Target;
  *
  * @see Remoted
  * @see ResourceResponse
- * @see ResourceView
+ * @see net.contextfw.web.application.lifecycle.ResourceView
  *
  */
 @Target( { METHOD })
@@ -43,8 +43,7 @@ public @interface ResourceBody {
      * </p>
      * <p>
      *  If page is responding in case where application
-     *  is to be embedded in another page, then this must be changed
-     *  to <code>false</code>
+     *  is to be embedded in another page, then this value must be <code>false</code>.
      * </p>
      * <p>
      *  This value has no effect when using as component resource.
