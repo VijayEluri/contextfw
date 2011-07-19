@@ -3,8 +3,12 @@ package net.contextfw.web.application.internal;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.List;
 
+import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.component.Component;
+import net.contextfw.web.application.internal.util.ClassScanner;
+import net.contextfw.web.application.lifecycle.LifecycleListener;
 import net.contextfw.web.application.remote.Delayed;
 import net.contextfw.web.application.remote.ResourceBody;
 import net.contextfw.web.application.util.Request;
@@ -18,13 +22,15 @@ public class ComponentUpdateHandler {
     private final Method method;
     private final Delayed delayed;
     private final boolean resource;
+    private final LifecycleListener listener;
 
-    public ComponentUpdateHandler(String key, Method method, Gson gson) {
+    public ComponentUpdateHandler(String key, Method method, Gson gson, LifecycleListener listener) {
         this.key = key;
         this.method = method;
         this.gson = gson;
         this.delayed = method.getAnnotation(Delayed.class);
         this.resource = method.getAnnotation(ResourceBody.class) != null;
+        this.listener = listener;
     }
 
     public static String getKey(Class<? extends Component> elClass, String methodName) {
@@ -40,55 +46,49 @@ public class ComponentUpdateHandler {
             if (element != null && element.isEnabled()) {
                 return invokeWithParams(element, request);
             }
-        }
-        catch (IllegalArgumentException e) {
-            e.printStackTrace();
-        }
-        catch (IllegalAccessException e) {
-            e.printStackTrace();
-        }
-        catch (InvocationTargetException e) {
-            if (RuntimeException.class.isAssignableFrom(e.getCause().getClass())) {
-                throw (RuntimeException) e.getCause();
-            }
-            else {
-                e.printStackTrace();
-            }
-        }
-        catch (NoSuchMethodException e) {
-            e.printStackTrace();
-        }
-        catch (InstantiationException e) {
-            e.printStackTrace();
+        } catch (IllegalArgumentException e) {
+            throw new WebApplicationException(e);
+        } catch (IllegalAccessException e) {
+            throw new WebApplicationException(e);
+        } catch (InvocationTargetException e) {
+            throw new WebApplicationException(e);
+        } catch (NoSuchMethodException e) {
+            throw new WebApplicationException(e);
+        } catch (InstantiationException e) {
+            throw new WebApplicationException(e);
         }
         return null;
     }
 
-    private Object invokeWithParams(Component element, Request request) throws IllegalArgumentException,
-            IllegalAccessException, InvocationTargetException, NoSuchMethodException, InstantiationException {
+    private Object invokeWithParams(Component element, Request request)
+            throws IllegalArgumentException,
+            IllegalAccessException, InvocationTargetException, NoSuchMethodException,
+            InstantiationException {
 
-        Class<?>[] paramTypes = method.getParameterTypes();
-        Object[] params = new Object[paramTypes.length];
+        List<Class<?>> paramTypes = ClassScanner.getParamTypes(element.getClass(), method);
+        Object[] params = new Object[paramTypes.size()];
 
-        for (int c = 0; c < paramTypes.length; c++) {
+        for (int c = 0; c < paramTypes.size(); c++) {
+
             String value = request.param("p" + c).getStringValue(null);
             if (value != null) {
                 try {
-                    Constructor<?> constructor = paramTypes[c].getConstructor(String.class);
+                    Constructor<?> constructor = paramTypes.get(c).getConstructor(String.class);
                     params[c] = constructor.newInstance(value);
-                }
-                catch (Exception e) {
+                } catch (Exception e) {
                     try {
-                        params[c] = gson.fromJson(value, paramTypes[c]);
-                    }
-                    catch (Exception e1) {
-                        e1.printStackTrace();
+                        params[c] = gson.fromJson(value, paramTypes.get(c));
+                    } catch (Exception e1) {
+                        throw new WebApplicationException(e1);
                     }
                 }
             }
         }
-
-        return method.invoke(element, params);
+        if (listener.beforeRemotedMethod(element, method, params)) {
+            return method.invoke(element, params);
+        } else {
+            return null;
+        }
     }
 
     public Delayed getDelayed() {

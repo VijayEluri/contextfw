@@ -1,5 +1,9 @@
 package net.contextfw.web.application.lifecycle;
 
+import java.lang.reflect.Method;
+
+import net.contextfw.web.application.component.Component;
+
 /**
  * This interface defines means to follow page lifecyle.
  * 
@@ -55,6 +59,34 @@ public interface LifecycleListener {
      * @return <code>true</code> if client update can continue, <code>false</code> otherwise
      */
     boolean beforeUpdate();
+    
+    /**
+     * <p>
+     *  This method is called just before remote method is to be invoked
+     * </p>
+     * 
+     * <p>
+     *  When remote method is to be invoked it is run through this handler. It's 
+     *  main purpose is for data validation or mngling. The arguments <code>args</code>
+     *  is modifiable and changes reflected to it, are also reflected to actual call.
+     * </p>
+     * 
+     * <p>
+     *  This method works basically as a proxy between requests and actual method calls.
+     *  When using this method, you do not need to create Guice proxies for components.
+     * </p>
+     * 
+     * @param component
+     *   The component where the call is made
+     * @param method
+     *   The method to be invoked
+     * @param args
+     *   The method arguments. Empty array if no arguments.
+     * @return
+     *   <code>true</code> if method is to be be invoked. <code>false</code> prevents 
+     *   method invocation.
+     */
+    boolean beforeRemotedMethod(Component component, Method method, Object[] args);
 
     /**
      * Called by framework after update has finished

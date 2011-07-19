@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import net.contextfw.web.application.ResourceCleaner;
 import net.contextfw.web.application.configuration.Configuration;
-import net.contextfw.web.application.internal.LifecycleListeners;
+import net.contextfw.web.application.lifecycle.LifecycleListener;
 import net.contextfw.web.application.lifecycle.PageFlowFilter;
 import net.contextfw.web.application.remote.ResourceResponse;
 
@@ -34,7 +34,7 @@ public class UpdateHandler {
 
     private final WebApplicationContextHandler handler;
 
-    private final LifecycleListeners listeners;
+    private final LifecycleListener listeners;
 
     private final PageFlowFilter pageFlowFilter;
 
@@ -49,7 +49,7 @@ public class UpdateHandler {
     @Inject
     public UpdateHandler(
             WebApplicationContextHandler handler,
-            LifecycleListeners listeners,
+            LifecycleListener listeners,
             PageFlowFilter pageFlowFilter,
             DirectoryWatcher watcher,
             ResourceCleaner cleaner,

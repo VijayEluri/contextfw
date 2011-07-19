@@ -15,6 +15,7 @@ import net.contextfw.web.application.internal.scope.WebApplicationScope;
 import net.contextfw.web.application.internal.service.WebApplicationContextHandler;
 import net.contextfw.web.application.internal.util.AttributeHandler;
 import net.contextfw.web.application.internal.util.ObjectAttributeSerializer;
+import net.contextfw.web.application.lifecycle.LifecycleListener;
 import net.contextfw.web.application.lifecycle.PageFlowFilter;
 import net.contextfw.web.application.lifecycle.PageScoped;
 import net.contextfw.web.application.serialize.AttributeJsonSerializer;
@@ -67,6 +68,7 @@ public final class WebApplicationModule extends AbstractModule {
         bind(Configuration.class).toInstance(configuration);
         bind(PropertyProvider.class).toInstance(configuration.get(Configuration.PROPERTY_PROVIDER));
         handlePageFlowFilter();
+        handleLifecycleListener();
         this.bindListener(Matchers.any(), new TypeListener() {
             @SuppressWarnings("unchecked")
             @Override
@@ -94,6 +96,16 @@ public final class WebApplicationModule extends AbstractModule {
         } else {
             bind(PageFlowFilter.class).to((Class<PageFlowFilter>) obj);
         }
+    }
+    
+    @SuppressWarnings({ "unchecked" })
+    private void handleLifecycleListener() {
+        Object obj = configuration.get(Configuration.LIFECYCLE_LISTENER);
+        if (obj instanceof LifecycleListener) {
+            bind(LifecycleListener.class).toInstance((LifecycleListener) obj);
+        } else {
+            bind(LifecycleListener.class).to((Class<LifecycleListener>) obj);
+        }   
     }
     
     @Singleton

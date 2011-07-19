@@ -15,8 +15,8 @@ import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.configuration.Configuration;
-import net.contextfw.web.application.internal.LifecycleListeners;
 import net.contextfw.web.application.internal.scope.WebApplicationScopedBeans;
+import net.contextfw.web.application.lifecycle.LifecycleListener;
 import net.contextfw.web.application.lifecycle.PageFlowFilter;
 
 import org.slf4j.Logger;
@@ -35,7 +35,7 @@ public class InitHandler {
     @Inject
     private Provider<WebApplication> webApplicationProvider;
     @Inject
-    private LifecycleListeners listeners;
+    private LifecycleListener listeners;
     @Inject
     private PageFlowFilter pageFlowFilter;
     

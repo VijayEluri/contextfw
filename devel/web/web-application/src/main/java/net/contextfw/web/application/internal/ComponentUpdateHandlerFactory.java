@@ -3,6 +3,8 @@ package net.contextfw.web.application.internal;
 import java.lang.reflect.Method;
 
 import net.contextfw.web.application.component.Component;
+import net.contextfw.web.application.internal.util.ClassScanner;
+import net.contextfw.web.application.lifecycle.LifecycleListener;
 import net.contextfw.web.application.remote.Remoted;
 
 import com.google.gson.Gson;
@@ -15,35 +17,23 @@ public class ComponentUpdateHandlerFactory {
     
     private Gson gson;
     
+    private final LifecycleListener listener;
+    
     @Inject
-    public ComponentUpdateHandlerFactory(Injector injector, Gson gson) {
+    public ComponentUpdateHandlerFactory(Injector injector, Gson gson, LifecycleListener listener) {
         this.gson = gson;
+        this.listener = listener;
     }
     
     public ComponentUpdateHandler createHandler(Class<? extends Component> elClass, String methodName) {
 
-        Class<?> cls = elClass;
-        Method method = null;
-
-        while (Component.class.isAssignableFrom(cls) && method == null) {
-            method = findMethod(cls, methodName);
-            cls = cls.getSuperclass();
-        }
+        Method method = ClassScanner.findMethodForName(elClass, methodName);
 
         if (method != null) {
-            return new ComponentUpdateHandler(ComponentUpdateHandler.getKey(elClass, methodName), method, gson);
+            return new ComponentUpdateHandler(ComponentUpdateHandler.getKey(elClass, methodName), method, gson, listener);
         }
         else {
             return null;
         }
-    }
-
-    private Method findMethod(Class<?> cls, String methodName) {
-        for (Method method : cls.getDeclaredMethods()) {
-            if (method.getAnnotation(Remoted.class) != null && method.getName().equals(methodName)) {
-                return method;
-            }
-        }
-        return null;
     }
 }

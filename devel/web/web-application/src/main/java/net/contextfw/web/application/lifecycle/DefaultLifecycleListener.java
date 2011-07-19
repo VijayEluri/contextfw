@@ -1,5 +1,9 @@
 package net.contextfw.web.application.lifecycle;
 
+import java.lang.reflect.Method;
+
+import net.contextfw.web.application.component.Component;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -41,5 +45,10 @@ public class DefaultLifecycleListener implements LifecycleListener {
 
     @Override
     public void afterRender() {
+    }
+
+    @Override
+    public boolean beforeRemotedMethod(Component component, Method method, Object[] args) {
+        return true;
     }
 }
