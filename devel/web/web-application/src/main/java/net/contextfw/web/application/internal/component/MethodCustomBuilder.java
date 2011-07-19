@@ -31,7 +31,7 @@ class MethodCustomBuilder extends Builder {
             method.invoke(buildable, name == null ? b : b.descend(name));
         }
         catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new WebApplicationException(e);
         }
     }
 }
