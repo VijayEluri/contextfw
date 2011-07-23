@@ -2,6 +2,7 @@ package net.contextfw.web.application.internal.component;
 
 import java.lang.reflect.Field;
 
+import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.internal.InternalWebApplicationException;
 
 final class FieldPropertyAccess<T> implements PropertyAccess<T> {
@@ -19,9 +20,17 @@ final class FieldPropertyAccess<T> implements PropertyAccess<T> {
          try {
             return (T) field.get(obj);
         } catch (IllegalArgumentException e) {
-            throw new InternalWebApplicationException(e);
+            if (WebApplicationException.class.isAssignableFrom(e.getCause().getClass())) {
+                throw (RuntimeException) e.getCause();
+            } else {
+                throw new InternalWebApplicationException(e);
+            }
         } catch (IllegalAccessException e) {
-            throw new InternalWebApplicationException(e);
+            if (WebApplicationException.class.isAssignableFrom(e.getCause().getClass())) {
+                throw (RuntimeException) e.getCause();
+            } else {
+                throw new InternalWebApplicationException(e);
+            }
         }
     }
 }

@@ -23,11 +23,23 @@ final class MethodPropertyAccess implements PropertyAccess<Object> {
          try {
             return method.invoke(obj);
         } catch (IllegalArgumentException e) {
-            throw new InternalWebApplicationException(e);
+            if (WebApplicationException.class.isAssignableFrom(e.getCause().getClass())) {
+                throw (RuntimeException) e.getCause();
+            } else {
+                throw new InternalWebApplicationException(e);
+            }
         } catch (IllegalAccessException e) {
-            throw new InternalWebApplicationException(e);
+            if (WebApplicationException.class.isAssignableFrom(e.getCause().getClass())) {
+                throw (RuntimeException) e.getCause();
+            } else {
+                throw new InternalWebApplicationException(e);
+            }
         } catch (InvocationTargetException e) {
-            throw new InternalWebApplicationException(e);
+            if (WebApplicationException.class.isAssignableFrom(e.getCause().getClass())) {
+                throw (RuntimeException) e.getCause();
+            } else {
+                throw new InternalWebApplicationException(e);
+            }
         }
     }
 }
