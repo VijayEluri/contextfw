@@ -1,17 +1,21 @@
 package net.contextfw.web.application;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.regex.Pattern;
 
 import net.contextfw.web.application.component.Component;
-import net.contextfw.web.application.configuration.KeyValue;
 import net.contextfw.web.application.configuration.Configuration;
+import net.contextfw.web.application.configuration.KeyValue;
 import net.contextfw.web.application.internal.WebApplicationServletModule;
 import net.contextfw.web.application.internal.component.AutoRegisterListener;
 import net.contextfw.web.application.internal.providers.HttpContextProvider;
 import net.contextfw.web.application.internal.providers.RequestProvider;
 import net.contextfw.web.application.internal.providers.WebApplicationHandleProvider;
 import net.contextfw.web.application.internal.scope.WebApplicationScope;
+import net.contextfw.web.application.internal.service.DirectoryWatcher;
 import net.contextfw.web.application.internal.service.WebApplicationContextHandler;
 import net.contextfw.web.application.internal.util.AttributeHandler;
 import net.contextfw.web.application.internal.util.ObjectAttributeSerializer;
@@ -41,7 +45,7 @@ import com.google.inject.spi.TypeListener;
 public final class WebApplicationModule extends AbstractModule {
 
     private final Configuration configuration;
-    
+
     private Logger logger = LoggerFactory.getLogger(WebApplicationModule.class);
 
     @SuppressWarnings("rawtypes")
@@ -80,11 +84,11 @@ public final class WebApplicationModule extends AbstractModule {
                 }
             }
         });
-        
-        WebApplicationServletModule servletModule = 
-            new WebApplicationServletModule(configuration,
-                    configuration.get(Configuration.PROPERTY_PROVIDER));
-        
+
+        WebApplicationServletModule servletModule =
+                new WebApplicationServletModule(configuration,
+                        configuration.get(Configuration.PROPERTY_PROVIDER));
+
         install(servletModule);
     }
 
@@ -97,7 +101,7 @@ public final class WebApplicationModule extends AbstractModule {
             bind(PageFlowFilter.class).to((Class<PageFlowFilter>) obj);
         }
     }
-    
+
     @SuppressWarnings({ "unchecked" })
     private void handleLifecycleListener() {
         Object obj = configuration.get(Configuration.LIFECYCLE_LISTENER);
@@ -105,47 +109,66 @@ public final class WebApplicationModule extends AbstractModule {
             bind(LifecycleListener.class).toInstance((LifecycleListener) obj);
         } else {
             bind(LifecycleListener.class).to((Class<LifecycleListener>) obj);
-        }   
+        }
     }
-    
+
     @Singleton
     @Provides
     public Gson provideGson(Injector injector) {
-        
+
         GsonBuilder builder = new GsonBuilder();
-        
+
         for (KeyValue<Class<?>, Class<? extends JsonSerializer<?>>> entry : configuration
                 .get(Configuration.JSON_SERIALIZER)) {
             builder.registerTypeAdapter(entry.getKey(), injector.getInstance(entry.getValue()));
         }
-        
+
         for (KeyValue<Class<?>, Class<? extends JsonDeserializer<?>>> entry : configuration
                 .get(Configuration.JSON_DESERIALIZER)) {
             builder.registerTypeAdapter(entry.getKey(), injector.getInstance(entry.getValue()));
         }
-        
+
         for (KeyValue<Class<?>, Class<? extends AttributeJsonSerializer<?>>> entry : configuration
                 .get(Configuration.ATTRIBUTE_JSON_SERIALIZER)) {
             builder.registerTypeAdapter(entry.getKey(), injector.getInstance(entry.getValue()));
         }
-        
+
         return builder.create();
     }
-    
+
     @Singleton
     @Provides
-    public WebApplicationContextHandler provideWebApplicationContextHandler(PageFlowFilter pageFlowFilter) {
-        final WebApplicationContextHandler handler = new WebApplicationContextHandler(configuration, pageFlowFilter);
+    public WebApplicationContextHandler provideWebApplicationContextHandler(
+            PageFlowFilter pageFlowFilter) {
+        final WebApplicationContextHandler handler = new WebApplicationContextHandler(
+                configuration, pageFlowFilter);
         Timer timer = new Timer(true);
         logger.info("Starting scheduled removal for expired web applications");
-        
+
         timer.schedule(new TimerTask() {
             public void run() {
                 handler.removeExpiredApplications();
             }
-        }, configuration.get(Configuration.REMOVAL_SCHEDULE_PERIOD), 
-        configuration.get(Configuration.REMOVAL_SCHEDULE_PERIOD)); 
-        
+        }, configuration.get(Configuration.REMOVAL_SCHEDULE_PERIOD),
+                configuration.get(Configuration.REMOVAL_SCHEDULE_PERIOD));
+
         return handler;
+    }
+
+    @Provides
+    @Singleton
+    public DirectoryWatcher resourceDirectoryWatcher() {
+        List<String> paths = null;
+        if (configuration.get(Configuration.DEVELOPMENT_MODE)) {
+            paths = new ArrayList<String>();
+            paths.addAll(configuration.get(Configuration.RESOURCE_PATH));
+        }
+        
+        Pattern matcher = Pattern.compile(".+\\.(xsl|css|js)", Pattern.CASE_INSENSITIVE);
+        
+        if (!configuration.get(Configuration.CLASS_RELOADING_ENABLED)) {
+            matcher = Pattern.compile(".+\\.(xsl|css|js|class)", Pattern.CASE_INSENSITIVE);
+        }
+        return new DirectoryWatcher(paths, matcher); 
     }
 }

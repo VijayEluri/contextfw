@@ -77,8 +77,14 @@ public class Configuration {
     private static final String KEY_RESOURCES_PREFIX = "contextfw.resourcesPrefix";
 
     private static final String KEY_LOG_XML = "contextfw.logXML";
+    
+    private static final String KEY_RELOADABLE_ROOT_PACKAGE = "contextfw.reloadableRootPackage";
 
     private static final String KEY_DEVELOPMENT_MODE = "contextfw.developmentMode";
+    
+    private static final String KEY_CLASS_RELOADING_ENABLED = "contextfw.classReloadingEnabled";
+    
+    private static final String KEY_CLASS_RELOADING_PATHS = "contextfw.classReloadingPaths";
 
     /**
      * Creates the default configuration.
@@ -90,6 +96,7 @@ public class Configuration {
     public static Configuration getDefaults() {
         return new Configuration()
           .set(DEVELOPMENT_MODE, true)
+          .set(CLASS_RELOADING_ENABLED, true)
           .set(LOG_XML, true)
           .set(TRANSFORMER_COUNT, 1)
           .set(RESOURCES_PREFIX, "/resources")
@@ -128,6 +135,28 @@ public class Configuration {
      */
     public static final SettableProperty<Boolean> DEVELOPMENT_MODE = 
         new BooleanProperty(KEY_DEVELOPMENT_MODE);
+    
+    /**
+     * Defines whether page components should be reloaded when changed.
+     * 
+     * <p>
+     *  It reloading is enabled page components are loaded through different
+     *  class loader and when changes are made that class loader it disposed
+     *  and new one is created.
+     * </p>
+     * 
+     * <p>
+     *  Note, class reloading works only for those classes which are not in 
+     *  <code>Singleton</code>-scope. Also, this setting has effect only
+     *  on development mode.
+     * </p>
+     * 
+     * <p>
+     *  Default: <code>true</code>
+     * </p>
+     */
+    public static final SettableProperty<Boolean> CLASS_RELOADING_ENABLED = 
+        new BooleanProperty(KEY_CLASS_RELOADING_ENABLED);
     
     /**
      * Defines whether the XML-representation of page load or update are logged. Only suitable
@@ -185,7 +214,6 @@ public class Configuration {
      */
     public static final SettableProperty<String> XML_PARAM_NAME = 
         new StringProperty(KEY_XML_PARAM_NAME);
-    
     
     /**
      * Defines the provider that is used to inject system properties to the system.
@@ -249,7 +277,7 @@ public class Configuration {
      *  The value of the property can mean class package or directory. By default
      *  value interpreted as package, but by adding a prefix <code>file:</code> value is
      *  interpreted as directory path.
-     * 
+     * </p>
      */
     public static final AddableProperty<Set<String>, String> RESOURCE_PATH
         = new StringSetProperty(KEY_RESOURCE_PATH);
@@ -263,6 +291,39 @@ public class Configuration {
      */
     public static final AddableProperty<Set<String>, String> VIEW_COMPONENT_ROOT_PACKAGE
         = new StringSetProperty(KEY_VIEW_COMPONENT_ROOT_PACKAGE);
+
+    /**
+     * Defines root paths that contains the binaries where reloadable 
+     * classes are compiled.
+     * 
+     * <p>
+     *  This setting has effect only if class reloading is enabled.
+     * </p>
+     * 
+     * <p>
+     *  Default: No default value
+     * </p>
+     * 
+     */
+    public static final AddableProperty<Set<String>, String> CLASS_RELOADING_PATHS
+        = new StringSetProperty(KEY_CLASS_RELOADING_PATHS);
+    
+    /**
+     * Defines root package from within reloadable classes are scanned.
+     * 
+     * <p>
+     *  This setting has effect only if class reloading is enabled. Also note
+     *  that all view-component root packages are automatically included to
+     *  reloadable packages.
+     * </p>
+     * 
+     * <p>
+     *  Default: No default value
+     * </p>
+     * 
+     */
+    public static final AddableProperty<Set<String>, String> RELOADABLE_ROOT_PACKAGE
+        = new StringSetProperty(KEY_RELOADABLE_ROOT_PACKAGE);
 
     /**
      * Defines the initial maximum inactivity until page scope is expired.

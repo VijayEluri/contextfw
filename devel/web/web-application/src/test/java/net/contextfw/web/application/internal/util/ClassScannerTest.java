@@ -26,9 +26,7 @@ public class ClassScannerTest {
         public void b(T t, A a, Long c) {};
     }
     
-    public static class C extends B<A> {
-
-    }
+    public static class C extends B<A> {}
     
     @Test
     public void testClassScanning() {

@@ -124,7 +124,7 @@ public class AbstractScanner {
         return entries;
     }
 
-    public static List<URI> toURIs(List<String> resourcePaths) {
+    public static List<URI> toURIs(Collection<String> resourcePaths) {
         List<URI> roots = new ArrayList<URI>(resourcePaths.size());
 
         for (String path : resourcePaths) {
