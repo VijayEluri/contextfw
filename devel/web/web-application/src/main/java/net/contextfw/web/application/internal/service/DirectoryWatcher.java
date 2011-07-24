@@ -69,10 +69,9 @@ public class DirectoryWatcher {
         }
 
         boolean hasChanged(File file) {
-            if (file.lastModified() != lastModified) {
+            if (file.isFile() && file.lastModified() != lastModified) {
                 return true;
-            }
-            if (file.isDirectory() && fileCount != file.list().length) {
+            } else if (file.isDirectory() && fileCount != file.list().length) {
                 return true;
             } else {
                 return false;
