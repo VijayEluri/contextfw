@@ -17,7 +17,9 @@ public class ReloadingClassLoader extends ClassLoader {
     private final Map<String, Class<?>> cache = new HashMap<String, Class<?>>();
 
     public ReloadingClassLoader(ReloadingClassLoaderConf conf) {
+        super(Thread.currentThread().getContextClassLoader());
         this.conf = conf;
+        
     }
 
     @Override
@@ -26,7 +28,7 @@ public class ReloadingClassLoader extends ClassLoader {
         for (String prefix : conf.getReloadablePackages()) {
             if (name.startsWith(prefix)) {
                 if (!cache.containsKey(name)) {
-                    cache.put(name, findClass(name));
+                    cache.put(name, findReloadableClass(name));
                 }
                 return cache.get(name);
             }
@@ -34,8 +36,7 @@ public class ReloadingClassLoader extends ClassLoader {
         return super.loadClass(name);
     }
 
-    @Override
-    public Class<?> findClass(String s) {
+    public Class<?> findReloadableClass(String s) {
         try {
             byte[] bytes = loadClassData(s);
             if (bytes != null) {
