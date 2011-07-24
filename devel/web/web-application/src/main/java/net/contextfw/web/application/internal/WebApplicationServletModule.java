@@ -69,7 +69,7 @@ public class WebApplicationServletModule extends ServletModule {
         if (reloadEnabled && configuration.get(Configuration.DEVELOPMENT_MODE)) {
             
             List<String> rootPaths = new ArrayList<String>();
-            for (String path : configuration.get(Configuration.CLASS_RELOADING_PATHS)) {
+            for (String path : configuration.get(Configuration.BUILD_PATH)) {
                 rootPaths.add(path.endsWith("/") ? path : path + "/");
             }
             

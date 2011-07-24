@@ -88,7 +88,7 @@ public class Configuration {
     
     private static final String KEY_CLASS_RELOADING_ENABLED = "contextfw.classReloadingEnabled";
     
-    private static final String KEY_CLASS_RELOADING_PATHS = "contextfw.classReloadingPaths";
+    private static final String KEY_BUILD_PATH = "contextfw.classReloadingPaths";
 
     /**
      * Creates the default configuration.
@@ -310,7 +310,7 @@ public class Configuration {
 
     /**
      * Defines root paths that contains the binaries where reloadable 
-     * classes are compiled.
+     * classes are built.
      * 
      * <p>
      *  This setting has effect only if class reloading is enabled.
@@ -321,8 +321,8 @@ public class Configuration {
      * </p>
      * 
      */
-    public static final AddableProperty<Set<String>, String> CLASS_RELOADING_PATHS
-        = new StringSetProperty(KEY_CLASS_RELOADING_PATHS);
+    public static final AddableProperty<Set<String>, String> BUILD_PATH
+        = new StringSetProperty(KEY_BUILD_PATH);
     
     /**
      * Defines root package from within reloadable classes are scanned.
