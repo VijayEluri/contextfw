@@ -20,11 +20,13 @@ import javax.xml.transform.stream.StreamSource;
 
 import net.contextfw.web.application.DocumentProcessor;
 import net.contextfw.web.application.WebApplicationException;
-import net.contextfw.web.application.configuration.KeyValue;
 import net.contextfw.web.application.configuration.Configuration;
+import net.contextfw.web.application.configuration.KeyValue;
 import net.contextfw.web.application.internal.service.DirectoryWatcher;
 import net.contextfw.web.application.internal.util.ResourceEntry;
 import net.contextfw.web.application.internal.util.ResourceScanner;
+import net.contextfw.web.application.util.DefaultXMLResponseLogger;
+import net.contextfw.web.application.util.XMLResponseLogger;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -61,7 +63,7 @@ public class WebResponder {
 
     private final int transformerCount;
     private final boolean debugMode;
-    private final boolean logXml;
+    private final XMLResponseLogger responseLogger;
     private final DocumentProcessor xslPostProcessor;
 
     public enum Mode {
@@ -85,7 +87,6 @@ public class WebResponder {
         rootResourcePaths.add("net.contextfw.web.application");
         transformerCount = configuration.get(Configuration.TRANSFORMER_COUNT);
         debugMode = configuration.get(Configuration.DEVELOPMENT_MODE);
-        logXml = configuration.get(Configuration.LOG_XML);
         resourcePaths.addAll(configuration.get(Configuration.RESOURCE_PATH));
         namespaces.addAll(configuration.get(Configuration.NAMESPACE));
         if (configuration.get(Configuration.XSL_POST_PROCESSOR) != null) {
@@ -93,6 +94,19 @@ public class WebResponder {
                     configuration.get(Configuration.XSL_POST_PROCESSOR));
         } else {
             xslPostProcessor = null;
+        }
+        if (configuration.get(Configuration.LOG_XML)) {
+            Object obj = configuration.get(Configuration.XML_RESPONSE_LOGGER);
+            if (obj instanceof XMLResponseLogger) {
+                responseLogger = (XMLResponseLogger) obj;
+            } else if (obj instanceof Class 
+                    && XMLResponseLogger.class.isAssignableFrom((Class<?>)obj)) {
+                responseLogger = injector.getInstance((Class<XMLResponseLogger>) obj);
+            } else {
+                responseLogger = null;
+            }
+        } else {
+            responseLogger = null;
         }
     }
 
@@ -108,7 +122,7 @@ public class WebResponder {
             writer = new XMLWriter(xml, format);
             writer.write(d);
 
-            logger.info("Logged xml-response:\n{}", xml.toString());
+            responseLogger.logXML(xml.toString());
 
         } catch (Exception e) {
             throw new WebApplicationException(e);
@@ -232,7 +246,7 @@ public class WebResponder {
 
     public void sendResponse(Document document, HttpServletResponse resp,
             Mode mode) throws ServletException, IOException {
-        if (logXml) {
+        if (responseLogger != null) {
             logXML(document);
         }
         if (mode != Mode.XML) {

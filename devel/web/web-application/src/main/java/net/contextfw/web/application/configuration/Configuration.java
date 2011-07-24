@@ -15,6 +15,8 @@ import net.contextfw.web.application.lifecycle.LifecycleListener;
 import net.contextfw.web.application.lifecycle.PageFlowFilter;
 import net.contextfw.web.application.serialize.AttributeJsonSerializer;
 import net.contextfw.web.application.serialize.AttributeSerializer;
+import net.contextfw.web.application.util.DefaultXMLResponseLogger;
+import net.contextfw.web.application.util.XMLResponseLogger;
 
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonSerializer;
@@ -78,6 +80,8 @@ public class Configuration {
 
     private static final String KEY_LOG_XML = "contextfw.logXML";
     
+    private static final String KEY_XML_RESPONSE_LOGGER = "contextfw.xmlResponseLogger";
+    
     private static final String KEY_RELOADABLE_ROOT_PACKAGE = "contextfw.reloadableRootPackage";
 
     private static final String KEY_DEVELOPMENT_MODE = "contextfw.developmentMode";
@@ -102,6 +106,7 @@ public class Configuration {
           .set(RESOURCES_PREFIX, "/resources")
           //.set(CONTEXT_PATH, "")
           .set(XML_PARAM_NAME, null)
+          .set(XML_RESPONSE_LOGGER.asInstance(new DefaultXMLResponseLogger()))
           .set(PROPERTY_PROVIDER, new SystemPropertyProvider())
           .set(LIFECYCLE_LISTENER.as(DefaultLifecycleListener.class))
           .set(PAGEFLOW_FILTER.as(DefaultPageFlowFilter.class))
@@ -239,6 +244,17 @@ public class Configuration {
      */
     public static final BindableProperty<PageFlowFilter> PAGEFLOW_FILTER = 
         new BindableProperty<PageFlowFilter>(KEY_PAGEFLOW_FILTER);
+
+    /**
+     * Binds a response logger for XML.
+     * 
+     * <p>
+     *  By default XML is logged by normal logging mechanism, but
+     *  it is possible to override using this property
+     * </p>
+     */
+    public static final BindableProperty<XMLResponseLogger> XML_RESPONSE_LOGGER = 
+        new BindableProperty<XMLResponseLogger>(KEY_XML_RESPONSE_LOGGER);
     
     /**
      * Binds a XSL-postprocessor to the system
