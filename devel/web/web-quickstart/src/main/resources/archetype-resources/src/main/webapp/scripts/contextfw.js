@@ -168,19 +168,59 @@ contextfw = {
  * The string "[]" is stripped
  */
 jQuery.fn.formToObject = function() {
+
+  var h = function(o, rawName, value) {
+    var dot = rawName.indexOf(".", rawName);
+    if (dot != -1) {
+      var subName = rawName.substring(0, dot);
+      if (!o[subName]) {
+        o[subName] = {};
+      }
+      h(o[subName], rawName.substring(dot+1), value);
+    } else {
+      if (rawName.match("\\[\\]$")=="[]") {
+        var name = rawName.substr(0, rawName.length-2);
+        if (!o[name]) {
+          o[name] = [];
+        }
+        o[name].push(value || '');
+      }
+      else {
+        o[rawName] = value || '';
+      }
+    }
+  }
   var o = {};
+  
   var a = this.serializeArray();
   jQuery.each(a, function() {
-  	if (this.name.match("\\[\\]$")=="[]") {
-  	  var name = this.name.substr(0, this.name.length-2);
-      if (!o[name]) {
-        o[name] = [];
-      }
-      o[name].push(this.value || '');
-  	}
-  	else {
-      o[this.name] = this.value || '';
-  	}
+    h(o, this.name, this.value);
   });
   return o;
 };
+
+var c = {
+  set : function(id, obj) {
+    if (!this[id]) {
+      this[id] = obj;
+    }
+  }
+};
+
+function cInit(id, obj) {
+  obj.id = id;
+  obj.self = obj;
+    
+  // A convience function to access some element within the component
+  obj.el = function(id) { 
+    return jQuery("#" + obj.id + "_" + id);
+  }
+    
+  // A convinience function to make remote calls.
+  obj.call = function(method, beforeCall, afterCall) {
+    return function() {
+      contextfw._call(obj.id, method, arguments, beforeCall, afterCall);
+    }
+  }
+  return obj;
+}
