@@ -15,7 +15,6 @@ import net.contextfw.web.application.WebApplicationModule;
 import net.contextfw.web.application.configuration.Configuration;
 
 import com.google.inject.AbstractModule;
-import com.google.inject.name.Names;
 import com.mycila.inject.jsr250.Jsr250;
 
 public class MyApplicationModule extends AbstractModule {
@@ -31,7 +30,7 @@ public class MyApplicationModule extends AbstractModule {
         Configuration conf = Configuration.getDefaults()
           .add(RESOURCE_PATH, "${package}")
           .add(VIEW_COMPONENT_ROOT_PACKAGE, "${package}.views")
-          .add(RELOADABLE_ROOT_PACKAGE, "${package}.components")
+          .add(RELOADABLE_CLASSES.includedPackage("${package}.components"))
           .set(CLASS_RELOADING_ENABLED, true)
           .add(BUILD_PATH, "target/classes")
           .add(BUILD_PATH, "target/test-classes")
