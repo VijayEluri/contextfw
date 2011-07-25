@@ -21,21 +21,28 @@ public class FunctionCall extends Script {
         this.args = args;
     }
 
-    protected static String toScript(String function, int argCount) {
+    protected static String toScript(String function, int argCount, boolean isFull) {
         StringBuilder b = new StringBuilder(function).append("(");
         String delim = "";
         for (int i = 0; i < argCount; i++) {
             b.append(delim).append("{").append(i).append("}");
             delim = ",";
         }
-        b.append(");\n");
+        b.append(")");
+        if (isFull) {
+            b.append(";\n");
+        }
         return b.toString();
     }
 
     @Override
     public String getScript(ScriptContext scriptContext) {
+        return getScript(scriptContext, true);
+    }
+    
+    protected String getScript(ScriptContext scriptContext, boolean isFull) {
         return FunctionCall.toScript(getFunctionName(scriptContext),
-                args == null ? 0 : args.length);
+                args == null ? 0 : args.length, isFull);
     }
 
     @Override

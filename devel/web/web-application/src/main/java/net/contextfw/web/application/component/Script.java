@@ -4,8 +4,6 @@ import java.text.MessageFormat;
 
 import org.apache.commons.lang.StringEscapeUtils;
 
-import net.contextfw.web.application.internal.component.ComponentBuilder;
-
 import com.google.gson.Gson;
 
 /**

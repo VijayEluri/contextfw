@@ -67,30 +67,6 @@ public class ScriptTest extends BaseComponentTest {
         assertDom("//WebApplication/Script").hasText("foo();\n");
     }
 
-    @Test
-    public void test6() {
-        List<String> strs = new ArrayList<String>();
-        strs.add("1");
-        strs.add("2");
-        A a = new A();
-        a.setId("el1");
-        ComponentFunctionCall script = new ComponentFunctionCall(a, "foo");
-        script.build(domBuilder.descend("Script"), gson, scriptContext);
-        assertDom("//WebApplication/Script").hasText("A(\"el1\").foo();\n");
-    }
-
-    @Test
-    public void test7() {
-        List<String> strs = new ArrayList<String>();
-        strs.add("1");
-        strs.add("2");
-        A a = new A();
-        a.setId("el1");
-        ComponentFunctionCall script = new ComponentFunctionCall(a, "foo", 1, 2);
-        script.build(domBuilder.descend("Script"), gson, scriptContext);
-        assertDom("//WebApplication/Script").hasText("A(\"el1\").foo(1,2);\n");
-    }
-
     public static class A extends Component {
     }
 }
