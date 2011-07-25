@@ -8,9 +8,9 @@ import java.util.regex.Pattern;
 
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.configuration.Configuration;
-import net.contextfw.web.application.configuration.KeyValue;
 import net.contextfw.web.application.internal.WebApplicationServletModule;
 import net.contextfw.web.application.internal.component.AutoRegisterListener;
+import net.contextfw.web.application.internal.configuration.KeyValue;
 import net.contextfw.web.application.internal.providers.HttpContextProvider;
 import net.contextfw.web.application.internal.providers.RequestProvider;
 import net.contextfw.web.application.internal.providers.WebApplicationHandleProvider;

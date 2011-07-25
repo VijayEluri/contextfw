@@ -21,7 +21,7 @@ import javax.xml.transform.stream.StreamSource;
 import net.contextfw.web.application.DocumentProcessor;
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.configuration.Configuration;
-import net.contextfw.web.application.configuration.KeyValue;
+import net.contextfw.web.application.internal.configuration.KeyValue;
 import net.contextfw.web.application.internal.service.DirectoryWatcher;
 import net.contextfw.web.application.internal.util.ResourceEntry;
 import net.contextfw.web.application.internal.util.ResourceScanner;
