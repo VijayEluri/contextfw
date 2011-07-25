@@ -2,8 +2,6 @@ package net.contextfw.web.application.remote;
 
 import javax.servlet.http.HttpServletRequest;
 
-import net.contextfw.web.application.component.Component;
-
 /**
  * The base interface for handling delayed updates
  * 
@@ -20,7 +18,7 @@ import net.contextfw.web.application.component.Component;
  * @param <T>
  *   The type of component
  */
-public interface DelayedUpdateHandler<T extends Component> {
+public interface DelayedUpdateHandler<T> {
 	
     /**
      * Returns <code>true</code> if update should be delayed
