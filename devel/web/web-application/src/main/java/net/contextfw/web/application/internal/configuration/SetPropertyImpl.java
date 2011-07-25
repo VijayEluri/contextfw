@@ -1,12 +1,14 @@
-package net.contextfw.web.application.configuration;
+package net.contextfw.web.application.internal.configuration;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-public class SetProperty<V> extends BaseProperty<Set<V>> implements AddableProperty<Set<V>, V> {
+import net.contextfw.web.application.configuration.AddableProperty;
 
-    public SetProperty(String key) {
+public class SetPropertyImpl<V> extends BaseProperty<Set<V>> implements AddableProperty<Set<V>, V> {
+
+    public SetPropertyImpl(String key) {
         super(key);
     }
 

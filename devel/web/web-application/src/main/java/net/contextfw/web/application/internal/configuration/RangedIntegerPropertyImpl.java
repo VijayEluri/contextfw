@@ -1,11 +1,12 @@
-package net.contextfw.web.application.configuration;
+package net.contextfw.web.application.internal.configuration;
 
-public class RangedIntegerProperty extends IntegerProperty {
+
+public class RangedIntegerPropertyImpl extends IntegerPropertyImpl {
 
     private final int min;
     private final int max;
     
-    public RangedIntegerProperty(String key, int min, int max) {
+    public RangedIntegerPropertyImpl(String key, int min, int max) {
         super(key);
         this.min = min;
         this.max = max;

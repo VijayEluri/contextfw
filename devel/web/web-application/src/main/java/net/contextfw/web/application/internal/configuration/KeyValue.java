@@ -1,4 +1,4 @@
-package net.contextfw.web.application.configuration;
+package net.contextfw.web.application.internal.configuration;
 
 public class KeyValue<K, V> {
 

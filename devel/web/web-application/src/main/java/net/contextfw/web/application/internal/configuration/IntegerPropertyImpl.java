@@ -1,9 +1,11 @@
-package net.contextfw.web.application.configuration;
+package net.contextfw.web.application.internal.configuration;
 
-public class IntegerProperty extends BaseProperty<Integer> 
+import net.contextfw.web.application.configuration.SettableProperty;
+
+public class IntegerPropertyImpl extends BaseProperty<Integer> 
     implements SettableProperty<Integer> {
 
-    public IntegerProperty(String key) {
+    public IntegerPropertyImpl(String key) {
         super(key);
     }
 

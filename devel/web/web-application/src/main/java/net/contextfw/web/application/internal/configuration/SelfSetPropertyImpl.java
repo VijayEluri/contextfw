@@ -1,19 +1,21 @@
-package net.contextfw.web.application.configuration;
+package net.contextfw.web.application.internal.configuration;
 
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 
-public class SelfSetProperty<V> extends BaseProperty<Set<V>> implements SelfAddableProperty<Set<V>, V> {
+import net.contextfw.web.application.configuration.SelfAddableProperty;
+
+public class SelfSetPropertyImpl<V> extends BaseProperty<Set<V>> implements SelfAddableProperty<Set<V>, V> {
 
     private final V value;
     
-    public SelfSetProperty(String key) {
+    public SelfSetPropertyImpl(String key) {
         super(key);
         this.value = null;
     }
     
-    public SelfSetProperty(String key, V value) {
+    public SelfSetPropertyImpl(String key, V value) {
         super(key);
         this.value = value;
     }

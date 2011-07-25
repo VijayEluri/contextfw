@@ -9,6 +9,19 @@ import java.util.Set;
 import net.contextfw.web.application.DocumentProcessor;
 import net.contextfw.web.application.PropertyProvider;
 import net.contextfw.web.application.SystemPropertyProvider;
+import net.contextfw.web.application.internal.configuration.BindablePropertyImpl;
+import net.contextfw.web.application.internal.configuration.BooleanPropertyImpl;
+import net.contextfw.web.application.internal.configuration.ClassPropertyImpl;
+import net.contextfw.web.application.internal.configuration.KeyValue;
+import net.contextfw.web.application.internal.configuration.ObjectPropertyImpl;
+import net.contextfw.web.application.internal.configuration.Property;
+import net.contextfw.web.application.internal.configuration.RangedIntegerPropertyImpl;
+import net.contextfw.web.application.internal.configuration.ReloadableClassPropertyImpl;
+import net.contextfw.web.application.internal.configuration.SelfKeyValueSetPropertyImpl;
+import net.contextfw.web.application.internal.configuration.SelfSettableProperty;
+import net.contextfw.web.application.internal.configuration.StringPropertyImpl;
+import net.contextfw.web.application.internal.configuration.StringSetPropertyImpl;
+import net.contextfw.web.application.internal.configuration.TemporalPropertyImpl;
 import net.contextfw.web.application.lifecycle.DefaultLifecycleListener;
 import net.contextfw.web.application.lifecycle.DefaultPageFlowFilter;
 import net.contextfw.web.application.lifecycle.LifecycleListener;
@@ -139,7 +152,7 @@ public class Configuration {
      * </p>
      */
     public static final SettableProperty<Boolean> DEVELOPMENT_MODE = 
-        new BooleanProperty(KEY_DEVELOPMENT_MODE);
+        new BooleanPropertyImpl(KEY_DEVELOPMENT_MODE);
     
     /**
      * Defines whether page components should be reloaded when changed.
@@ -161,7 +174,7 @@ public class Configuration {
      * </p>
      */
     public static final SettableProperty<Boolean> CLASS_RELOADING_ENABLED = 
-        new BooleanProperty(KEY_CLASS_RELOADING_ENABLED);
+        new BooleanPropertyImpl(KEY_CLASS_RELOADING_ENABLED);
     
     /**
      * Defines whether the XML-representation of page load or update are logged. Only suitable
@@ -172,7 +185,7 @@ public class Configuration {
      * </p>
      */
     public static final SettableProperty<Boolean> LOG_XML = 
-        new BooleanProperty(KEY_LOG_XML);
+        new BooleanPropertyImpl(KEY_LOG_XML);
     
     /**
      * Defines the prefix for javascript- and css-files that are loaded with each page.
@@ -182,26 +195,8 @@ public class Configuration {
      * </p>
      */
     public static final SettableProperty<String> RESOURCES_PREFIX = 
-        new StringProperty(KEY_RESOURCES_PREFIX);
-    
-//    /**
-//     * Defines the http context path where the system is installed.
-//     * 
-//     * <p>
-//     *  This information is important for all resources that should be accessible from
-//     *  web page. Uses standard conventions. In XSL-templates the value of this property
-//     *  is accessible through variable <code>$contextPath</code>
-//     * </p>
-//     * <p>
-//     *  Example: <code>&lt;img src="{$contextPath}/images/image.jpg" /&gt;</code>
-//     * </p>
-//     * <p>
-//     *  Default: empty string
-//     * </p>
-//     */
-//    public static final SettableProperty<String> CONTEXT_PATH = 
-//        new StringProperty(KEY_CONTEXT_PATH);
-    
+        new StringPropertyImpl(KEY_RESOURCES_PREFIX);
+
     /**
      * Besides property <code>LOG_XML</code> it is possible to see the the page XML-representation
      * on web client. 
@@ -218,7 +213,7 @@ public class Configuration {
      * </p>
      */
     public static final SettableProperty<String> XML_PARAM_NAME = 
-        new StringProperty(KEY_XML_PARAM_NAME);
+        new StringPropertyImpl(KEY_XML_PARAM_NAME);
     
     /**
      * Defines the provider that is used to inject system properties to the system.
@@ -231,19 +226,19 @@ public class Configuration {
      * </p>  
      */
     public static final SettableProperty<PropertyProvider> PROPERTY_PROVIDER = 
-        new ObjectProperty<PropertyProvider>(KEY_PROPERTY_PROVIDER);
+        new ObjectPropertyImpl<PropertyProvider>(KEY_PROPERTY_PROVIDER);
     
     /**
      * Binds a lifecycle listener to the system
      */
     public static final BindableProperty<LifecycleListener> LIFECYCLE_LISTENER = 
-        new BindableProperty<LifecycleListener>(KEY_LIFECYCLE_LISTENER);
+        new BindablePropertyImpl<LifecycleListener>(KEY_LIFECYCLE_LISTENER);
     
     /**
      * Binds a pageflow filter to the system
      */
     public static final BindableProperty<PageFlowFilter> PAGEFLOW_FILTER = 
-        new BindableProperty<PageFlowFilter>(KEY_PAGEFLOW_FILTER);
+        new BindablePropertyImpl<PageFlowFilter>(KEY_PAGEFLOW_FILTER);
 
     /**
      * Binds a response logger for XML.
@@ -254,13 +249,13 @@ public class Configuration {
      * </p>
      */
     public static final BindableProperty<XMLResponseLogger> XML_RESPONSE_LOGGER = 
-        new BindableProperty<XMLResponseLogger>(KEY_XML_RESPONSE_LOGGER);
+        new BindablePropertyImpl<XMLResponseLogger>(KEY_XML_RESPONSE_LOGGER);
     
     /**
      * Binds a XSL-postprocessor to the system
      */
     public static final SettableProperty<Class<? extends DocumentProcessor>> XSL_POST_PROCESSOR = 
-        new ClassProperty<DocumentProcessor>(KEY_XSL_POST_PROCESSOR);
+        new ClassPropertyImpl<DocumentProcessor>(KEY_XSL_POST_PROCESSOR);
     
     /**
      * Defines the number of transformers that are used to render XSL into XHTML.
@@ -279,7 +274,7 @@ public class Configuration {
      * </p>
      */
     public static final SettableProperty<Integer> TRANSFORMER_COUNT =
-        new RangedIntegerProperty(KEY_TRANSFORMER_COUNT, 1, 200);
+        new RangedIntegerPropertyImpl(KEY_TRANSFORMER_COUNT, 1, 200);
     
     /**
      * Defines the root paths that contains components' css- and javascript-resources.
@@ -296,7 +291,7 @@ public class Configuration {
      * </p>
      */
     public static final AddableProperty<Set<String>, String> RESOURCE_PATH
-        = new StringSetProperty(KEY_RESOURCE_PATH);
+        = new StringSetPropertyImpl(KEY_RESOURCE_PATH);
     
     /**
      * Defines the root package from within view packages are scanned.
@@ -306,7 +301,7 @@ public class Configuration {
      * </p>
      */
     public static final AddableProperty<Set<String>, String> VIEW_COMPONENT_ROOT_PACKAGE
-        = new StringSetProperty(KEY_VIEW_COMPONENT_ROOT_PACKAGE);
+        = new StringSetPropertyImpl(KEY_VIEW_COMPONENT_ROOT_PACKAGE);
 
     /**
      * Defines root paths that contains the binaries where reloadable 
@@ -322,7 +317,7 @@ public class Configuration {
      * 
      */
     public static final AddableProperty<Set<String>, String> BUILD_PATH
-        = new StringSetProperty(KEY_BUILD_PATH);
+        = new StringSetPropertyImpl(KEY_BUILD_PATH);
     
     /**
      * Defines root package from within reloadable classes are scanned.
@@ -338,8 +333,8 @@ public class Configuration {
      * </p>
      * 
      */
-    public static final AddableProperty<Set<String>, String> RELOADABLE_ROOT_PACKAGE
-        = new StringSetProperty(KEY_RELOADABLE_ROOT_PACKAGE);
+    public static final ReloadableClassProperty RELOADABLE_CLASSES 
+        = new ReloadableClassPropertyImpl(KEY_RELOADABLE_ROOT_PACKAGE);
 
     /**
      * Defines the initial maximum inactivity until page scope is expired.
@@ -359,7 +354,7 @@ public class Configuration {
      * </p>
      */
     public static final TemporalProperty INITIAL_MAX_INACTIVITY = 
-        new TemporalProperty(KEY_INITIAL_MAX_INACTIVITY);
+        new TemporalPropertyImpl(KEY_INITIAL_MAX_INACTIVITY);
     
     /**
      * Defines the maximum inactivity until page scope is expired.
@@ -382,7 +377,7 @@ public class Configuration {
      * </p>
      */
     public static final TemporalProperty MAX_INACTIVITY = 
-        new TemporalProperty(KEY_MAX_INACTIVITY);
+        new TemporalPropertyImpl(KEY_MAX_INACTIVITY);
     
     /**
      * Defines the the period how often expired page scopes are purged from memory.
@@ -395,7 +390,7 @@ public class Configuration {
      * </p>
      */
     public static final TemporalProperty REMOVAL_SCHEDULE_PERIOD = 
-        new TemporalProperty(KEY_REMOVAL_SCHEDULE_PERIOD);
+        new TemporalPropertyImpl(KEY_REMOVAL_SCHEDULE_PERIOD);
     
     /**
      * Defines additional namespaces to be used in XSL-templates.
@@ -407,23 +402,14 @@ public class Configuration {
      */
     public static final SelfKeyValueSetProperty<String, String>
         NAMESPACE
-        = new SelfKeyValueSetProperty<String, String>(KEY_NAMESPACE);
-    
-//    public static final SelfKeyValueSetProperty<String, String>
-//      CREATE_HTTP_HEADER
-//      = new SelfKeyValueSetProperty<String, String>(KEY_CREATE_HTTP_HEADER);
-//    
-//    public static final SelfKeyValueSetProperty<String, String>
-//      UPDATE_HTTP_HEADER
-//    = new SelfKeyValueSetProperty<String, String>(KEY_UPDATE_HTTP_HEADER);
-    
+        = new SelfKeyValueSetPropertyImpl<String, String>(KEY_NAMESPACE);
     
     /**
      * Binds a new AttributeJsonSerialiser to the system
      */
     public static final SelfKeyValueSetProperty<Class<?>, 
         Class<? extends AttributeJsonSerializer<?>>> ATTRIBUTE_JSON_SERIALIZER
-           = new SelfKeyValueSetProperty<Class<?>, 
+           = new SelfKeyValueSetPropertyImpl<Class<?>, 
               Class<? extends AttributeJsonSerializer<?>>>(KEY_ATTRIBUTE_JSON_SERIALIZER 
               );
     
@@ -432,7 +418,7 @@ public class Configuration {
      */
     public static final SelfKeyValueSetProperty<Class<?>, 
     Class<? extends JsonDeserializer<?>>> JSON_DESERIALIZER
-        = new SelfKeyValueSetProperty<Class<?>, 
+        = new SelfKeyValueSetPropertyImpl<Class<?>, 
             Class<? extends JsonDeserializer<?>>>(KEY_JSON_DESERIALIZER);
     
     /**
@@ -440,7 +426,7 @@ public class Configuration {
      */
     public static final SelfKeyValueSetProperty<Class<?>, 
     Class<? extends JsonSerializer<?>>> JSON_SERIALIZER
-        = new SelfKeyValueSetProperty<Class<?>, 
+        = new SelfKeyValueSetPropertyImpl<Class<?>, 
             Class<? extends JsonSerializer<?>>>(KEY_JSON_SERIALIZER);
     
     /**
@@ -448,7 +434,7 @@ public class Configuration {
      */
     public static final SelfKeyValueSetProperty<Class<?>, 
     Class<? extends AttributeSerializer<?>>> ATTRIBUTE_SERIALIZER
-        = new SelfKeyValueSetProperty<Class<?>, 
+        = new SelfKeyValueSetPropertyImpl<Class<?>, 
             Class<? extends AttributeSerializer<?>>>(KEY_ATTRIBUTE_SERIALIZER);
 
     
@@ -501,7 +487,7 @@ public class Configuration {
      * Set a new property.
      * 
      * <p>
-     *  Previosly set property get overriden.
+     *  Previously set property get overriden.
      * </p>
      */
     public <T extends Collection<V>, V> Configuration set(SelfAddableProperty<T, V> property, T value) {
@@ -512,7 +498,7 @@ public class Configuration {
      * Set a new property.
      * 
      * <p>
-     *  Previosly set property get overriden.
+     *  Previously set property get overriden.
      * </p>
      */
     public <T> Configuration set(SelfSettableProperty<T> property) {
@@ -532,9 +518,4 @@ public class Configuration {
     public <T extends Collection<V>, V> Configuration add(SelfAddableProperty<T, V> property) {
         return new Configuration(values, property, property.add(get(property), property.getValue()));
     }
-    
-//    public <K, V> Configuration add(KeyValueSetProperty<K, V> property) {
-//        return new Configuration(values, property, property.append(
-//                get(property), property.getValue()));
-//    }
 }

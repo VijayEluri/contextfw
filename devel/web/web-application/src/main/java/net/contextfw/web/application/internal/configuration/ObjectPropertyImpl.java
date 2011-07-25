@@ -1,9 +1,11 @@
-package net.contextfw.web.application.configuration;
+package net.contextfw.web.application.internal.configuration;
 
-public class ObjectProperty<T> extends BaseProperty<T> 
+import net.contextfw.web.application.configuration.SettableProperty;
+
+public class ObjectPropertyImpl<T> extends BaseProperty<T> 
    implements SettableProperty<T> {
 
-    public ObjectProperty(String key) {
+    public ObjectPropertyImpl(String key) {
         super(key);
     }
 

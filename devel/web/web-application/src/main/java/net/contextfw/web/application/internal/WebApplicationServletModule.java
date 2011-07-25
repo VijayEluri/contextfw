@@ -2,7 +2,6 @@ package net.contextfw.web.application.internal;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -39,7 +38,7 @@ public class WebApplicationServletModule extends ServletModule {
 
     private final String resourcePrefix;
 
-    private final List<String> rootPackages = new ArrayList<String>();
+    private final Set<String> rootPackages;
 
     private final Configuration configuration;
 
@@ -61,23 +60,14 @@ public class WebApplicationServletModule extends ServletModule {
     public WebApplicationServletModule(Configuration configuration,
             PropertyProvider propertyProvider) {
         resourcePrefix = configuration.get(Configuration.RESOURCES_PREFIX);
-        rootPackages.addAll(configuration.get(Configuration.VIEW_COMPONENT_ROOT_PACKAGE));
         this.configuration = configuration;
         this.properties = propertyProvider;
 
+        rootPackages = configuration.get(Configuration.VIEW_COMPONENT_ROOT_PACKAGE);
         reloadEnabled = configuration.get(Configuration.CLASS_RELOADING_ENABLED);
+        
         if (reloadEnabled && configuration.get(Configuration.DEVELOPMENT_MODE)) {
-            
-            List<String> rootPaths = new ArrayList<String>();
-            for (String path : configuration.get(Configuration.BUILD_PATH)) {
-                rootPaths.add(path.endsWith("/") ? path : path + "/");
-            }
-            
-            Set<String> packages = new HashSet<String>();
-            packages.addAll(configuration.get(Configuration.VIEW_COMPONENT_ROOT_PACKAGE));
-            packages.addAll(configuration.get(Configuration.RELOADABLE_ROOT_PACKAGE));
-            
-            reloadConf = new ReloadingClassLoaderConf(packages, rootPaths);
+            reloadConf = new ReloadingClassLoaderConf(configuration);
             classLoader = new ReloadingClassLoader(reloadConf);
         }
     }
@@ -108,15 +98,14 @@ public class WebApplicationServletModule extends ServletModule {
         initializerProvider = new InitializerProvider(properties);
 
         if (reloadConf != null) {
-            List<String> packages = new ArrayList<String>();
-            for (String pck : reloadConf.getReloadablePackages()) {
-                for (String prefix : reloadConf.getClassDirectories()) {
-                    String delim = prefix.endsWith("/") ? "" : "/";
-                    packages.add("file:" + prefix + delim + pck.replaceAll("\\.", "/"));
-                }
-            }
-            packages.addAll(reloadConf.getReloadablePackages());
-            classWatcher = new DirectoryWatcher(packages, 
+//            List<String> packages = new ArrayList<String>();
+//            for (String pck : ) {
+//                for (String prefix : reloadConf.getBuildPaths()) {
+//                    String delim = prefix.endsWith("/") ? "" : "/";
+//                    packages.add("file:" + prefix + delim + pck.replaceAll("\\.", "/"));
+//                }
+//            }
+            classWatcher = new DirectoryWatcher(reloadConf.getReloadablePackageNames(), 
                     Pattern.compile(".+\\.class"));
         }
         

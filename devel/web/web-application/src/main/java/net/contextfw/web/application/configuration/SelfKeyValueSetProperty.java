@@ -1,17 +1,11 @@
 package net.contextfw.web.application.configuration;
 
+import java.util.Set;
 
-public class SelfKeyValueSetProperty<K, V> extends SelfSetProperty<KeyValue<K, V>> {
+import net.contextfw.web.application.internal.configuration.KeyValue;
 
-    public SelfKeyValueSetProperty(String key) {
-        super(key);
-    }
-    
-    private SelfKeyValueSetProperty(String key, KeyValue<K, V> value) {
-        super(key, value);
-    }
-    
-    public SelfKeyValueSetProperty<K, V> as (K key, V value) {
-        return new SelfKeyValueSetProperty<K, V>(getKey(), new KeyValue<K, V>(key, value));
-    }
+public interface SelfKeyValueSetProperty<K, V> extends SelfAddableProperty<Set<KeyValue<K,V>>, KeyValue<K,V>> {
+
+    SelfKeyValueSetProperty<K, V> as(K key, V value);
+
 }
