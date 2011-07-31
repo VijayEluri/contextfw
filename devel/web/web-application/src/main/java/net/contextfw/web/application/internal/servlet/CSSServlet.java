@@ -42,4 +42,9 @@ public class CSSServlet extends ResourceServlet {
     protected List<String> getRootPaths() {
         return resourcePaths;
     }
+
+    @Override
+    protected String getContentType() {
+        return "text/css";
+    }
 }

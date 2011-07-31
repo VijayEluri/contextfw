@@ -43,4 +43,9 @@ public class ScriptServlet extends ResourceServlet {
         return resourcePaths;
     }
 
+    @Override
+    protected String getContentType() {
+        return "application/javascript";
+    }
+
 }

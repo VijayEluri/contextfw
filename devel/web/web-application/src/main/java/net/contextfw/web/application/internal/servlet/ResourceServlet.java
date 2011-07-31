@@ -33,6 +33,8 @@ public abstract class ResourceServlet extends HttpServlet {
         if (clear()) {
             clean();
         }
+        
+        resp.setContentType(getContentType());
 
         if (content == null) {
             synchronized (this) {
@@ -71,4 +73,6 @@ public abstract class ResourceServlet extends HttpServlet {
     protected abstract Pattern getAcceptor();
 
     protected abstract List<String> getRootPaths();
+    
+    protected abstract String getContentType();
 }
