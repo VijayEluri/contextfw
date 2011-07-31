@@ -9,7 +9,6 @@ import java.io.IOException;
 import java.util.Properties;
 import java.net.URL;
 
-import net.contextfw.quick082.ResponseLogger;
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.WebApplicationModule;
 import net.contextfw.web.application.configuration.Configuration;
