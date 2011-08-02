@@ -20,5 +20,5 @@ import javax.servlet.http.HttpServletResponse;
  *
  */
 public interface ResourceResponse {
-    public void serve(HttpServletRequest request, HttpServletResponse response) throws IOException;
+    void serve(HttpServletRequest request, HttpServletResponse response) throws IOException;
 }

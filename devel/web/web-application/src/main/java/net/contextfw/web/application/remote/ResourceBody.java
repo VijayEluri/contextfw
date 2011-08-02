@@ -49,5 +49,5 @@ public @interface ResourceBody {
      *  This value has no effect when using as component resource.
      * </p>
      */
-    public boolean expire() default false;
+    boolean expire() default false;
 }

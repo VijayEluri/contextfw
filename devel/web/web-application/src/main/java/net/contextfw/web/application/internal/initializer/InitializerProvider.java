@@ -1,14 +1,9 @@
 package net.contextfw.web.application.internal.initializer;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.regex.Pattern;
 import java.util.regex.PatternSyntaxException;
 
-import net.contextfw.web.application.PropertyProvider;
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.lifecycle.PageScoped;
@@ -19,18 +14,10 @@ import org.slf4j.LoggerFactory;
 
 public class InitializerProvider {
 
+    @SuppressWarnings("unused")
     private Logger logger = LoggerFactory.getLogger(InitializerProvider.class);
 
-    private final PropertyProvider properties;
-
-    //private final Map<Pattern, Class<? extends Component>> initializers = new HashMap<Pattern, Class<? extends Component>>();
-
-    //private final Map<Class<? extends Component>, List<Class<? extends Component>>> chain = new HashMap<Class<? extends Component>, List<Class<? extends Component>>>();
-
-    private String contextPath;
-
-    public InitializerProvider(PropertyProvider configuration) {
-        this.properties = configuration;
+    public InitializerProvider() {
     }
 
     public List<Class<? extends Component>> getInitializerChain(Class<? extends Component> cl) {
@@ -80,16 +67,6 @@ public class InitializerProvider {
         }
     }
 
-//    public List<Class<? extends Component>> findChain(String url) {
-//        for (Entry<Pattern, Class<? extends Component>> entry : initializers
-//                .entrySet()) {
-//            if (entry.getKey().matcher(url).matches()) {
-//                return chain.get(entry.getValue());
-//            }
-//        }
-//        return null;
-//    }
-
     private View processClass(Class<?> cl) {
 
         if (cl.getAnnotation(PageScoped.class) == null) {
@@ -104,9 +81,5 @@ public class InitializerProvider {
                     + "' is missing @View-annotation");
         }
         return annotation;
-    }
-
-    public void setContextPath(String contextPath) {
-        this.contextPath = contextPath;
     }
 }

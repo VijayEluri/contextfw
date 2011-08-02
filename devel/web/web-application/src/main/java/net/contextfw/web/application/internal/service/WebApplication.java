@@ -15,21 +15,21 @@ public interface WebApplication {
      * 
      * @throws ContextServiceException
      */
-    public void initState() throws WebApplicationException;
+    void initState() throws WebApplicationException;
 
     /**
      * 
      * @return
      *      true, if web application should be removed
      */
-    public boolean sendResponse();
+    boolean sendResponse();
 
     /**
      * This is called when page is updated
      * 
      * @throws ContextServiceException
      */
-    public UpdateInvocation updateState(boolean updateComponents, String componentId, String method) throws WebApplicationException;
+    UpdateInvocation updateState(boolean updateComponents, String componentId, String method) throws WebApplicationException;
     
-    public void setInitializerChain(List<Class<? extends Component>> chain);
+    void setInitializerChain(List<Class<? extends Component>> chain);
 }

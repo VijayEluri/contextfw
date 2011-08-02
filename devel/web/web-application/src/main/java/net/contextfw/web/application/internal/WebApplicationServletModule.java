@@ -1,6 +1,5 @@
 package net.contextfw.web.application.internal;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -44,8 +43,6 @@ public class WebApplicationServletModule extends ServletModule {
 
     private ClassLoader classLoader = null;
 
-    private final boolean reloadEnabled;
-
     private final Map<String, InitServlet> servlets = new HashMap<String, InitServlet>();
     
     private InitializerProvider initializerProvider;
@@ -64,7 +61,7 @@ public class WebApplicationServletModule extends ServletModule {
         this.properties = propertyProvider;
 
         rootPackages = configuration.get(Configuration.VIEW_COMPONENT_ROOT_PACKAGE);
-        reloadEnabled = configuration.get(Configuration.CLASS_RELOADING_ENABLED);
+        boolean reloadEnabled = configuration.get(Configuration.CLASS_RELOADING_ENABLED);
         
         if (reloadEnabled && configuration.get(Configuration.DEVELOPMENT_MODE)) {
             reloadConf = new ReloadingClassLoaderConf(configuration);
@@ -95,7 +92,7 @@ public class WebApplicationServletModule extends ServletModule {
 
         InitHandler initHandler = new InitHandler(configuration);
         requestInjection(initHandler);
-        initializerProvider = new InitializerProvider(properties);
+        initializerProvider = new InitializerProvider();
 
         if (reloadConf != null) {
 //            List<String> packages = new ArrayList<String>();

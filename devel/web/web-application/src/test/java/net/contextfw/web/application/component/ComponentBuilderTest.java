@@ -81,14 +81,13 @@ public class ComponentBuilderTest extends BaseComponentTest {
         
         @ScriptElement
         public Script[] arrayOfInits() {
-            List<Script> inits = new ArrayList<Script>();
             return new Script[] {
               new FunctionCall("init", "a", "b"),
               new FunctionCall("init", "a") };
         }
 
         @ScriptElement
-        private Script init2 = new FunctionCall("init2", "a");
+        public Script init2 = new FunctionCall("init2", "a");
     }
     
     public static class Bee extends Component {

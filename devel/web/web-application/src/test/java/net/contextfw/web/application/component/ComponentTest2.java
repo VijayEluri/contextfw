@@ -1,16 +1,12 @@
 package net.contextfw.web.application.component;
 
-import static org.junit.Assert.assertNull;
-import net.contextfw.web.application.component.ComponentBuilderTest.Aa;
-import net.contextfw.web.application.component.ComponentBuilderTest.Bee;
-import net.contextfw.web.application.component.ComponentBuilderTest.Cee;
-
 import org.junit.Test;
 
 public class ComponentTest2 extends BaseComponentTest {
 
     public static class A extends Component {
         
+        @SuppressWarnings("unused")
         @Attribute
         private String a = "A";
 
@@ -22,6 +18,7 @@ public class ComponentTest2 extends BaseComponentTest {
     
     public static class C extends A {
         
+        @SuppressWarnings("unused")
         @Attribute
         private String a = "C";
         

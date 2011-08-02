@@ -25,7 +25,6 @@ import net.contextfw.web.application.internal.configuration.KeyValue;
 import net.contextfw.web.application.internal.service.DirectoryWatcher;
 import net.contextfw.web.application.internal.util.ResourceEntry;
 import net.contextfw.web.application.internal.util.ResourceScanner;
-import net.contextfw.web.application.util.DefaultXMLResponseLogger;
 import net.contextfw.web.application.util.XMLResponseLogger;
 
 import org.dom4j.Document;
@@ -62,7 +61,6 @@ public class WebResponder {
     private List<Transformer> transformers;
 
     private final int transformerCount;
-    private final boolean debugMode;
     private final XMLResponseLogger responseLogger;
     private final DocumentProcessor xslPostProcessor;
 
@@ -82,11 +80,11 @@ public class WebResponder {
         }
     }
 
+    @SuppressWarnings("unchecked")
     @Inject
     public WebResponder(Configuration configuration, Injector injector, DirectoryWatcher watcher) {
         rootResourcePaths.add("net.contextfw.web.application");
         transformerCount = configuration.get(Configuration.TRANSFORMER_COUNT);
-        debugMode = configuration.get(Configuration.DEVELOPMENT_MODE);
         resourcePaths.addAll(configuration.get(Configuration.RESOURCE_PATH));
         namespaces.addAll(configuration.get(Configuration.NAMESPACE));
         if (configuration.get(Configuration.XSL_POST_PROCESSOR) != null) {

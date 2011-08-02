@@ -5,7 +5,6 @@ import java.lang.reflect.Method;
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.internal.util.ClassScanner;
 import net.contextfw.web.application.lifecycle.LifecycleListener;
-import net.contextfw.web.application.remote.Remoted;
 
 import com.google.gson.Gson;
 import com.google.inject.Inject;
