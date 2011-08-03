@@ -106,8 +106,11 @@ public class WebApplicationImpl implements WebApplication {
                     httpContext.getResponse().sendError(httpContext.getErrorCode(), httpContext.getErrorMsg());
                     return true;
                 } else if (httpContext.isReload()) {
-                    httpContext.getResponse().sendRedirect(httpContext.getRequestURI() 
-                            + httpContext.getQueryString() == null ? "" : "?" + httpContext.getQueryString());
+                    StringBuilder sb = new StringBuilder(httpContext.getRequestURI());
+                    if (httpContext.getQueryString() != null) {
+                        sb.append("?").append(httpContext.getQueryString());
+                    }
+                    httpContext.getResponse().sendRedirect(sb.toString());
                 }
             }
 

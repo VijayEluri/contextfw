@@ -68,7 +68,8 @@ public class ReloadingClassLoader extends ClassLoader {
             int size = (int) f.length();
             byte buff[] = new byte[size];
             FileInputStream fis = new FileInputStream(f);
-            DataInputStream dis = new DataInputStream(fis);
+            // FIXME Fix IOexception usage. Dis may not get closed
+            DataInputStream dis = new DataInputStream(fis); // NOSONAR
             dis.readFully(buff);
             dis.close();
             return buff;

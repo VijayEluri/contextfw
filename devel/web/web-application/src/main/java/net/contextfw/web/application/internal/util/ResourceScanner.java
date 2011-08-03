@@ -16,7 +16,6 @@ public class ResourceScanner extends AbstractScanner {
             Pattern acceptor) {
         
         List<ResourceEntry> entries = findResourceEntries(resourcePaths);
-
         List<ResourceEntry> rv = new ArrayList<ResourceEntry>();
         
         for (ResourceEntry entry : entries) {

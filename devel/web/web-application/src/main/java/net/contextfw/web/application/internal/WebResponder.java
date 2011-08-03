@@ -132,14 +132,19 @@ public class WebResponder {
         ResourceEntry root = null;
 
         Iterator<ResourceEntry> iter = rootResources.iterator();
-
-        while (iter.hasNext()) {
-            ResourceEntry next = iter.next();
-            if (next.getPath().endsWith("root.xsl")) {
-                iter.remove();
-                root = next;
-                break;
+        if (iter != null) {
+            while (iter.hasNext()) {
+                ResourceEntry next = iter.next();
+                if (next.getPath().endsWith("root.xsl")) {
+                    iter.remove();
+                    root = next;
+                    break;
+                }
             }
+        }
+        
+        if (root == null) {
+            throw new InternalWebApplicationException("root.xsl was not found");
         }
 
         List<ResourceEntry> resources = ResourceScanner.findResources(resourcePaths, XSL_ACCEPTOR);

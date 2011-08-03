@@ -88,6 +88,10 @@ public class WebApplicationServletModule extends ServletModule {
 
     private void serveViewComponents() {
 
+        // Note: This process creates some phantom chains from 
+        // views that do not have any url. Those chains are
+        // however ingnored and are not such problem.
+        
         logger.info("Configuring view components");
 
         List<Class<?>> classes = ClassScanner.getClasses(rootPackages);
