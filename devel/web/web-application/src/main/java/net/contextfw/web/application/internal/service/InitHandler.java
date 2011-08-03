@@ -112,6 +112,7 @@ public class InitHandler {
                     }
 
                 } catch (Exception e) {
+                    // TODO Fix this construct with test
                     listeners.onException(e);
                     if (e instanceof WebApplicationException) {
                         throw (WebApplicationException) e;

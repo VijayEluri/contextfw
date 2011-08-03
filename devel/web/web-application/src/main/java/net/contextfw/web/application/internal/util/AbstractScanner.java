@@ -60,7 +60,7 @@ public class AbstractScanner {
         return entries;
     }
     
-    private static Collection<? extends ResourceEntry> findResourcesFromJar(URL directory) throws UnsupportedEncodingException, IOException {
+    private static Collection<? extends ResourceEntry> findResourcesFromJar(URL directory) throws IOException {
         
         List<ResourceEntry> resources = new ArrayList<ResourceEntry>();
         

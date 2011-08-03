@@ -24,19 +24,19 @@ public class TemporalPropertyImpl implements TemporalProperty {
     }
 
     public TemporalPropertyImpl inHoursAndMins(long hours, long mins) {
-        return new TemporalPropertyImpl(key, (hours*60+mins)*60*1000);
+        return new TemporalPropertyImpl(key, (hours*60+mins) * 60 *1000); // NOSONAR
     }
     
     public TemporalPropertyImpl inMinsAndSecs(long minutes, long seconds) {
-        return new TemporalPropertyImpl(key, (seconds + minutes * 60) * 1000);
+        return new TemporalPropertyImpl(key, (seconds + minutes * 60) * 1000); // NOSONAR
     }
     
     public TemporalPropertyImpl inSeconds(long seconds) {
-        return inMillis(seconds * 1000);
+        return inMillis(seconds * 1000); // NOSONAR
     }
     
     public TemporalPropertyImpl inMinutes(long minutes) {
-        return inSeconds(minutes * 60);
+        return inSeconds(minutes * 60); // NOSONAR
     }
     
     public TemporalPropertyImpl inMillis(final long millis) {

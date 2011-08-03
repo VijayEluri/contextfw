@@ -12,7 +12,6 @@ import net.contextfw.web.application.internal.WebApplicationServletModule;
 import net.contextfw.web.application.internal.component.AutoRegisterListener;
 import net.contextfw.web.application.internal.configuration.KeyValue;
 import net.contextfw.web.application.internal.providers.HttpContextProvider;
-import net.contextfw.web.application.internal.providers.RequestProvider;
 import net.contextfw.web.application.internal.providers.WebApplicationHandleProvider;
 import net.contextfw.web.application.internal.scope.WebApplicationScope;
 import net.contextfw.web.application.internal.service.DirectoryWatcher;
@@ -23,7 +22,6 @@ import net.contextfw.web.application.lifecycle.LifecycleListener;
 import net.contextfw.web.application.lifecycle.PageFlowFilter;
 import net.contextfw.web.application.lifecycle.PageScoped;
 import net.contextfw.web.application.serialize.AttributeJsonSerializer;
-import net.contextfw.web.application.util.Request;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -68,7 +66,6 @@ public final class WebApplicationModule extends AbstractModule {
         bind(ObjectAttributeSerializer.class).to(AttributeHandler.class);
         bind(WebApplicationHandle.class).toProvider(
                 WebApplicationHandleProvider.class);
-        bind(Request.class).toProvider(RequestProvider.class);
         bind(Configuration.class).toInstance(configuration);
         bind(PropertyProvider.class).toInstance(configuration.get(Configuration.PROPERTY_PROVIDER));
         handlePageFlowFilter();

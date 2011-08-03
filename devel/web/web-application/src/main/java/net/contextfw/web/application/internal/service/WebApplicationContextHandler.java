@@ -23,7 +23,7 @@ public class WebApplicationContextHandler {
 
     private final PageFlowFilter pageFlowFilter;
     
-    private volatile static Map<WebApplicationHandle, WebApplicationContext> contexts = 
+    private static volatile Map<WebApplicationHandle, WebApplicationContext> contexts = 
         new HashMap<WebApplicationHandle, WebApplicationContext>();
 
     public synchronized int refreshApplication(WebApplicationHandle handle) {
@@ -67,14 +67,11 @@ public class WebApplicationContextHandler {
     }
 
     public synchronized WebApplicationHandle createNewHandle() {
-        String key = UUID.randomUUID().toString();
-
-        while (contexts.containsKey(key)) {
-            key = UUID.randomUUID().toString();
-        }
-
-        WebApplicationHandle handle = new WebApplicationHandle(key);
-
+        WebApplicationHandle handle;
+        do {
+            handle = new WebApplicationHandle(UUID.randomUUID().toString());
+        } while (contexts.containsKey(handle));
+        
         return handle;
     }
 

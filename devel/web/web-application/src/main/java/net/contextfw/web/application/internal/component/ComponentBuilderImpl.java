@@ -34,16 +34,18 @@ import com.google.inject.Singleton;
 public class ComponentBuilderImpl implements ComponentBuilder, ScriptContext {
 
     private static class MetaModel {
-        public Set<String> registeredNames = new HashSet<String>();
-        public List<Method> beforeBuilds = new ArrayList<Method>();
-        public List<Method> afterBuilds = new ArrayList<Method>();
-        public List<Builder> builders = new ArrayList<Builder>();
-        public List<Builder> updateBuilders = new ArrayList<Builder>();
-        public List<Builder> partialBuilders = new ArrayList<Builder>();
-        public String buildName;
-        public Buildable annotation;
+        public Set<String> registeredNames = new HashSet<String>(); // NOSONAR
+        public List<Method> beforeBuilds = new ArrayList<Method>(); // NOSONAR
+        public List<Method> afterBuilds = new ArrayList<Method>(); // NOSONAR
+        public List<Builder> builders = new ArrayList<Builder>(); // NOSONAR
+        public List<Builder> updateBuilders = new ArrayList<Builder>(); // NOSONAR
+        public List<Builder> partialBuilders = new ArrayList<Builder>(); // NOSONAR
+        public String buildName; // NOSONAR
+        public Buildable annotation; // NOSONAR
     }
 
+    // FIXME Move the static metam model handling to somewhere else
+    //       Now their intent is a bit mixed          
     private static final Map<Class<?>, MetaModel> metaModels = new HashMap<Class<?>, MetaModel>();
     private static final Map<Class<?>, Class<?>> actualClasses = new WeakHashMap<Class<?>, Class<?>>();
 
@@ -74,7 +76,7 @@ public class ComponentBuilderImpl implements ComponentBuilder, ScriptContext {
     
     private Buildable findBuildable(final Class<?> cl) {
         Class<?> current = cl;
-        while (current instanceof Object) {
+        while (current != null) {
             if (current.isAnnotationPresent(Buildable.class)) {
                 return current.getAnnotation(Buildable.class);
             }
@@ -117,7 +119,7 @@ public class ComponentBuilderImpl implements ComponentBuilder, ScriptContext {
 
         Class<?> currentClass = cl;
 
-        while (currentClass instanceof Object) {
+        while (currentClass != null) {
 
             for (Field field : currentClass.getDeclaredFields()) {
 

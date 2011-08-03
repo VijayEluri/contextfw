@@ -31,6 +31,8 @@ import com.google.inject.servlet.ServletModule;
 
 public class WebApplicationServletModule extends ServletModule {
 
+    private static final String REGEX = "regex:";
+
     private Logger logger = LoggerFactory.getLogger(WebApplicationServletModule.class);
 
     private final PropertyProvider properties;
@@ -159,8 +161,8 @@ public class WebApplicationServletModule extends ServletModule {
     }
 
     private void serveInitServlet(Class<?> cl, String url, InitServlet servlet) {
-        if (url.startsWith("regex:")) {
-            String serveUrl = url.substring(6);
+        if (url.startsWith(REGEX)) {
+            String serveUrl = url.substring(REGEX.length());
             logger.info("  Serving url: " + cl.getName() + " => {} (regex)", serveUrl);
             serveRegex(serveUrl).with(servlet);
         } else {

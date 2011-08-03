@@ -5,13 +5,14 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 
+import javax.servlet.http.HttpServletRequest;
+
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.internal.util.ClassScanner;
 import net.contextfw.web.application.lifecycle.LifecycleListener;
 import net.contextfw.web.application.remote.Delayed;
 import net.contextfw.web.application.remote.ResourceBody;
-import net.contextfw.web.application.util.Request;
 
 import com.google.gson.Gson;
 
@@ -41,7 +42,7 @@ public class ComponentUpdateHandler {
         return key;
     }
 
-    public Object invoke(Component element, Request request) {
+    public Object invoke(Component element, HttpServletRequest request) {
         try {
             if (element != null && element.isEnabled()) {
                 return invokeWithParams(element, request);
@@ -60,9 +61,8 @@ public class ComponentUpdateHandler {
         return null;
     }
 
-    private Object invokeWithParams(Component element, Request request)
-            throws IllegalArgumentException,
-            IllegalAccessException, InvocationTargetException, NoSuchMethodException,
+    private Object invokeWithParams(Component element, HttpServletRequest request)
+            throws IllegalAccessException, InvocationTargetException, NoSuchMethodException,
             InstantiationException {
 
         List<Class<?>> paramTypes = ClassScanner.getParamTypes(element.getClass(), method);
@@ -70,7 +70,7 @@ public class ComponentUpdateHandler {
 
         for (int c = 0; c < paramTypes.size(); c++) {
 
-            String value = request.param("p" + c).getStringValue(null);
+            String value = request.getParameter("p" + c);
             if (value != null) {
                 try {
                     Constructor<?> constructor = paramTypes.get(c).getConstructor(String.class);

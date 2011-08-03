@@ -16,6 +16,8 @@ import net.contextfw.web.application.remote.Remoted;
 
 public class ClassScanner extends AbstractScanner {
 
+    private static final int POSTFIX = "class.".length();
+    
     public static List<Class<?>> getClasses(String... packageNames) {
         ArrayList<String> list = new ArrayList<String>(packageNames.length);
         Collections.addAll(list, packageNames);
@@ -69,7 +71,7 @@ public class ClassScanner extends AbstractScanner {
     }
 
     private static String toClassName(String fileName) {
-        return fileName.substring(0, fileName.length() - 6).replaceAll("/", "\\.");
+        return fileName.substring(0, fileName.length() - POSTFIX).replaceAll("/", "\\.");
     }
 
     public static List<Class<?>> getParamTypes(Class<?> declaringClass, Method method) {

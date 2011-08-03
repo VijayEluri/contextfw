@@ -8,7 +8,7 @@ import net.contextfw.web.application.internal.component.ComponentBuilder;
 
 /**
  * The base class of a component
- *
+ * 
  */
 @Buildable
 public abstract class Component {
@@ -19,7 +19,7 @@ public abstract class Component {
     private Component parent = null;
     private Set<Component> children = null;
     private Set<Component> waitingToRegister = null;
-    
+
     private boolean enabled = true;
 
     private enum RefreshMode {
@@ -33,13 +33,13 @@ public abstract class Component {
      * Assigns an id for the component
      * 
      * <p>
-     *  Id is generated automatically by the web framework so setting an id is not necesssary.
-     *  the id is of a form <code>el[n]</code> where <code>[n]</code> is an incrementing 
-     *  value.  
+     * Id is generated automatically by the web framework so setting an id is
+     * not necesssary. the id is of a form <code>el[n]</code> where
+     * <code>[n]</code> is an incrementing value.
      * </p>
      * <p>
-     *  It is also possible to set a custom id, but to be sure that setting succceeds it must be don
-     *  during initialization.
+     * It is also possible to set a custom id, but to be sure that setting
+     * succceeds it must be don during initialization.
      * </p>
      */
     public void setId(String id) {
@@ -53,9 +53,10 @@ public abstract class Component {
      * Get's component id
      * 
      * <p>
-     *  The <code>id</code> is <code>null</code> initially, but when component is registered to thes
-     *  system id is generated automatically. This means that <code>id</code> may not be in use
-     *  at initialization phase and developer should not rely on using <code>id</code> in class properties.
+     * The <code>id</code> is <code>null</code> initially, but when component is
+     * registered to thes system id is generated automatically. This means that
+     * <code>id</code> may not be in use at initialization phase and developer
+     * should not rely on using <code>id</code> in class properties.
      * </p>
      */
     public String getId() {
@@ -66,21 +67,22 @@ public abstract class Component {
      * Adds a component to be a child of this component.
      * 
      * <p>
-     *  Registering child components is a mandatory task so that the framework is able to 
-     *  register all components in the page and assign proper ids for them.
+     * Registering child components is a mandatory task so that the framework is
+     * able to register all components in the page and assign proper ids for
+     * them.
      * </p>
      * 
      * <p>
-     *  Component registering is lazy. If parent component has not yet been registered then
-     *  registering for child components is delayd untit parent is also registered.
+     * Component registering is lazy. If parent component has not yet been
+     * registered then registering for child components is delayd untit parent
+     * is also registered.
      * </p>
      * 
      * @param <T>
-     *   Component type
+     *            Component type
      * @param el
-     *   The Component
-     * @return
-     *   The added component
+     *            The Component
+     * @return The added component
      */
     public <T extends Component> T registerChild(T el) {
         if (children == null) {
@@ -143,15 +145,15 @@ public abstract class Component {
      * Refreshes component state to web client
      * 
      * <p>
-     *  When component needs to update its state on web client, this
-     *  method must be called. Framework recognizes the request and 
-     *  creates property update during rendering phase.
+     * When component needs to update its state on web client, this method must
+     * be called. Framework recognizes the request and creates property update
+     * during rendering phase.
      * </p>
      * 
      * <p>
-     *  <b>Note!</b> If paren component also requests update, then the update
-     *  of this component is canceled, because in normal circumstances this
-     *  component if fully redrawn by the parent component.
+     * <b>Note!</b> If paren component also requests update, then the update of
+     * this component is canceled, because in normal circumstances this
+     * component if fully redrawn by the parent component.
      * </p>
      */
     public void refresh() {
@@ -180,14 +182,13 @@ public abstract class Component {
             if (isNormalUpdate) {
                 builder.buildUpdate(domBuilder, this, isNormalUpdate ? "update" : partialUpdateName);
             } else {
-                builder.buildPartialUpdate(domBuilder, this, isNormalUpdate ? "update" : partialUpdateName, partialUpdates);
+                builder.buildPartialUpdate(domBuilder, this, isNormalUpdate ? "update"
+                        : partialUpdateName, partialUpdates);
             }
         }
-        if (refreshMode == RefreshMode.PASS || !isNormalUpdate) {
-            if (children != null) {
-                for (Component child : children) {
-                    child.buildComponentUpdate(domBuilder, builder);
-                }
+        if ((refreshMode == RefreshMode.PASS || !isNormalUpdate) && children != null) {
+            for (Component child : children) {
+                child.buildComponentUpdate(domBuilder, builder);
             }
         }
         clearCascadedUpdate();
@@ -197,7 +198,8 @@ public abstract class Component {
      * Requests a partial update for component
      * 
      * <p>
-     *  When there is a need to only partially update component, then this method is used
+     * When there is a need to only partially update component, then this method
+     * is used
      * </p>
      * 
      * 
@@ -237,9 +239,10 @@ public abstract class Component {
      * Defines if this component is enabled or disabled.
      * 
      * <p>
-     *  If component is disabled then it is not added to DOM-tree during rendering phase. Also
-     *  disabled component does not listen remote calls.
+     * If component is disabled then it is not added to DOM-tree during
+     * rendering phase. Also disabled component does not listen remote calls.
      * </p>
+     * 
      * @param enabled
      */
     public void setEnabled(boolean enabled) {

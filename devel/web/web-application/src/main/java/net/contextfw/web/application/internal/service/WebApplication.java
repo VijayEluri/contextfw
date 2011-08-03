@@ -2,7 +2,6 @@ package net.contextfw.web.application.internal.service;
 
 import java.util.List;
 
-import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.component.Component;
 
 import com.google.inject.ImplementedBy;
@@ -12,10 +11,8 @@ public interface WebApplication {
 
     /**
      * This is called when page is shown for the first time
-     * 
-     * @throws ContextServiceException
      */
-    void initState() throws WebApplicationException;
+    void initState();
 
     /**
      * 
@@ -26,10 +23,8 @@ public interface WebApplication {
 
     /**
      * This is called when page is updated
-     * 
-     * @throws ContextServiceException
      */
-    UpdateInvocation updateState(boolean updateComponents, String componentId, String method) throws WebApplicationException;
+    UpdateInvocation updateState(boolean updateComponents, String componentId, String method);
     
     void setInitializerChain(List<Class<? extends Component>> chain);
 }

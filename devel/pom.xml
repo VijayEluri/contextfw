@@ -61,6 +61,21 @@ limitations under the License.
 		</dependency>
 	</dependencies>
 	<profiles>
+	    <profile>
+            <id>sonar</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <properties>
+                <!-- EXAMPLE FOR MYSQL -->
+                <sonar.jdbc.url>
+                  jdbc:mysql://localhost:3306/sonar?useUnicode=true&amp;characterEncoding=utf8
+                </sonar.jdbc.url>
+                <sonar.jdbc.driverClassName>com.mysql.jdbc.Driver</sonar.jdbc.driverClassName>
+                <sonar.jdbc.username>sonar</sonar.jdbc.username>
+                <sonar.jdbc.password>sonar</sonar.jdbc.password>
+            </properties>
+        </profile>
 		<profile>
 			<id>release-sign-artifacts</id>
 			<activation>

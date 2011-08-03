@@ -2,7 +2,6 @@ package net.contextfw.web.application.internal;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringReader;
 import java.io.StringWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
@@ -12,17 +11,11 @@ import java.util.regex.Pattern;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
-import javax.xml.transform.Transformer;
-import javax.xml.transform.TransformerConfigurationException;
-import javax.xml.transform.TransformerException;
-import javax.xml.transform.TransformerFactory;
-import javax.xml.transform.stream.StreamSource;
 
 import net.contextfw.web.application.DocumentProcessor;
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.internal.configuration.KeyValue;
-import net.contextfw.web.application.internal.service.DirectoryWatcher;
 import net.contextfw.web.application.internal.util.ResourceEntry;
 import net.contextfw.web.application.internal.util.ResourceScanner;
 import net.contextfw.web.application.util.XMLResponseLogger;
@@ -31,8 +24,6 @@ import org.dom4j.Document;
 import org.dom4j.DocumentException;
 import org.dom4j.Element;
 import org.dom4j.Node;
-import org.dom4j.io.DocumentResult;
-import org.dom4j.io.DocumentSource;
 import org.dom4j.io.HTMLWriter;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
@@ -57,17 +48,18 @@ public class WebResponder {
     private final List<KeyValue<String, String>> namespaces =
             new ArrayList<KeyValue<String, String>>();
 
-    private int currentTransformer = 0;
-    private List<Transformer> transformers;
+    private final Transformers transformers;
 
-    private final int transformerCount;
     private final XMLResponseLogger responseLogger;
     private final DocumentProcessor xslPostProcessor;
+    
+    private final OutputFormat htmlFormat;
 
     public enum Mode {
 
-        INIT("text/html;charset=UTF-8"), UPDATE("text/xml;charset=UTF-8"), XML(
-                "text/xml;charset=UTF-8");
+        INIT("text/html;charset=UTF-8"),
+        UPDATE("text/xml;charset=UTF-8"),
+        XML("text/xml;charset=UTF-8");
 
         private final String contentType;
 
@@ -82,11 +74,19 @@ public class WebResponder {
 
     @SuppressWarnings("unchecked")
     @Inject
-    public WebResponder(Configuration configuration, Injector injector, DirectoryWatcher watcher) {
+    public WebResponder(Configuration configuration, Injector injector) {
         rootResourcePaths.add("net.contextfw.web.application");
-        transformerCount = configuration.get(Configuration.TRANSFORMER_COUNT);
+        transformers = new Transformers(configuration.get(Configuration.TRANSFORMER_COUNT));
         resourcePaths.addAll(configuration.get(Configuration.RESOURCE_PATH));
         namespaces.addAll(configuration.get(Configuration.NAMESPACE));
+        
+        htmlFormat = OutputFormat.createCompactFormat();
+        htmlFormat.setXHTML(true);
+        htmlFormat.setTrimText(false);
+        htmlFormat.setPadText(true);
+        htmlFormat.setNewlines(false);
+        htmlFormat.setExpandEmptyElements(true);
+        
         if (configuration.get(Configuration.XSL_POST_PROCESSOR) != null) {
             xslPostProcessor = injector.getInstance(
                     configuration.get(Configuration.XSL_POST_PROCESSOR));
@@ -97,8 +97,8 @@ public class WebResponder {
             Object obj = configuration.get(Configuration.XML_RESPONSE_LOGGER);
             if (obj instanceof XMLResponseLogger) {
                 responseLogger = (XMLResponseLogger) obj;
-            } else if (obj instanceof Class 
-                    && XMLResponseLogger.class.isAssignableFrom((Class<?>)obj)) {
+            } else if (obj instanceof Class
+                    && XMLResponseLogger.class.isAssignableFrom((Class<?>) obj)) {
                 responseLogger = injector.getInstance((Class<XMLResponseLogger>) obj);
             } else {
                 responseLogger = null;
@@ -107,9 +107,6 @@ public class WebResponder {
             responseLogger = null;
         }
     }
-
-    private final static TransformerFactory factory = TransformerFactory
-            .newInstance();
 
     public void logXML(Document d) {
         try {
@@ -124,37 +121,6 @@ public class WebResponder {
 
         } catch (Exception e) {
             throw new WebApplicationException(e);
-        }
-    }
-
-    private Transformer getTransformer() {
-        List<Transformer> transformers = this.transformers;
-        if (transformers == null) {
-            synchronized (this) {
-                if (transformers == null) {
-                    logger.info("Reloading resources");
-                    clean();
-                    transformers = this.transformers;
-                }
-            }
-        }
-        currentTransformer = (currentTransformer + 1) % transformerCount;
-        return transformers.get(currentTransformer);
-    }
-
-    public synchronized void clean() {
-        transformers = new ArrayList<Transformer>(transformerCount);
-
-        String xslDocumenContent = getXSLDocumentContent();
-
-        for (int i = 0; i < transformerCount; i++) {
-            try {
-                transformers.add(factory.newTransformer(new StreamSource(
-                        new StringReader(xslDocumenContent))));
-            } catch (TransformerConfigurationException e) {
-                throw new WebApplicationException("Could not get transformer",
-                        e);
-            }
         }
     }
 
@@ -207,8 +173,9 @@ public class WebResponder {
                             }
                         }
                     } catch (DocumentException de) {
-                        transformers = null;
-                        throw new WebApplicationException("Xsl-file " + file.getPath() + " contains errors", de);
+                        transformers.invalidate();
+                        throw new WebApplicationException("Xsl-file " + file.getPath()
+                                + " contains errors", de);
                     } finally {
                         stream.close();
                     }
@@ -272,39 +239,24 @@ public class WebResponder {
         resp.setHeader("Pragma", "no-cache");
         resp.setHeader("Cache-Control", "no-cache, no-store");
 
-        DocumentSource source = new DocumentSource(document);
-        DocumentResult result = new DocumentResult();
-
-        try {
-            Transformer tr = getTransformer();
-            synchronized (tr) {
-                String lang = document.getRootElement().attributeValue(
-                        "xml:lang");
-                if (lang != null) {
-                    tr.setParameter("xml:lang", lang);
-                }
-                tr.transform(source, result);
-            }
-            Document rDocument = result.getDocument();
-
-            OutputFormat format = OutputFormat.createCompactFormat();
-            format.setXHTML(true);
-            format.setTrimText(false);
-            format.setPadText(true);
-            format.setNewlines(false);
-            format.setExpandEmptyElements(true);
-
-            if (mode == Mode.INIT) {
-                rDocument
-                        .addDocType("html",
-                                "-//W3C//DTD XHTML 1.0 Transitional//EN",
-                                "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd");
-                new HTMLWriter(resp.getWriter(), format).write(rDocument);
-            } else {
-                new HTMLWriter(resp.getWriter(), format).write(rDocument);
-            }
-        } catch (TransformerException e) {
-            e.printStackTrace();
+        if (!transformers.isInitialized()) {
+            clean();
         }
+
+        Document rDocument = transformers.transform(document);
+        
+        if (mode == Mode.INIT) {
+            rDocument.addDocType(
+                "html",
+                "-//W3C//DTD XHTML 1.0 Transitional//EN",
+                "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd");
+        }
+        
+        new HTMLWriter(resp.getWriter(), htmlFormat).write(rDocument);
+    }
+
+    public void clean() {
+        logger.info("Reloading resources");
+        transformers.initialize(getXSLDocumentContent());
     }
 }

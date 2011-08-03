@@ -2,7 +2,7 @@ package net.contextfw.web.application.internal;
 
 public class InternalWebApplicationException extends RuntimeException {
 
-    private final static String PREFIX = "** THIS IS AN INTERNAL EXCEPTION. PLEASE REPORT IT AS A BUG **\n";
+    private static final String PREFIX = "** THIS IS AN INTERNAL EXCEPTION. PLEASE REPORT IT AS A BUG **\n";
     
     private static final long serialVersionUID = 1L;
 

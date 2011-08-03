@@ -28,7 +28,6 @@ import net.contextfw.web.application.lifecycle.PageScoped;
 import net.contextfw.web.application.lifecycle.ResourceView;
 import net.contextfw.web.application.remote.ResourceBody;
 import net.contextfw.web.application.remote.ResourceResponse;
-import net.contextfw.web.application.util.Request;
 
 import com.google.gson.Gson;
 import com.google.inject.Inject;
@@ -90,7 +89,7 @@ public class WebApplicationImpl implements WebApplication {
     }
 
     @Override
-    public void initState() throws WebApplicationException {
+    public void initState() {
         context = new InitializerContextImpl(injector, chain);
         rootComponent.registerChild(context.initChild());
     }
@@ -207,7 +206,7 @@ public class WebApplicationImpl implements WebApplication {
     }
 
     @Override
-    public UpdateInvocation updateState(boolean updateComponents, String componentId, String method) throws WebApplicationException {
+    public UpdateInvocation updateState(boolean updateComponents, String componentId, String method) {
         mode = Mode.UPDATE;
         if (updateComponents) {
             return updateElements(componentId, method);
@@ -217,9 +216,8 @@ public class WebApplicationImpl implements WebApplication {
     }
 
     @SuppressWarnings("unchecked")
-    protected UpdateInvocation updateElements(final String id, final String method) throws WebApplicationException {
+    protected UpdateInvocation updateElements(final String id, final String method) {
         try {
-            Request request = new Request(httpContext.getRequest());
             Component element = componentRegister.findComponent(id);
             String key = ComponentUpdateHandler.getKey(element.getClass(), method);
 
@@ -235,7 +233,7 @@ public class WebApplicationImpl implements WebApplication {
                                   .isUpdateDelayed(element, httpContext.getRequest())) {
                         return new UpdateInvocation(
                                 handler.isResource(),
-                                handler.invoke(element, request)
+                                handler.invoke(element, httpContext.getRequest())
                                 );
                     } else {
                         return UpdateInvocation.DELAYED;
