@@ -15,7 +15,7 @@ import net.contextfw.web.application.lifecycle.View;
 
 public class UriMapping implements Comparable<UriMapping> {
 
-    private final static String REGEX = "regex:";
+    private static final String REGEX = "regex:";
     
     private final String path;
     
@@ -30,7 +30,7 @@ public class UriMapping implements Comparable<UriMapping> {
         this.viewClass = viewClass;
         if (path.startsWith(REGEX)) {
             this.path = path.substring(REGEX.length());
-            matcher = UriPatternType.get(UriPatternType.REGEX, this.getPath());
+            matcher = UriPatternType.get(UriPatternType.REGEX, this.path);
         } else {
             this.path = path;
             matcher = UriPatternType.get(UriPatternType.SERVLET, path);
@@ -54,7 +54,7 @@ public class UriMapping implements Comparable<UriMapping> {
         } else if (o instanceof UriMapping) {
             UriMapping other = (UriMapping) o;
             if (this.getMatcher().getPatternType() == other.getMatcher().getPatternType()) {
-                return this.getPath().equals(other.getPath());
+                return this.getPath().equals(other.path);
             }
         }
         return false;
@@ -74,7 +74,7 @@ public class UriMapping implements Comparable<UriMapping> {
     }
     
     private String getMatcherUri() {
-        return getMatcher().extractPath(getPath());
+        return matcher.extractPath(getPath());
     }
 
     public String getPath() {

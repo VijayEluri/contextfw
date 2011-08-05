@@ -111,7 +111,7 @@ public class DirectoryWatcher {
     }
 
     private void update(File file) {
-        if (file.exists()) {
+        if (file != null && file.exists()) {
             entries.put(file, new FileEntry(file));
             if (file.isDirectory()) {
                 for (File child : file.listFiles()) {

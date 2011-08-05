@@ -21,7 +21,6 @@ import net.contextfw.web.application.component.DOMBuilder;
 import net.contextfw.web.application.component.Element;
 import net.contextfw.web.application.component.ScriptContext;
 import net.contextfw.web.application.component.ScriptElement;
-import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.internal.util.AttributeHandler;
 import net.contextfw.web.application.lifecycle.AfterBuild;
 import net.contextfw.web.application.lifecycle.BeforeBuild;
@@ -54,8 +53,7 @@ public class ComponentBuilderImpl implements ComponentBuilder, ScriptContext {
     private final Gson gson;
 
     @Inject
-    public ComponentBuilderImpl(AttributeHandler attributeHandler, Gson gson,
-            Configuration properties) {
+    public ComponentBuilderImpl(AttributeHandler attributeHandler, Gson gson) {
         this.attributeHandler = attributeHandler;
         this.gson = gson;
     }

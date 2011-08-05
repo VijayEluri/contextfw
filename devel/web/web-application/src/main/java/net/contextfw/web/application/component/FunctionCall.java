@@ -47,7 +47,7 @@ public class FunctionCall extends Script {
 
     @Override
     public Object[] getArguments(ScriptContext scriptContext) {
-        return args;
+        return args; // NOSONAR
     }
 
     /**

@@ -8,6 +8,9 @@ import net.contextfw.web.application.component.Element;
 
 import com.google.inject.spi.InjectionListener;
 
+// FIXME This class needs to be refactored to be faster. Too many
+// unnecessary checks are made
+
 public class AutoRegisterListener<I> implements InjectionListener<I> {
 
     @Override

@@ -24,7 +24,7 @@ import net.contextfw.web.application.WebApplicationException;
  * @author marko
  * 
  */
-public class AbstractScanner {
+public abstract class AbstractScanner {
 
     private static final String FILE = "file";
     private static final String CLASSPATH = "classpath";

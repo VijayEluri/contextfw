@@ -1,6 +1,8 @@
 package net.contextfw.web.application.internal.servlet;
 
 import java.io.IOException;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
@@ -94,9 +96,14 @@ public class DevelopmentFilter implements Filter, ReloadingClassLoaderContext {
     public void reloadClasses() {
         logger.debug("Reloading view components");
         
-        ClassLoader classLoader = reloadConf == null ? 
-                Thread.currentThread().getContextClassLoader() : 
-                new ReloadingClassLoader(reloadConf);
+        ClassLoader classLoader = AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
+            @Override
+            public ClassLoader run() {
+                return reloadConf == null ? 
+                        Thread.currentThread().getContextClassLoader() : 
+                        new ReloadingClassLoader(reloadConf);
+            }
+        });
 
         List<Class<?>> classes = ClassScanner.getClasses(rootPackages);
         

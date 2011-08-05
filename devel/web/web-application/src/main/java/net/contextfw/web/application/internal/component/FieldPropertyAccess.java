@@ -1,6 +1,8 @@
 package net.contextfw.web.application.internal.component;
 
 import java.lang.reflect.Field;
+import java.security.AccessController;
+import java.security.PrivilegedAction;
 
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.internal.InternalWebApplicationException;
@@ -9,9 +11,16 @@ final class FieldPropertyAccess<T> implements PropertyAccess<T> {
 
     private final Field field;
     
-    public FieldPropertyAccess(Field field) {
+    public FieldPropertyAccess(final Field field) {
         this.field = field;
-        field.setAccessible(true);
+        AccessController.doPrivileged(new PrivilegedAction<Void>() {
+            @Override
+            public Void run() {
+                field.setAccessible(true);
+                return null;
+            }
+        });
+        
     }
 
     @SuppressWarnings("unchecked")

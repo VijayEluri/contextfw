@@ -1,5 +1,6 @@
 package net.contextfw.web.application.internal.component;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 import net.contextfw.web.application.WebApplicationException;
@@ -30,7 +31,11 @@ class MethodCustomBuilder extends Builder {
         try {
             method.invoke(buildable, name == null ? b : b.descend(name));
         }
-        catch (Exception e) {
+        catch (RuntimeException e) {
+            throw new WebApplicationException(e);
+        } catch (IllegalAccessException e) {
+            throw new WebApplicationException(e);
+        } catch (InvocationTargetException e) {
             throw new WebApplicationException(e);
         }
     }

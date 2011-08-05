@@ -3,7 +3,6 @@ package net.contextfw.web.application.component;
 import java.io.StringWriter;
 
 import net.contextfw.web.application.WebApplicationException;
-import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.internal.ToStringSerializer;
 import net.contextfw.web.application.internal.component.ComponentBuilder;
 import net.contextfw.web.application.internal.component.ComponentBuilderImpl;
@@ -44,9 +43,8 @@ public abstract class BaseComponentTest {
     @Before
     public void before() {
         componentRegister = new ComponentRegister();
-        Configuration configuration = Configuration.getDefaults();
         Gson gson = new Gson();
-        componentBuilder = new ComponentBuilderImpl(null, gson, configuration);
+        componentBuilder = new ComponentBuilderImpl(null, gson);
         scriptContext = (ScriptContext) componentBuilder;
         domBuilder = new DOMBuilder("WebApplication", serializer, componentBuilder);
         webApplicationComponent = new WebApplicationComponent(componentRegister);

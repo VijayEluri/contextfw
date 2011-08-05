@@ -8,7 +8,6 @@ import net.contextfw.web.application.lifecycle.LifecycleListener;
 
 import com.google.gson.Gson;
 import com.google.inject.Inject;
-import com.google.inject.Injector;
 import com.google.inject.Singleton;
 
 @Singleton
@@ -19,7 +18,7 @@ public class ComponentUpdateHandlerFactory {
     private final LifecycleListener listener;
     
     @Inject
-    public ComponentUpdateHandlerFactory(Injector injector, Gson gson, LifecycleListener listener) {
+    public ComponentUpdateHandlerFactory(Gson gson, LifecycleListener listener) {
         this.gson = gson;
         this.listener = listener;
     }
@@ -29,7 +28,8 @@ public class ComponentUpdateHandlerFactory {
         Method method = ClassScanner.findMethodForName(elClass, methodName);
 
         if (method != null) {
-            return new ComponentUpdateHandler(ComponentUpdateHandler.getKey(elClass, methodName), method, gson, listener);
+            return new ComponentUpdateHandler(
+                    ComponentUpdateHandler.getKey(elClass, methodName), method, gson, listener);
         }
         else {
             return null;

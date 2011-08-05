@@ -47,8 +47,6 @@ public class WebApplicationServletModule extends ServletModule {
     
     private ReloadingClassLoaderConf reloadConf;
     
-    private DevelopmentFilter developmentFilter;
-    
     private InitHandler initHandler;
     
     public WebApplicationServletModule(Configuration configuration,
@@ -98,7 +96,7 @@ public class WebApplicationServletModule extends ServletModule {
             new DirectoryWatcher(reloadConf.getReloadablePackageNames(), 
                 classPattern);
         
-        developmentFilter = new DevelopmentFilter(
+        DevelopmentFilter developmentFilter = new DevelopmentFilter(
                 rootPackages,
                 initHandler,
                 initializerProvider,

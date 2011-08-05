@@ -17,8 +17,7 @@ public class UpdateServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
-    private final UpdateHandler handler; // NOSONAR
-
+    private final transient UpdateHandler handler;
     
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

@@ -26,31 +26,35 @@ public abstract class ResourceServlet extends HttpServlet {
     public void clean() {
         content = null;
     }
-    
+
     @Override
-    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
+    protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
+            IOException {
 
         if (clear()) {
             clean();
         }
-        
+
         resp.setContentType(getContentType());
 
         if (content == null) {
-            synchronized (this) {
-                if (content == null) {
-                    StringBuilder contentBuilder = new StringBuilder();
-                    List<ResourceEntry> files = ResourceScanner.findResources(getRootPaths(), getAcceptor());
-                    for (ResourceEntry file : files) {
-                        addContent(contentBuilder, file);
-                    }
-                    content = contentBuilder.toString();
-                }
-            }
+            reloadResources();
         }
 
         resp.getWriter().print(content);
         resp.getWriter().close();
+    }
+
+    private synchronized void reloadResources() {
+        if (content == null) {
+            StringBuilder contentBuilder = new StringBuilder();
+            List<ResourceEntry> files = ResourceScanner
+                    .findResources(getRootPaths(), getAcceptor());
+            for (ResourceEntry file : files) {
+                addContent(contentBuilder, file);
+            }
+            content = contentBuilder.toString();
+        }
     }
 
     private void addContent(StringBuilder contentBuilder, ResourceEntry file) {
@@ -58,7 +62,7 @@ public abstract class ResourceServlet extends HttpServlet {
             InputStream stream = file.getInputStream();
             contentBuilder.append(IOUtils.toString(stream));
             if (contentBuilder.charAt(contentBuilder.length() - 1) != '\n') {
-            	contentBuilder.append("\n");
+                contentBuilder.append("\n");
             }
             stream.close();
         } catch (FileNotFoundException e) {
@@ -73,6 +77,6 @@ public abstract class ResourceServlet extends HttpServlet {
     protected abstract Pattern getAcceptor();
 
     protected abstract List<String> getRootPaths();
-    
+
     protected abstract String getContentType();
 }

@@ -7,7 +7,7 @@ public class WebApplicationComponent extends Component {
 
     private final ComponentRegister elementRegister;
 
-    private Component child;
+    private Component child = null;
     
     public WebApplicationComponent(ComponentRegister elementRegister) {
         this.elementRegister = elementRegister;
