@@ -22,11 +22,7 @@ contextfw = {
 	},
 
 	unload: function() {
-		jQuery.ajax({
-	        type: "GET",
-	        url: this.removeUrl,
-	        async: false
-	    });
+	    new Image().src = this.removeUrl;
 	},
 	
 	_call: function(elId, method, args, beforeCall, afterCall) {
