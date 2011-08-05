@@ -39,12 +39,7 @@ public class UriMapping implements Comparable<UriMapping> {
     
     @Override
     public int hashCode() {
-        final int prime = 31;
-        int result = 1;
-        result = prime * result + ((matcher == null) ? 0 : matcher.hashCode());
-        result = prime * result + ((path == null) ? 0 : path.hashCode());
-        result = prime * result + ((viewClass == null) ? 0 : viewClass.hashCode());
-        return result;
+        return path.hashCode();
     }
     
     @Override
@@ -54,7 +49,7 @@ public class UriMapping implements Comparable<UriMapping> {
         } else if (o instanceof UriMapping) {
             UriMapping other = (UriMapping) o;
             if (this.getMatcher().getPatternType() == other.getMatcher().getPatternType()) {
-                return this.getPath().equals(other.path);
+                return this.path.equals(other.path);
             }
         }
         return false;
@@ -72,7 +67,7 @@ public class UriMapping implements Comparable<UriMapping> {
             String myUri =this.getMatcherUri();
             String otherUri = other.getMatcherUri();
             if (myUri == null && otherUri == null) {
-                return 0;
+                return other.path.compareTo(this.path);
             } else if (myUri == null && otherUri != null) {
                 return 1;
             } else if (myUri != null && otherUri == null) {

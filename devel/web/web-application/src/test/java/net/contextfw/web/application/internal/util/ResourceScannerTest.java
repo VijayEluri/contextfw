@@ -39,7 +39,7 @@ public class ResourceScannerTest {
         
         List<String> paths = new ArrayList<String>();
         
-        paths.add("net.contextfw.web");
+        paths.add("net.contextfw.web.application.component");
         paths.add("javax.servlet");
         
         paths.add("file:src/main/resources");
@@ -48,7 +48,7 @@ public class ResourceScannerTest {
         paths.add("classpath:net/contextfw/web");
         
         List<ResourceEntry> rootFiles = AbstractScanner.findResourceEntries(paths);
-        assertEquals(405, rootFiles.size());
+        assertEquals(264, rootFiles.size());
         
 //        assertTrue(rootFiles.get(0).getAbsolutePath().endsWith("/target/test-classes/net/contextfw/web"));
 //        assertTrue(rootFiles.get(1).getAbsolutePath().endsWith("/target/classes/net/contextfw/web"));
