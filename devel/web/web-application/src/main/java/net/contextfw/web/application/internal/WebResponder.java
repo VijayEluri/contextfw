@@ -261,7 +261,7 @@ public class WebResponder {
     }
 
     public void clean() {
-        logger.info("Reloading resources");
+        logger.debug("Reloading resources");
         transformers.initialize(getXSLDocumentContent());
     }
 }
