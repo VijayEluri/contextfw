@@ -69,12 +69,22 @@ public class UriMapping implements Comparable<UriMapping> {
                 && other.getMatcher().getPatternType() == UriPatternType.SERVLET) {
             return 1;
         } else {
-            return other.getMatcherUri().compareTo(this.getMatcherUri());
+            String myUri =this.getMatcherUri();
+            String otherUri = other.getMatcherUri();
+            if (myUri == null && otherUri == null) {
+                return 0;
+            } else if (myUri == null && otherUri != null) {
+                return 1;
+            } else if (myUri != null && otherUri == null) {
+                return -1;
+            } else {
+                return otherUri.compareTo(myUri);
+            }
         }
     }
     
     private String getMatcherUri() {
-        return matcher.extractPath(getPath());
+        return matcher.extractPath(path);
     }
 
     public String getPath() {

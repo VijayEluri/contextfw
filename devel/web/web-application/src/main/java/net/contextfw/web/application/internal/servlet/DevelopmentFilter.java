@@ -93,7 +93,7 @@ public class DevelopmentFilter implements Filter, ReloadingClassLoaderContext {
     public void destroy() {}
 
     @Override
-    public void reloadClasses() {
+    public synchronized void reloadClasses() {
         logger.debug("Reloading view components");
         
         ClassLoader classLoader = AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
