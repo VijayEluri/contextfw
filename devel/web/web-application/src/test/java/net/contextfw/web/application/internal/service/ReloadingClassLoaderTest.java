@@ -24,18 +24,6 @@ public class ReloadingClassLoaderTest {
     }
     
     @Test
-    public void Build_Paths() {
-        conf = conf
-            .add(BUILD_PATH, "target/classes")
-            .add(BUILD_PATH, "target/test-classes");
-        
-        ReloadingClassLoaderConf rConf = new ReloadingClassLoaderConf(conf);
-        assertEquals(2, rConf.getBuildPaths().size());
-        
-        assertTrue(rConf.getBuildPaths().contains("target/classes/"));
-    }
-    
-    @Test
     public void Reloadable_Packages() {
         
         conf = conf
@@ -78,8 +66,6 @@ public class ReloadingClassLoaderTest {
     @Test
     public void Load_Classes() throws ClassNotFoundException {
         conf = conf
-            .add(BUILD_PATH, "target/classes")
-            .add(BUILD_PATH, "target/test-classes")
             .add(RELOADABLE_CLASSES.includedPackage("net.contextfw.web.application.internal.service", false))
             .add(RELOADABLE_CLASSES.excludedClass(NonReloadable.class));
         
@@ -99,8 +85,6 @@ public class ReloadingClassLoaderTest {
     @Test(expected=ClassNotFoundException.class)
     public void Throw_Class_CastException() throws ClassNotFoundException {
         conf = conf
-            .add(BUILD_PATH, "target/classes")
-            .add(BUILD_PATH, "target/test-classes")
             .add(RELOADABLE_CLASSES.includedPackage("net.contextfw.web.application.internal.service", false))
             .add(RELOADABLE_CLASSES.excludedClass(NonReloadable.class));
         

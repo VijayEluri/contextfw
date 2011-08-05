@@ -1,13 +1,14 @@
 package net.contextfw.web.application.internal.service;
 
 import java.io.DataInputStream;
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashMap;
 import java.util.Map;
 
 import net.contextfw.web.application.WebApplicationException;
+
+import org.apache.commons.io.IOUtils;
 
 public class ReloadingClassLoader extends ClassLoader {
 
@@ -55,22 +56,10 @@ public class ReloadingClassLoader extends ClassLoader {
     }
 
     private byte[] loadClassData(String className) throws IOException {
-        File f = null;
-        for (String prefix : conf.getBuildPaths()) {
-            f = new File(prefix + className.replaceAll("\\.", "/") + ".class");
-            if (f.exists()) {
-                break;
-            } else {
-                f = null;
-            }
-        }
-        if (f != null) {
-            int size = (int) f.length();
-            byte buff[] = new byte[size];
-            FileInputStream fis = new FileInputStream(f);
-            // FIXME Fix IOexception usage. Dis may not get closed
-            DataInputStream dis = new DataInputStream(fis); // NOSONAR
-            dis.readFully(buff);
+        InputStream stream = super.getResourceAsStream(className.replaceAll("\\.", "/") + ".class");
+        if (stream != null) {
+            DataInputStream dis = new DataInputStream(stream); // NOSONAR
+            byte buff[] = IOUtils.toByteArray(stream);
             dis.close();
             return buff;
         } else {

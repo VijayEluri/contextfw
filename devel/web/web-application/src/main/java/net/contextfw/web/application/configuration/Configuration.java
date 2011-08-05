@@ -315,7 +315,9 @@ public class Configuration {
      *  Default: No default value
      * </p>
      * 
+     * <p>Deprecated: not needed after all</p>
      */
+    @Deprecated
     public static final AddableProperty<Set<String>, String> BUILD_PATH
         = new StringSetPropertyImpl(KEY_BUILD_PATH);
     

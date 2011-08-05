@@ -1,8 +1,6 @@
 package net.contextfw.web.application.internal.service;
 
-import java.util.ArrayList;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -18,16 +16,7 @@ public class ReloadingClassLoaderConf {
     
     private final Set<Class<?>> excludedClasses = new HashSet<Class<?>>();
     
-    private final List<String> buildPaths = new ArrayList<String>();
-    
-    //recursive ? Pattern.compile(
-    //        "^" + trimmedName.replaceAll("\\.", "\\.") + 
-
     public ReloadingClassLoaderConf(Configuration conf) {
-        // Build paths
-        for (String path : conf.get(Configuration.BUILD_PATH)) {
-            buildPaths.add(path.endsWith("/") ? path : path + "/");
-        }
         
         for (Object obj : conf.get(Configuration.RELOADABLE_CLASSES)) {
             if (obj instanceof Set<?>) {
@@ -63,10 +52,6 @@ public class ReloadingClassLoaderConf {
         return excludedClasses;
     }
 
-    public List<String> getBuildPaths() {
-        return buildPaths;
-    }
-    
     public boolean isInReloadablePackage(String className) {
         for (Pattern pattern : reloadablePackages) {
             if (pattern.matcher(className).matches()) {
