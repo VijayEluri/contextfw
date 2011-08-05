@@ -22,7 +22,11 @@ contextfw = {
 	},
 
 	unload: function() {
-		jQuery.get(this.removeUrl);
+		jQuery.ajax({
+	        type: "GET",
+	        url: this.removeUrl,
+	        async: false
+	    });
 	},
 	
 	_call: function(elId, method, args, beforeCall, afterCall) {
