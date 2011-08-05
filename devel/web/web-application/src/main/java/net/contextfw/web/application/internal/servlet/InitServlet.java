@@ -9,52 +9,28 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import net.contextfw.web.application.component.Component;
-import net.contextfw.web.application.internal.WebApplicationServletModule;
-import net.contextfw.web.application.internal.service.DirectoryWatcher;
 import net.contextfw.web.application.internal.service.InitHandler;
-import net.contextfw.web.application.internal.service.ReloadingClassLoaderContext;
 
 public class InitServlet extends HttpServlet {
 
-    private List<Class<? extends Component>> chain; // NOSONAR
+    private static final long serialVersionUID = 1L;
     
-    private DirectoryWatcher watcher; // NOSONAR
+    private final List<Class<? extends Component>> chain; // NOSONAR
     
-    private ReloadingClassLoaderContext module; // NOSONAR
+    private final InitHandler handler;
     
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        reloadClasses();
         handler.handleRequest(chain, this, req, resp);
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        reloadClasses();
         handler.handleRequest(chain, this, req, resp);
     }
 
-    private void reloadClasses() {
-        if (watcher != null && watcher.hasChanged()) {
-            module.reloadClasses();
-        }
-    }
-    
-    private static final long serialVersionUID = 1L;
-
-    private final InitHandler handler;
-
-    public InitServlet(ReloadingClassLoaderContext module,
-                       DirectoryWatcher watcher,
-                       InitHandler handler, 
-                       List<Class<? extends Component>> chain) {
+    public InitServlet(InitHandler handler, List<Class<? extends Component>> chain) {
         this.handler = handler;
-        this.chain = chain;
-        this.watcher = watcher;
-        this.module = module;
-    }
-
-    public void setChain(List<Class<? extends Component>> chain) {
         this.chain = chain;
     }
 }

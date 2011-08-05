@@ -4,38 +4,34 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
 import java.util.regex.Pattern;
 
 import net.contextfw.web.application.PropertyProvider;
-import net.contextfw.web.application.WebApplicationException;
-import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.configuration.Configuration;
-import net.contextfw.web.application.internal.component.ComponentBuilderImpl;
 import net.contextfw.web.application.internal.initializer.InitializerProvider;
 import net.contextfw.web.application.internal.service.DirectoryWatcher;
 import net.contextfw.web.application.internal.service.InitHandler;
-import net.contextfw.web.application.internal.service.ReloadingClassLoader;
 import net.contextfw.web.application.internal.service.ReloadingClassLoaderConf;
-import net.contextfw.web.application.internal.service.ReloadingClassLoaderContext;
 import net.contextfw.web.application.internal.servlet.CSSServlet;
 import net.contextfw.web.application.internal.servlet.DevelopmentFilter;
 import net.contextfw.web.application.internal.servlet.InitServlet;
 import net.contextfw.web.application.internal.servlet.ScriptServlet;
 import net.contextfw.web.application.internal.servlet.UpdateServlet;
+import net.contextfw.web.application.internal.servlet.UriMapping;
+import net.contextfw.web.application.internal.servlet.UriPatternType;
 import net.contextfw.web.application.internal.util.ClassScanner;
-import net.contextfw.web.application.lifecycle.View;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Inject;
 import com.google.inject.servlet.ServletModule;
 
-public class WebApplicationServletModule extends ServletModule implements ReloadingClassLoaderContext {
-
-    private static final String REGEX = "regex:";
+public class WebApplicationServletModule extends ServletModule {
 
     private Logger logger = LoggerFactory.getLogger(WebApplicationServletModule.class);
+    
+    private final Pattern classPattern = Pattern.compile(".+\\.class");
 
     private final PropertyProvider properties;
 
@@ -45,21 +41,14 @@ public class WebApplicationServletModule extends ServletModule implements Reload
 
     private final Configuration configuration;
 
-    private ClassLoader classLoader = null;
-
     private final Map<String, InitServlet> servlets = new HashMap<String, InitServlet>();
     
     private InitializerProvider initializerProvider;
-    
-    private DirectoryWatcher classWatcher;
     
     private ReloadingClassLoaderConf reloadConf;
     
     private DevelopmentFilter developmentFilter;
     
-    @Inject
-    private ComponentBuilderImpl componentBuilder;
-
     private InitHandler initHandler;
     
     public WebApplicationServletModule(Configuration configuration,
@@ -74,7 +63,6 @@ public class WebApplicationServletModule extends ServletModule implements Reload
         
         if (reloadEnabled && configuration.get(Configuration.DEVELOPMENT_MODE)) {
             reloadConf = new ReloadingClassLoaderConf(configuration);
-            classLoader = new ReloadingClassLoader(reloadConf);
         }
         
     }
@@ -86,7 +74,6 @@ public class WebApplicationServletModule extends ServletModule implements Reload
         requestInjection(initHandler);
         initializerProvider = new InitializerProvider();
         
-        logger.info("Configuring default servlets");
         serve(resourcePrefix + ".js").with(
                 ScriptServlet.class);
         serve(resourcePrefix + ".css").with(
@@ -95,18 +82,21 @@ public class WebApplicationServletModule extends ServletModule implements Reload
         serveRegex(".*/contextfw-refresh/.*").with(UpdateServlet.class);
         serveRegex(".*/contextfw-remove/.*").with(UpdateServlet.class);
         requestInjection(this);
-        if (configuration.get(Configuration.DEVELOPMENT_MODE) && reloadConf != null) {
+        if (configuration.get(Configuration.DEVELOPMENT_MODE)) {
             serveDevelopmentMode();
         } else {
-            serveViewComponents();
+            serveProductionMode();
         }
     }
 
     private void serveDevelopmentMode() {
-        logger.info("Running urls in development mode");
+        logger.info("Serving view components in DEVELOPMENT mode");
         
-        classWatcher = new DirectoryWatcher(reloadConf.getReloadablePackageNames(), 
-                Pattern.compile(".+\\.class"));
+        DirectoryWatcher classWatcher = reloadConf == null ?
+            new DirectoryWatcher(configuration.get(Configuration.VIEW_COMPONENT_ROOT_PACKAGE),
+                  classPattern) :  
+            new DirectoryWatcher(reloadConf.getReloadablePackageNames(), 
+                classPattern);
         
         developmentFilter = new DevelopmentFilter(
                 rootPackages,
@@ -115,106 +105,36 @@ public class WebApplicationServletModule extends ServletModule implements Reload
                 reloadConf,
                 classWatcher,
                 properties);
+        
         filter("/*").through(developmentFilter);
     }
 
-    private void serveViewComponents() {
-
-        // Note: This process creates some phantom chains from 
-        // views that do not have any url. Those chains are
-        // however ingnored and are not such problem.
+    private void serveProductionMode() {
+        logger.info("Serving view components in PRODUCTION mode");
         
-        logger.info("Configuring view components");
-
         List<Class<?>> classes = ClassScanner.getClasses(rootPackages);
-
-        if (reloadConf != null) {
-//            List<String> packages = new ArrayList<String>();
-//            for (String pck : ) {
-//                for (String prefix : reloadConf.getBuildPaths()) {
-//                    String delim = prefix.endsWith("/") ? "" : "/";
-//                    packages.add("file:" + prefix + delim + pck.replaceAll("\\.", "/"));
-//                }
-//            }
-            classWatcher = new DirectoryWatcher(reloadConf.getReloadablePackageNames(), 
-                    Pattern.compile(".+\\.class"));
-        }
+        ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
         
-        for (Class<?> cl : classes) {
-            View annotation = cl.getAnnotation(View.class);
-            if (annotation != null) {
-                if (!Component.class.isAssignableFrom(cl)) {
-                    throw new WebApplicationException("Class " + cl.getName()
-                            + " annotated with @View does " +
-                            "not extend Component");
-                }
-
-                List<Class<? extends Component>> chain;
-                if (reloadConf == null) {
-                    chain = initializerProvider.getInitializerChain(cl.asSubclass(Component.class));
-                } else {
-                    try {
-                        chain = initializerProvider.getInitializerChain(
-                                classLoader.loadClass(cl.getCanonicalName()).asSubclass(Component.class));
-                    } catch (ClassNotFoundException e) {
-                        throw new WebApplicationException(e);
-                    }
-                }
-
-                InitServlet initServlet = new InitServlet(
-                        this, classWatcher, initHandler, chain);
-                if (reloadConf != null) {
-                    servlets.put(cl.getCanonicalName(), initServlet);
-                }
-                for (String url : annotation.url()) {
-                    if (!"".equals(url)) {
-                        serveInitServlet(cl, url, initServlet);
-                    }
-                }
-                for (String property : annotation.property()) {
-                    if (!"".equals(property)) {
-                        if (!properties.get().containsKey(property)) {
-                            throw new WebApplicationException("No url bound to property: "
-                                    + property);
-                        }
-                        String url = properties.get().getProperty(property);
-
-                        if (url != null && !"".equals(url)) {
-                            serveInitServlet(cl, url, initServlet);
-                        } else {
-                            throw new WebApplicationException(
-                                    "No url bound to view component. (class="
-                                            + cl.getSimpleName() + ", property=" + property + ")");
-                        }
-                    }
-                }
-            }
-        }
+        SortedSet<UriMapping> mappings = UriMapping.createMappings(
+                classes, 
+                classLoader,
+                initializerProvider,
+                initHandler,
+                properties);
+        
+        serveMappings(mappings);
     }
 
-    private void serveInitServlet(Class<?> cl, String url, InitServlet servlet) {
-        if (url.startsWith(REGEX)) {
-            String serveUrl = url.substring(REGEX.length());
-            logger.info("  Serving url: " + cl.getName() + " => {} (regex)", serveUrl);
-            serveRegex(serveUrl).with(servlet);
-        } else {
-            logger.info("  Serving url: " + cl.getName() + " => {}", url);
-            serve(url).with(servlet);
-        }
-    }
-    
-    public void reloadClasses() {
-        logger.info("Reloading classes");
-        componentBuilder.clean();
-        classLoader = new ReloadingClassLoader(reloadConf);
-        for (Map.Entry<String, InitServlet> entry : servlets.entrySet()) {
-            try {
-                entry.getValue().setChain(
-                        initializerProvider.getInitializerChain(
-                                    classLoader.loadClass(entry.getKey()).asSubclass(Component.class)));
-            } catch (ClassNotFoundException e) {
-                throw new WebApplicationException(e);
-            }
+    private void serveMappings(SortedSet<UriMapping> mappings) {
+        for (UriMapping mapping : mappings) {
+            servlets.put(mapping.getViewClass().getCanonicalName(), mapping.getInitServlet());
+            if (mapping.getPatternType() == UriPatternType.REGEX) {
+                logger.info("  Serving url: " + mapping.getViewClass().getName() + " => {} (regex)", mapping.getPath());
+                serveRegex(mapping.getPath()).with(mapping.getInitServlet());
+            } else {
+                logger.info("  Serving url: " + mapping.getViewClass().getName() + " => {}", mapping.getPath());
+                serve(mapping.getPath()).with(mapping.getInitServlet());
+            }   
         }
     }
 }

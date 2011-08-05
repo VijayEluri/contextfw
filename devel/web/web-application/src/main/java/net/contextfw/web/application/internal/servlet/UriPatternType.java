@@ -45,7 +45,7 @@ public enum UriPatternType {
    *
    * @author dhanji@gmail.com (Dhanji R. Prasanna)
    */
-  private static class ServletStyleUriPatternMatcher implements UriPatternMatcher {
+  public static class ServletStyleUriPatternMatcher implements UriPatternMatcher {
     private final String pattern;
     private final Kind patternKind;
 
@@ -107,7 +107,7 @@ public enum UriPatternType {
    *
    * @author dhanji@gmail.com (Dhanji R. Prasanna)
    */
-  private static class RegexUriPatternMatcher implements UriPatternMatcher {
+  public static class RegexUriPatternMatcher implements UriPatternMatcher {
     private final Pattern pattern;
 
     public RegexUriPatternMatcher(String pattern) {
