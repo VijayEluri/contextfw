@@ -16,7 +16,9 @@ import net.contextfw.web.application.internal.service.DirectoryWatcher;
 import net.contextfw.web.application.internal.service.InitHandler;
 import net.contextfw.web.application.internal.service.ReloadingClassLoader;
 import net.contextfw.web.application.internal.service.ReloadingClassLoaderConf;
+import net.contextfw.web.application.internal.service.ReloadingClassLoaderContext;
 import net.contextfw.web.application.internal.servlet.CSSServlet;
+import net.contextfw.web.application.internal.servlet.DevelopmentFilter;
 import net.contextfw.web.application.internal.servlet.InitServlet;
 import net.contextfw.web.application.internal.servlet.ScriptServlet;
 import net.contextfw.web.application.internal.servlet.UpdateServlet;
@@ -29,7 +31,7 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.servlet.ServletModule;
 
-public class WebApplicationServletModule extends ServletModule {
+public class WebApplicationServletModule extends ServletModule implements ReloadingClassLoaderContext {
 
     private static final String REGEX = "regex:";
 
@@ -53,11 +55,16 @@ public class WebApplicationServletModule extends ServletModule {
     
     private ReloadingClassLoaderConf reloadConf;
     
+    private DevelopmentFilter developmentFilter;
+    
     @Inject
     private ComponentBuilderImpl componentBuilder;
 
+    private InitHandler initHandler;
+    
     public WebApplicationServletModule(Configuration configuration,
             PropertyProvider propertyProvider) {
+        
         resourcePrefix = configuration.get(Configuration.RESOURCES_PREFIX);
         this.configuration = configuration;
         this.properties = propertyProvider;
@@ -69,11 +76,16 @@ public class WebApplicationServletModule extends ServletModule {
             reloadConf = new ReloadingClassLoaderConf(configuration);
             classLoader = new ReloadingClassLoader(reloadConf);
         }
+        
     }
 
     @Override
     protected void configureServlets() {
 
+        initHandler = new InitHandler(configuration);
+        requestInjection(initHandler);
+        initializerProvider = new InitializerProvider();
+        
         logger.info("Configuring default servlets");
         serve(resourcePrefix + ".js").with(
                 ScriptServlet.class);
@@ -83,7 +95,27 @@ public class WebApplicationServletModule extends ServletModule {
         serveRegex(".*/contextfw-refresh/.*").with(UpdateServlet.class);
         serveRegex(".*/contextfw-remove/.*").with(UpdateServlet.class);
         requestInjection(this);
-        serveViewComponents();
+        if (configuration.get(Configuration.DEVELOPMENT_MODE) && reloadConf != null) {
+            serveDevelopmentMode();
+        } else {
+            serveViewComponents();
+        }
+    }
+
+    private void serveDevelopmentMode() {
+        logger.info("Running urls in development mode");
+        
+        classWatcher = new DirectoryWatcher(reloadConf.getReloadablePackageNames(), 
+                Pattern.compile(".+\\.class"));
+        
+        developmentFilter = new DevelopmentFilter(
+                rootPackages,
+                initHandler,
+                initializerProvider,
+                reloadConf,
+                classWatcher,
+                properties);
+        filter("/*").through(developmentFilter);
     }
 
     private void serveViewComponents() {
@@ -95,10 +127,6 @@ public class WebApplicationServletModule extends ServletModule {
         logger.info("Configuring view components");
 
         List<Class<?>> classes = ClassScanner.getClasses(rootPackages);
-
-        InitHandler initHandler = new InitHandler(configuration);
-        requestInjection(initHandler);
-        initializerProvider = new InitializerProvider();
 
         if (reloadConf != null) {
 //            List<String> packages = new ArrayList<String>();
