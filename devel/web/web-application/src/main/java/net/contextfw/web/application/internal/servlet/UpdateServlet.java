@@ -15,6 +15,11 @@ import com.google.inject.Singleton;
 @Singleton
 public class UpdateServlet extends HttpServlet {
 
+    private static final long serialVersionUID = 1L;
+
+    private final UpdateHandler handler; // NOSONAR
+
+    
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         doPost(req, resp);
@@ -24,10 +29,6 @@ public class UpdateServlet extends HttpServlet {
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         handler.handleRequest(this, req, resp);
     }
-
-    private static final long serialVersionUID = 1L;
-
-    private final UpdateHandler handler;
 
     @Inject
     public UpdateServlet(UpdateHandler handler) {

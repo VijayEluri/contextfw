@@ -7,26 +7,23 @@ public class KeyValue<K, V> {
     private final V value;
 
     public KeyValue(K key, V value) {
+        if (key == null) {
+            throw new IllegalArgumentException("Key cannot be null");
+        }
         this.key = key;
         this.value = value;
     }
     
+    @SuppressWarnings("rawtypes")
     @Override
-    public boolean equals(Object obj) {
-        if (this == obj)
+    public boolean equals(Object other) {
+        if (this == other) {
             return true;
-        if (obj == null)
+        } else if (other instanceof KeyValue) {
+            return this.key.equals(((KeyValue) other).key);
+        } else {
             return false;
-        if (getClass() != obj.getClass())
-            return false;
-        @SuppressWarnings("rawtypes")
-        KeyValue other = (KeyValue) obj;
-        if (key == null) {
-            if (other.key != null)
-                return false;
-        } else if (!key.equals(other.key))
-            return false;
-        return true;
+        }
     }
     
     public K getKey() {

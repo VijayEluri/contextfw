@@ -2,7 +2,6 @@ package net.contextfw.web.application.internal.initializer;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.PatternSyntaxException;
 
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.component.Component;
@@ -32,39 +31,16 @@ public class InitializerProvider {
 
         View annotation = processClass(cl);
 
-        if ("".equals(annotation.url())) {
-            return null;
-        }
-        try {
-//            for (String url : annotation.url()) {
-//                if (!"".equals(url)) {
-//                    initializers.put(Pattern.compile(contextPath + toUrl(url),
-//                            Pattern.CASE_INSENSITIVE), cl);
-//                }
-//            }
-//            for (String property : annotation.property()) {
-//                if (!"".equals(property)) {
-//                    String url = properties.get().getProperty(property);
-//                    if (url != null && !"".equals(url)) {
-//                        initializers.put(Pattern.compile(contextPath + toUrl(url),
-//                                Pattern.CASE_INSENSITIVE), cl);
-//                    }
-//                }
-//            }
-            List<Class<? extends Component>> classes = new ArrayList<Class<? extends Component>>();
+        List<Class<? extends Component>> classes = new ArrayList<Class<? extends Component>>();
 
-            Class<? extends Component> currentClass = annotation.parent();
-            classes.add(cl);
-            while (!currentClass.equals(Component.class)) {
-                View anno = processClass(currentClass);
-                classes.add(0, currentClass);
-                currentClass = anno.parent();
-            }
-            return classes;
-        } catch (PatternSyntaxException pse) {
-            throw new WebApplicationException("Could not compile url:"
-                    + annotation.url(), pse);
+        Class<? extends Component> currentClass = annotation.parent();
+        classes.add(cl);
+        while (!currentClass.equals(Component.class)) {
+            View anno = processClass(currentClass);
+            classes.add(0, currentClass);
+            currentClass = anno.parent();
         }
+        return classes;
     }
 
     private View processClass(Class<?> cl) {

@@ -221,8 +221,9 @@ public abstract class Component {
      * For internal use only
      */
     public void clearCascadedUpdate() {
-        if (refreshMode == RefreshMode.NONE)
+        if (refreshMode == RefreshMode.NONE) {
             return;
+        }
         refreshMode = RefreshMode.NONE;
 
         if (children != null) {

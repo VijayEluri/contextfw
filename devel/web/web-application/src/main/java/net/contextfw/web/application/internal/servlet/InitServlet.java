@@ -12,14 +12,15 @@ import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.internal.WebApplicationServletModule;
 import net.contextfw.web.application.internal.service.DirectoryWatcher;
 import net.contextfw.web.application.internal.service.InitHandler;
+import net.contextfw.web.application.internal.service.ReloadingClassLoaderContext;
 
 public class InitServlet extends HttpServlet {
 
-    private List<Class<? extends Component>> chain;
+    private List<Class<? extends Component>> chain; // NOSONAR
     
-    private DirectoryWatcher watcher;
+    private DirectoryWatcher watcher; // NOSONAR
     
-    private WebApplicationServletModule module;
+    private ReloadingClassLoaderContext module; // NOSONAR
     
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -43,7 +44,7 @@ public class InitServlet extends HttpServlet {
 
     private final InitHandler handler;
 
-    public InitServlet(WebApplicationServletModule module,
+    public InitServlet(ReloadingClassLoaderContext module,
                        DirectoryWatcher watcher,
                        InitHandler handler, 
                        List<Class<? extends Component>> chain) {
