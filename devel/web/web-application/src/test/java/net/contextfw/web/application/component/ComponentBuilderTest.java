@@ -95,8 +95,13 @@ public class ComponentBuilderTest extends BaseComponentTest {
         @Element
         private Aa comp1;
         
+        @Element
+        private Aa hidden;
+        
         public Bee(Aa comp1) {
             this.comp1 = this.registerChild(comp1);
+            this.hidden = this.registerChild(new Aa());
+            this.hidden.setEnabled(false);
         }
         
         @CustomBuild
@@ -195,7 +200,8 @@ public class ComponentBuilderTest extends BaseComponentTest {
         webApplicationComponent.registerChild(comp);
         webApplicationComponent.buildChild(domBuilder);
         logXML(domBuilder);
-        assertDom("//WebApplication/Bee/comp1/Aa").hasAttribute("id", "el2");
+        assertDom("//WebApplication/Bee/comp1/Aa").hasAttribute("id", "el3");
+        assertDom("//WebApplication/Bee/hidden/Aa").notExists();
     }
     
     @Test
@@ -313,5 +319,27 @@ public class ComponentBuilderTest extends BaseComponentTest {
         assertDom("//WebApplication/Cee.aa1Update/aa1/Aa").exists();
         assertDom("//WebApplication/Cee.aa1Update/aa2/Aa").notExists();
         assertDom("//WebApplication/Aa.update").exists();
+    }
+    
+    @Test
+    public void testIdGenerator() {
+        long time = System.currentTimeMillis();
+        StringBuilder sb = new StringBuilder("el_");
+        for (int i = 0; i < 1000000; i++) {
+            String s = sb.replace(2, 10, Integer.toString(i)).toString();
+            //System.out.println(sb);
+        }
+        long end = System.currentTimeMillis();
+        System.out.println("Elapsed time:" +  (end - time));
+        
+        
+        time = System.currentTimeMillis();
+        for (int i = 0; i < 1000000; i++) {
+            String s = "el" + i;
+            //sb.replace(2, 100, Integer.toString(i));
+            //System.out.println(sb);
+        }
+        end = System.currentTimeMillis();
+        System.out.println("Elapsed time:" +  (end - time));
     }
 }

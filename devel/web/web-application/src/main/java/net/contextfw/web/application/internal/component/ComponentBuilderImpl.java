@@ -267,6 +267,11 @@ public class ComponentBuilderImpl implements ComponentBuilder, ScriptContext {
     public void build(DOMBuilder sb, Object component, Object... buildins) {
         MetaModel model = getMetaModel(component.getClass());
         if (model.annotation != null) {
+            if (component instanceof Component) {
+                if (!((Component) component).isEnabled()) {
+                    return;
+                }
+            }
             DOMBuilder b = model.buildName == null ? sb : sb
                     .descend(model.buildName);
             build(model, b, component, model.builders, false, null, buildins);
@@ -278,11 +283,7 @@ public class ComponentBuilderImpl implements ComponentBuilder, ScriptContext {
     private void build(MetaModel model, DOMBuilder b, Object component,
             List<Builder> builders, boolean partial, Set<String> updates,
             Object... buildins) {
-        if (component instanceof Component) {
-            if (!((Component) component).isEnabled()) {
-                return;
-            }
-        }
+        
         for (Method method : model.beforeBuilds) {
             try {
                 method.invoke(component);
