@@ -60,7 +60,7 @@ public class InitHandler {
             throws ServletException, IOException {
         
     	if (watcher != null && watcher.hasChanged()) {
-    		logger.info("Reloading resources");
+    		logger.debug("Reloading resources");
     		cleaner.clean();
     	}
     	
