@@ -78,7 +78,7 @@ public class ComponentUpdateHandler {
                 } catch (Exception e) {
                     try {
                         params[c] = gson.fromJson(value, paramTypes.get(c));
-                    } catch (Exception e1) {
+                    } catch (RuntimeException e1) {
                         throw new WebApplicationException(e1);
                     }
                 }

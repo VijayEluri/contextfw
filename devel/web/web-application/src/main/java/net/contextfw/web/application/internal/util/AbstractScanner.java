@@ -29,6 +29,9 @@ public abstract class AbstractScanner {
     private static final String FILE = "file";
     private static final String CLASSPATH = "classpath";
     
+    protected AbstractScanner() {
+    }
+    
     protected static List<ResourceEntry> findResourceEntries(List<String> resourcePaths) {
         List<ResourceEntry> entries = new ArrayList<ResourceEntry>();
         List<URI> rootURIs = toURIs(resourcePaths);

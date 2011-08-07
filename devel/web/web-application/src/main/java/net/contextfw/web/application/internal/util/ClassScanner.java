@@ -48,18 +48,18 @@ public class ClassScanner extends AbstractScanner {
 
                     String fileName = entry.getPath();
                     if (fileName.endsWith(".class") && !fileName.contains("$")) {
-                        Class<?> _class;
+                        Class<?> klass;
                         String className = toClassName(fileName);
                         try {
-                            _class = Class.forName(className);
+                            klass = Class.forName(className);
                         } catch (ExceptionInInitializerError e) {
                             // happen, for example, in classes, which depend on
                             // Spring to inject some beans, and which fail,
                             // if dependency is not fulfilled
-                            _class = Class.forName(className,
+                            klass = Class.forName(className,
                                     false, Thread.currentThread().getContextClassLoader());
                         }
-                        classes.add(_class);
+                        classes.add(klass);
                     }
                 }
             }

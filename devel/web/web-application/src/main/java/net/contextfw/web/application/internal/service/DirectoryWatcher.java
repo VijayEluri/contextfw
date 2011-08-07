@@ -57,7 +57,6 @@ public class DirectoryWatcher {
 
     private static class FileEntry {
 
-        File file;
         long lastModified;
         long fileCount;
 
@@ -73,22 +72,6 @@ public class DirectoryWatcher {
                 return true;
             } else if (file.isDirectory() && fileCount != file.list().length) {
                 return true;
-            } else {
-                return false;
-            }
-        }
-
-        @Override
-        public int hashCode() {
-            return file.hashCode();
-        }
-
-        @Override
-        public boolean equals(Object other) {
-            if (this == other) {
-                return true;
-            } else if (other instanceof FileEntry) {
-                return this.file.equals(((FileEntry) other).file);
             } else {
                 return false;
             }
