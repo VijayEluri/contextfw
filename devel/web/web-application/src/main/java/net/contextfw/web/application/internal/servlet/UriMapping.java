@@ -48,7 +48,7 @@ public class UriMapping implements Comparable<UriMapping> {
             return true;
         } else if (o instanceof UriMapping) {
             UriMapping other = (UriMapping) o;
-            if (this.getMatcher().getPatternType() == other.getMatcher().getPatternType()) {
+            if (this.matcher.getPatternType() == other.matcher.getPatternType()) {
                 return this.path.equals(other.path);
             }
         }
@@ -57,20 +57,20 @@ public class UriMapping implements Comparable<UriMapping> {
     
     @Override
     public int compareTo(UriMapping other) {
-        if (this.getMatcher().getPatternType() == UriPatternType.SERVLET 
-                && other.getMatcher().getPatternType() == UriPatternType.REGEX) {
+        if (this.matcher.getPatternType() == UriPatternType.SERVLET 
+                && other.matcher.getPatternType() == UriPatternType.REGEX) {
             return -1;
-        } else if (this.getMatcher().getPatternType() == UriPatternType.REGEX 
-                && other.getMatcher().getPatternType() == UriPatternType.SERVLET) {
+        } else if (this.matcher.getPatternType() == UriPatternType.REGEX 
+                && other.matcher.getPatternType() == UriPatternType.SERVLET) {
             return 1;
         } else {
             String myUri =this.getMatcherUri();
             String otherUri = other.getMatcherUri();
             if (myUri == null && otherUri == null) {
                 return other.path.compareTo(this.path);
-            } else if (myUri == null && otherUri != null) {
+            } else if (myUri == null) {
                 return 1;
-            } else if (myUri != null && otherUri == null) {
+            } else if (otherUri == null) {
                 return -1;
             } else {
                 return otherUri.compareTo(myUri);
