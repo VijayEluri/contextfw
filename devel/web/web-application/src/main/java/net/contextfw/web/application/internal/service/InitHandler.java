@@ -66,7 +66,7 @@ public class InitHandler {
     	
         if(!pageFlowFilter.beforePageCreate(
                 handler.getContextCount(),
-                    request)) {
+                    request, response)) {
             return;
         }
 

@@ -108,7 +108,7 @@ public class UpdateHandler {
 
             if (!CONTEXTFW_REMOVE.equals(command)) {
                 if (!pageFlowFilter.beforePageUpdate(handler.getContextCount(),
-                        request)) {
+                        request, response)) {
                     return;
                 }
             }

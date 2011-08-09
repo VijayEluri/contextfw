@@ -1,6 +1,7 @@
 package net.contextfw.web.application.lifecycle;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * This interface defines a filter that is used to control request
@@ -31,10 +32,14 @@ public interface PageFlowFilter {
      *   Statistics of current active scope count
      * @param request
      *   Current request
+     * @param response
+     *   Current response
      * @return
      *   <code>true</code> if page initialization can continue.
      */
-    boolean beforePageCreate(int scopeCount, HttpServletRequest request);
+    boolean beforePageCreate(int scopeCount, 
+                             HttpServletRequest request,
+                             HttpServletResponse response);
     
     
     /**
@@ -55,10 +60,14 @@ public interface PageFlowFilter {
      *   Statistics of current active scope count
      * @param request
      *   Current request
+     * @param response
+     *   Current response
      * @return
      *   <code>true</code> if page initialization can continue.
      */
-    boolean beforePageUpdate(int scopeCount, HttpServletRequest request);
+    boolean beforePageUpdate(int scopeCount, 
+                             HttpServletRequest request,
+                             HttpServletResponse response);
     
     /**
      * Called by framework just after page has been created but not processed

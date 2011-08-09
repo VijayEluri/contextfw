@@ -1,6 +1,7 @@
 package net.contextfw.web.application.lifecycle;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 
 /**
  * The default implementation for PageFlowFilter
@@ -29,12 +30,16 @@ public class DefaultPageFlowFilter implements PageFlowFilter {
     }
 
     @Override
-    public boolean beforePageCreate(int scopeCount, HttpServletRequest request) {
+    public boolean beforePageCreate(int scopeCount, 
+                                    HttpServletRequest request,
+                                    HttpServletResponse response) {
         return true;
     }
 
     @Override
-    public boolean beforePageUpdate(int scopeCount, HttpServletRequest request) {
+    public boolean beforePageUpdate(int scopeCount, 
+                                    HttpServletRequest request,
+                                    HttpServletResponse response) {
         return true;
     }
 }
