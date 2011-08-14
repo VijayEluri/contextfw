@@ -51,4 +51,9 @@ public class DefaultLifecycleListener implements LifecycleListener {
     public boolean beforeRemotedMethod(Component component, Method method, Object[] args) {
         return true;
     }
+
+    @Override
+    public void afterRemoteMethod(Component component, Method method, RuntimeException thrown) {
+        if (thrown != null) throw thrown;
+    }
 }

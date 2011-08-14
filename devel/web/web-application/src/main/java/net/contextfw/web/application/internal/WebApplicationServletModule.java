@@ -16,11 +16,13 @@ import net.contextfw.web.application.internal.service.ReloadingClassLoaderConf;
 import net.contextfw.web.application.internal.servlet.CSSServlet;
 import net.contextfw.web.application.internal.servlet.DevelopmentFilter;
 import net.contextfw.web.application.internal.servlet.InitServlet;
+import net.contextfw.web.application.internal.servlet.RegexUriMapping;
 import net.contextfw.web.application.internal.servlet.ScriptServlet;
 import net.contextfw.web.application.internal.servlet.UpdateServlet;
 import net.contextfw.web.application.internal.servlet.UriMapping;
-import net.contextfw.web.application.internal.servlet.UriPatternType;
+import net.contextfw.web.application.internal.servlet.UriMappingFactory;
 import net.contextfw.web.application.internal.util.ClassScanner;
+import net.contextfw.web.application.lifecycle.RequestInvocationFilter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,9 +49,12 @@ public class WebApplicationServletModule extends ServletModule {
     
     private ReloadingClassLoaderConf reloadConf;
     
+    private final RequestInvocationFilter filter;
+    
     private InitHandler initHandler;
     
-    public WebApplicationServletModule(Configuration configuration,
+    public WebApplicationServletModule(
+            Configuration configuration,
             PropertyProvider propertyProvider) {
         
         resourcePrefix = configuration.get(Configuration.RESOURCES_PREFIX);
@@ -62,7 +67,7 @@ public class WebApplicationServletModule extends ServletModule {
         if (reloadEnabled && configuration.get(Configuration.DEVELOPMENT_MODE)) {
             reloadConf = new ReloadingClassLoaderConf(configuration);
         }
-        
+        this.filter = configuration.get(Configuration.REQUEST_INVOCATION_FILTER);
     }
 
     @Override
@@ -102,9 +107,11 @@ public class WebApplicationServletModule extends ServletModule {
                 initializerProvider,
                 reloadConf,
                 classWatcher,
-                properties);
+                properties, 
+                filter);
         
         filter("/*").through(developmentFilter);
+        requestInjection(developmentFilter);
     }
 
     private void serveProductionMode() {
@@ -112,13 +119,15 @@ public class WebApplicationServletModule extends ServletModule {
         
         List<Class<?>> classes = ClassScanner.getClasses(rootPackages);
         ClassLoader classLoader = Thread.currentThread().getContextClassLoader();
+        UriMappingFactory fact = new UriMappingFactory();
         
-        SortedSet<UriMapping> mappings = UriMapping.createMappings(
+        SortedSet<UriMapping> mappings = fact.createMappings(
                 classes, 
                 classLoader,
                 initializerProvider,
                 initHandler,
-                properties);
+                properties,
+                filter);
         
         serveMappings(mappings);
     }
@@ -126,7 +135,7 @@ public class WebApplicationServletModule extends ServletModule {
     private void serveMappings(SortedSet<UriMapping> mappings) {
         for (UriMapping mapping : mappings) {
             servlets.put(mapping.getViewClass().getCanonicalName(), mapping.getInitServlet());
-            if (mapping.getPatternType() == UriPatternType.REGEX) {
+            if (mapping instanceof RegexUriMapping) {
                 logger.info("  Serving url: " + mapping.getViewClass().getName() + " => {} (regex)", mapping.getPath());
                 serveRegex(mapping.getPath()).with(mapping.getInitServlet());
             } else {

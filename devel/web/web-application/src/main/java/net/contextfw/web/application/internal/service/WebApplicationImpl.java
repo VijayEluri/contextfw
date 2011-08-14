@@ -91,7 +91,7 @@ public class WebApplicationImpl implements WebApplication {
     @Override
     public void initState() {
         context = new InitializerContextImpl(injector, chain);
-        rootComponent.registerChild(context.initChild());
+        getRootComponent().registerChild(context.initChild());
     }
 
     @Override
@@ -187,7 +187,7 @@ public class WebApplicationImpl implements WebApplication {
             d.attr("lang", context.getLocale().toString());
         }
         if (mode == Mode.INIT) {
-            rootComponent.buildChild(d);
+            getRootComponent().buildChild(d);
         } else if (httpContext.getRedirectUrl() != null) {
             d.descend("Redirect").attr("href", httpContext.getRedirectUrl());
         } else if (httpContext.getErrorCode() != null) {
@@ -195,10 +195,10 @@ public class WebApplicationImpl implements WebApplication {
         } else if (httpContext.isReload()) {
             d.descend("Reload");
         } else {
-            rootComponent.buildChildUpdate(d, builder);
+            getRootComponent().buildChildUpdate(d, builder);
         }
 
-        rootComponent.clearCascadedUpdate();
+        getRootComponent().clearCascadedUpdate();
 
         if (xmlParamName == null
                 || httpContext.getRequest().getParameter(xmlParamName) == null) {
@@ -236,7 +236,7 @@ public class WebApplicationImpl implements WebApplication {
                                   .isUpdateDelayed(element, httpContext.getRequest())) {
                         return new UpdateInvocation(
                                 handler.isResource(),
-                                handler.invoke(element, httpContext.getRequest())
+                                handler.invoke(rootComponent, element, httpContext.getRequest())
                                 );
                     } else {
                         return UpdateInvocation.DELAYED;
@@ -265,5 +265,9 @@ public class WebApplicationImpl implements WebApplication {
         // response.addHeader("Cache-Control","post-check=0, pre-check=0");
         response.addHeader("Pragma", "no-cache");
         response.setHeader("Connection", "Keep-Alive");
+    }
+
+    public WebApplicationComponent getRootComponent() {
+        return rootComponent;
     }
 }

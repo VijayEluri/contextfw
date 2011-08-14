@@ -21,6 +21,7 @@ import net.contextfw.web.application.internal.util.ObjectAttributeSerializer;
 import net.contextfw.web.application.lifecycle.LifecycleListener;
 import net.contextfw.web.application.lifecycle.PageFlowFilter;
 import net.contextfw.web.application.lifecycle.PageScoped;
+import net.contextfw.web.application.lifecycle.RequestInvocationFilter;
 import net.contextfw.web.application.serialize.AttributeJsonSerializer;
 
 import org.slf4j.Logger;
@@ -68,6 +69,7 @@ public final class WebApplicationModule extends AbstractModule {
                 WebApplicationHandleProvider.class);
         bind(Configuration.class).toInstance(configuration);
         bind(PropertyProvider.class).toInstance(configuration.get(Configuration.PROPERTY_PROVIDER));
+        bind(RequestInvocationFilter.class).toInstance(configuration.get(Configuration.REQUEST_INVOCATION_FILTER));        
         handlePageFlowFilter();
         handleLifecycleListener();
         this.bindListener(Matchers.any(), new TypeListener() {

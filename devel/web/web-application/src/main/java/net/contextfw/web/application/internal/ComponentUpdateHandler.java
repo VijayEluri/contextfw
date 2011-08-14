@@ -42,18 +42,14 @@ public class ComponentUpdateHandler {
         return key;
     }
 
-    public Object invoke(Component element, HttpServletRequest request) {
+    public Object invoke(Component rootComponent, Component element, HttpServletRequest request) {
         try {
             if (element != null && element.isEnabled()) {
-                return invokeWithParams(element, request);
+                return invokeWithParams(rootComponent, element, request);
             }
         } catch (IllegalArgumentException e) {
             throw new WebApplicationException(e);
         } catch (IllegalAccessException e) {
-            throw new WebApplicationException(e);
-        } catch (InvocationTargetException e) {
-            throw new WebApplicationException(e);
-        } catch (NoSuchMethodException e) {
             throw new WebApplicationException(e);
         } catch (InstantiationException e) {
             throw new WebApplicationException(e);
@@ -61,34 +57,41 @@ public class ComponentUpdateHandler {
         return null;
     }
 
-    private Object invokeWithParams(Component element, HttpServletRequest request)
-            throws IllegalAccessException, InvocationTargetException, NoSuchMethodException,
-            InstantiationException {
+    private Object invokeWithParams(Component rootComponent, Component component, HttpServletRequest request)
+            throws IllegalAccessException, InstantiationException {
 
-        List<Class<?>> paramTypes = ClassScanner.getParamTypes(element.getClass(), method);
+        List<Class<?>> paramTypes = ClassScanner.getParamTypes(component.getClass(), method);
         Object[] params = new Object[paramTypes.size()];
-
-        for (int c = 0; c < paramTypes.size(); c++) {
-
-            String value = request.getParameter("p" + c);
-            if (value != null) {
-                try {
-                    Constructor<?> constructor = paramTypes.get(c).getConstructor(String.class);
-                    params[c] = constructor.newInstance(value);
-                } catch (Exception e) {
+        RuntimeException thrown = null;
+        Object returnVal = null;
+        try {
+            for (int c = 0; c < paramTypes.size(); c++) {
+    
+                String value = request.getParameter("p" + c);
+                if (value != null) {
                     try {
+                        Constructor<?> constructor = paramTypes.get(c).getConstructor(String.class);
+                        params[c] = constructor.newInstance(value);
+                    } catch (NoSuchMethodException e) {
                         params[c] = gson.fromJson(value, paramTypes.get(c));
-                    } catch (RuntimeException e1) {
-                        throw new WebApplicationException(e1);
+                    } catch (InvocationTargetException ie) {
+                        throw new WebApplicationException(ie);
                     }
                 }
             }
+            if (listener.beforeRemotedMethod(component, method, params)) {
+                returnVal = method.invoke(component, params);
+            } else {
+                return null;
+            }
+        } catch (RuntimeException e) {
+            rootComponent.clearCascadedUpdate();
+            thrown = e;
+        } catch (InvocationTargetException e) {
+            thrown = new WebApplicationException(e);
         }
-        if (listener.beforeRemotedMethod(element, method, params)) {
-            return method.invoke(element, params);
-        } else {
-            return null;
-        }
+        listener.afterRemoteMethod(component, method, thrown);
+        return returnVal;
     }
 
     public Delayed getDelayed() {

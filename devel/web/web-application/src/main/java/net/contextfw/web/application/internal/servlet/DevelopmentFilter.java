@@ -24,6 +24,7 @@ import net.contextfw.web.application.internal.service.ReloadingClassLoader;
 import net.contextfw.web.application.internal.service.ReloadingClassLoaderConf;
 import net.contextfw.web.application.internal.service.ReloadingClassLoaderContext;
 import net.contextfw.web.application.internal.util.ClassScanner;
+import net.contextfw.web.application.lifecycle.RequestInvocationFilter;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,25 +38,30 @@ public class DevelopmentFilter implements Filter, ReloadingClassLoaderContext {
 
     private SortedSet<UriMapping> mappings = new TreeSet<UriMapping>();
     
+    private final UriMappingFactory fact = new UriMappingFactory();
+    
     private final Set<String> rootPackages;
     private final InitHandler initHandler;
     private final InitializerProvider initializerProvider;
     private final ReloadingClassLoaderConf reloadConf;
     private final DirectoryWatcher classWatcher;
     private final PropertyProvider properties;
+    private final RequestInvocationFilter filter;
 
     public DevelopmentFilter(Set<String> rootPackages,
                              InitHandler initHandler,
                              InitializerProvider initializerProvider,
                              ReloadingClassLoaderConf reloadConf,
                              DirectoryWatcher classWatcher,
-                             PropertyProvider properties) {
+                             PropertyProvider properties,
+                             RequestInvocationFilter filter) {
         this.rootPackages = rootPackages;
         this.initHandler = initHandler;
         this.initializerProvider = initializerProvider;
         this.reloadConf = reloadConf;
         this.classWatcher = classWatcher;
         this.properties = properties;
+        this.filter = filter;
     }
 
     @Override
@@ -76,7 +82,7 @@ public class DevelopmentFilter implements Filter, ReloadingClassLoaderContext {
             String uri = req.getRequestURI();
 
             for (UriMapping mapping : mappings) {
-                if (mapping.getMatcher().matches(uri)) {
+                if (mapping.matches(uri)) {
                     mapping.getInitServlet().service(request, response);
                     served = true;
                     break;
@@ -107,11 +113,12 @@ public class DevelopmentFilter implements Filter, ReloadingClassLoaderContext {
 
         List<Class<?>> classes = ClassScanner.getClasses(rootPackages);
         
-        mappings = UriMapping.createMappings(
+        mappings = fact.createMappings(
                 classes, 
                 classLoader,
                 initializerProvider,
                 initHandler,
-                properties);
+                properties,
+                filter);
     }
 }

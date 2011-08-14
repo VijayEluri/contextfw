@@ -24,8 +24,10 @@ import net.contextfw.web.application.internal.configuration.StringSetPropertyImp
 import net.contextfw.web.application.internal.configuration.TemporalPropertyImpl;
 import net.contextfw.web.application.lifecycle.DefaultLifecycleListener;
 import net.contextfw.web.application.lifecycle.DefaultPageFlowFilter;
+import net.contextfw.web.application.lifecycle.DefaultRequestInvocationFilter;
 import net.contextfw.web.application.lifecycle.LifecycleListener;
 import net.contextfw.web.application.lifecycle.PageFlowFilter;
+import net.contextfw.web.application.lifecycle.RequestInvocationFilter;
 import net.contextfw.web.application.serialize.AttributeJsonSerializer;
 import net.contextfw.web.application.serialize.AttributeSerializer;
 import net.contextfw.web.application.util.DefaultXMLResponseLogger;
@@ -79,6 +81,8 @@ public class Configuration {
 
     private static final String KEY_LIFECYCLE_LISTENER = "contextfw.lifecycleListener";
     
+    private static final String KEY_REQUEST_INVOCATION_FILTER = "contextfw.requestInvocationFilter";
+    
     private static final String KEY_PAGEFLOW_FILTER = "contextfw.pageFlowFilter";
 
     private static final String KEY_PROPERTY_PROVIDER = "contextfw.propertyProvider";
@@ -121,6 +125,7 @@ public class Configuration {
           .set(XML_PARAM_NAME, null)
           .set(XML_RESPONSE_LOGGER.asInstance(new DefaultXMLResponseLogger()))
           .set(PROPERTY_PROVIDER, new SystemPropertyProvider())
+          .set(REQUEST_INVOCATION_FILTER, new DefaultRequestInvocationFilter())
           .set(LIFECYCLE_LISTENER.as(DefaultLifecycleListener.class))
           .set(PAGEFLOW_FILTER.as(DefaultPageFlowFilter.class))
           .set(RESOURCE_PATH, new HashSet<String>())
@@ -233,6 +238,12 @@ public class Configuration {
      */
     public static final BindableProperty<LifecycleListener> LIFECYCLE_LISTENER = 
         new BindablePropertyImpl<LifecycleListener>(KEY_LIFECYCLE_LISTENER);
+
+    /**
+     * Binds a request invocation filter to the system
+     */
+    public static final SettableProperty<RequestInvocationFilter> REQUEST_INVOCATION_FILTER = 
+        new ObjectPropertyImpl<RequestInvocationFilter>(KEY_REQUEST_INVOCATION_FILTER);
     
     /**
      * Binds a pageflow filter to the system

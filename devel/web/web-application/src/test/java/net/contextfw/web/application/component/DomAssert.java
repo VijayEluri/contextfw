@@ -29,6 +29,12 @@ public class DomAssert {
         Assert.assertEquals(msg, value, ((org.dom4j.Element) node).attributeValue(name));
     }
     
+    public void attributeStartsWith(String name, String value) {
+        exists();
+        Assert.assertTrue(msg + ":" + node.getClass().getSimpleName(), node instanceof org.dom4j.Element);
+        Assert.assertTrue(msg, ((org.dom4j.Element) node).attributeValue(name).startsWith(value));
+    }
+    
     public void hasText(String text) {
         exists();
         Assert.assertEquals("isText:" + msg, text, node.getText());

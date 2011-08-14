@@ -89,6 +89,31 @@ public interface LifecycleListener {
     boolean beforeRemotedMethod(Component component, Method method, Object[] args);
 
     /**
+     * Invoked after the remote method invocation has finished.
+     * 
+     * <p>
+     *  If method throws an exception it is given as argument. This allows system to 
+     *  react exceptional condition. 
+     * </p>
+     * <p>
+     *  Also, if parameter parsing from client side fails, the exception is returned also. 
+     *  The method can re throw the exception or throw a new one. When throwing an exception
+     *  it should be remembered that it is caught by method onException().
+     * </p>
+     * <p>
+     *  If remote method was not called due beforeRemoteMethod() returning false 
+     *  then this method is also bypassed.
+     * </p>
+     * @param component
+     *   The component where the call is made
+     * @param method
+     *   The method invoked
+     * @param thrown
+     *   The exception if it was thrown
+     */
+    void afterRemoteMethod(Component component, Method method, RuntimeException thrown);
+
+    /**
      * Called by framework after update has finished
      */
     void afterUpdate();
