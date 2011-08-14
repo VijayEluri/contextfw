@@ -1,0 +1,84 @@
+package net.contextfw.web.application.component;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import net.contextfw.web.application.WebApplicationException;
+import net.contextfw.web.application.internal.component.MetaComponent;
+import net.contextfw.web.application.internal.servlet.UriMapping;
+import net.contextfw.web.application.internal.servlet.UriMappingFactory;
+import net.contextfw.web.application.remote.ErrorResolution;
+import net.contextfw.web.application.remote.PathParam;
+
+import org.junit.Before;
+import org.junit.Test;
+
+public class PathParamTest {
+
+    private UriMappingFactory fact = new UriMappingFactory();
+    
+    private MetaComponent aMeta;
+    
+    private A a;
+    
+    private UriMapping map1 = fact.getMapping(A.class, null, "/foo/{a}/{bee}/long/{d}/date/{c}");
+    private UriMapping map2 = fact.getMapping(A.class, null, "/foo/{a}/{bee}");
+    
+    private static class A extends Component {
+
+        @PathParam
+        private boolean a;
+        
+        @PathParam(name="bee")
+        private String b;
+        
+        @PathParam(onNull=ErrorResolution.RETHROW_CAUSE)
+        private Long d;
+        
+        private Integer c;
+        
+        private Double e;
+        
+        @PathParam
+        private Double f;
+        
+        @SuppressWarnings("unused")
+        @PathParam(onNull=ErrorResolution.RETHROW_CAUSE)
+        public void c(Integer time) {
+            this.c = time;
+        }
+        
+        @SuppressWarnings("unused")
+        @PathParam
+        public void e(Double e) {
+            this.e = e;
+        }
+    }
+    
+    @Before
+    public void setup() {
+        aMeta = new MetaComponent(A.class, null, null, null);
+        a = new A();
+    }
+    
+    @Test
+    public void Test1() {
+        aMeta.applyPathParams(a, map1, 
+                "/foo/true/something/long/123/date/3", null);
+        assertEquals(true, a.a);
+        assertEquals("something", a.b);
+        assertEquals((Long) 123L, (Long) a.d);
+        assertEquals((Integer) 3, a.c);
+        assertNull(a.e);
+        assertNull(a.f);
+    }
+    
+    @Test(expected=WebApplicationException.class)
+    public void Test_Null_D() {
+        aMeta.applyPathParams(a, map2, "/foo/true/something/", null);
+    }
+    
+    @Test(expected=WebApplicationException.class)
+    public void Test_Null_C() {
+        aMeta.applyPathParams(a, map1, "/foo/true/something/long/123/date/", null);
+    }
+}
