@@ -20,10 +20,16 @@ public class UpdateServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
+            value="SE_BAD_FIELD", justification="I know what I'm doing")
     private final transient UpdateHandler handler;
     
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
+            value="SE_BAD_FIELD", justification="I know what I'm doing")
     private final RequestInvocationFilter filter;
     
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
+            value="SE_BAD_FIELD", justification="I know what I'm doing")
     private final RequestInvocation invocation = new RequestInvocation() {
         @Override
         public void invoke(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {

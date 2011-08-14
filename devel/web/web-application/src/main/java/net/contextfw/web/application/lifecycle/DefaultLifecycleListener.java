@@ -54,6 +54,8 @@ public class DefaultLifecycleListener implements LifecycleListener {
 
     @Override
     public void afterRemoteMethod(Component component, Method method, RuntimeException thrown) {
-        if (thrown != null) throw thrown;
+        if (thrown != null) { 
+            throw thrown; 
+        }
     }
 }

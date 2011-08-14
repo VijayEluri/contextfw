@@ -57,9 +57,9 @@ public class UriMappingFactory {
             }
             split.setPattern(p);
         }
-        return new PathStyleUriMapping(null, 
+        return new PathStyleUriMapping(viewClass, 
                                constructedPath.toString(), 
-                               null,
+                               initServlet,
                                splits);
     }
     
@@ -86,9 +86,9 @@ public class UriMappingFactory {
             }
             split.setPattern(p);
         }
-        return new RegexUriMapping(null, 
+        return new RegexUriMapping(viewClass, 
                                constructedPath.toString(), 
-                               null,
+                               initServlet,
                                splits);
     }
     private List<Split> splitByVariables(String path, Pattern variableVerifier) {

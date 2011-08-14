@@ -12,7 +12,7 @@ public interface RequestInvocationFilter {
         INIT, UPDATE
     }
     
-    public void filter(Mode mode, HttpServletRequest request, 
-                       HttpServletResponse response, 
-                       RequestInvocation invocation) throws ServletException, IOException;
+    void filter(Mode mode, HttpServletRequest request, 
+                HttpServletResponse response, 
+                RequestInvocation invocation) throws ServletException, IOException;
 }

@@ -20,15 +20,20 @@ public class InitServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
     
-    private final List<Class<? extends Component>> chain; // NOSONAR
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
+            value="SE_BAD_FIELD", justification="I know what I'm doing")
+    private final List<Class<? extends Component>> chain;
     
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
+            value="SE_BAD_FIELD", justification="I know what I'm doing")
     private final InitHandler handler;
     
     @Inject
     private final RequestInvocationFilter filter;
     
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
+            value="SE_BAD_FIELD", justification="I know what I'm doing")
     private final RequestInvocation invocation = new RequestInvocation() {
-
         @Override
         public void invoke(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
             handler.handleRequest(chain, InitServlet.this, request, response);

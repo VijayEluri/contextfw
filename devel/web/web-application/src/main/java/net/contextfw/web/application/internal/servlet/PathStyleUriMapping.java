@@ -3,6 +3,7 @@ package net.contextfw.web.application.internal.servlet;
 import java.util.List;
 
 import net.contextfw.web.application.component.Component;
+import edu.umd.cs.findbugs.annotations.NonNull;
 
 /**
  * Partly adapted from Guice 3 to provide identical path matching
@@ -16,10 +17,10 @@ public class PathStyleUriMapping extends UriMapping {
         PREFIX, SUFFIX, LITERAL,
     }
 
-    public PathStyleUriMapping(Class<? extends Component> viewClass,
-            String pattern,
-            InitServlet initServlet,
-            List<Split> splits) {
+    public PathStyleUriMapping(@NonNull Class<? extends Component> viewClass,
+            @NonNull String pattern,
+            @NonNull InitServlet initServlet,
+            @NonNull List<Split> splits) {
         super(viewClass, pattern, initServlet, splits, Type.SERVLET);
         if (pattern.startsWith("*")) {
             this.pattern = pattern.substring(1);
