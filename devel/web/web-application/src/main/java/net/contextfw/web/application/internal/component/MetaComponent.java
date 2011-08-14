@@ -27,7 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 
-public class MetaComponent {
+public final class MetaComponent {
 
     private static Map<Class<?>, Class<?>> primitives = new HashMap<Class<?>, Class<?>>();
 
@@ -78,7 +78,7 @@ public class MetaComponent {
         }
     }
 
-    private boolean processFieldBuilders(Field field) {
+    private final boolean processFieldBuilders(Field field) {
         PropertyAccess<Object> propertyAccess =
                 new FieldPropertyAccess<Object>(field);
 
@@ -116,30 +116,30 @@ public class MetaComponent {
         Builder builder = null;
 
         if (method.getAnnotation(Element.class) != null) {
-            Element annotation = method.getAnnotation(Element.class);
-            name = "".equals(annotation.name()) ? method.getName()
-                    : annotation.name();
+            Element element = method.getAnnotation(Element.class);
+            name = "".equals(element.name()) ? method.getName()
+                    : element.name();
             builder = new ElementBuilder(componentBuilder, new MethodPropertyAccess(
                     method),
-                    annotation.wrap() ? name : null, method.getName());
-            addToBuilders(annotation.onCreate(), annotation.onUpdate(), builder);
+                    element.wrap() ? name : null, method.getName());
+            addToBuilders(element.onCreate(), element.onUpdate(), builder);
         } else if (method.getAnnotation(Attribute.class) != null) {
-            Attribute annotation = method
+            Attribute attribute = method
                     .getAnnotation(Attribute.class);
-            name = "".equals(annotation.name()) ? method.getName()
-                    : annotation.name();
+            name = "".equals(attribute.name()) ? method.getName()
+                    : attribute.name();
             builder = new AttributeBuilder(new MethodPropertyAccess(
                     method), name,
                     method.getName());
-            addToBuilders(annotation.onCreate(), annotation.onUpdate(), builder);
+            addToBuilders(attribute.onCreate(), attribute.onUpdate(), builder);
         } else if (method.getAnnotation(CustomBuild.class) != null) {
-            CustomBuild annotation = method
+            CustomBuild customBuild = method
                     .getAnnotation(CustomBuild.class);
-            name = "".equals(annotation.name()) ? method.getName()
-                    : annotation.name();
+            name = "".equals(customBuild.name()) ? method.getName()
+                    : customBuild.name();
             builder = new MethodCustomBuilder(method,
-                    annotation.wrap() ? name : null);
-            addToBuilders(annotation.onCreate(), annotation.onUpdate(), builder);
+                    customBuild.wrap() ? name : null);
+            addToBuilders(customBuild.onCreate(), customBuild.onUpdate(), builder);
         } else if (method.getAnnotation(ScriptElement.class) != null) {
             ScriptElement scriptElement = method
                     .getAnnotation(ScriptElement.class);
@@ -274,7 +274,7 @@ public class MetaComponent {
                     throw new WebApplicationException(field,
                             "@PathParam-annotated field " +
                                     "type does not contain constructor " +
-                                    "having String as parameter");
+                                    "having String as parameter", e);
                 }
             }
             pathParamFields.add(field);
@@ -289,7 +289,7 @@ public class MetaComponent {
             Class<?>[] types = method.getParameterTypes();
             if (types.length != 1) {
                 throw new WebApplicationException(method,
-                        "@PathParam annotated method does not take 1 parameter");
+                        "@PathParam annotated method does not take 1 parameter", null);
             }
             if (!primitives.containsKey(types[0])) {
                 try {
@@ -300,7 +300,7 @@ public class MetaComponent {
                     throw new WebApplicationException(method,
                             "@PathParam-annotated method parameter " +
                                     "type does not contain constructor " +
-                                    "having String as parameter");
+                                    "having String as parameter", e);
                 }
             }
             pathParamMethods.add(method);
@@ -390,7 +390,7 @@ public class MetaComponent {
             case SET_TO_NULL:
                 return null;
             case RETHROW_CAUSE:
-                throw new WebApplicationException(cl, "Null value for path param: " + name);
+                throw new WebApplicationException(cl, "Null value for path param: " + name, null);
             case SEND_NOT_FOUND_ERROR:
             case SEND_BAD_REQUEST_ERROR:
                 throw new MetaComponentException(annotation.onNull());

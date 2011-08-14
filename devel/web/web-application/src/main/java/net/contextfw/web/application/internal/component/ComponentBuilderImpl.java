@@ -78,7 +78,7 @@ public class ComponentBuilderImpl implements ComponentBuilder, ScriptContext {
         if (model.annotation != null) {
             return model.buildName;
         } else {
-            throw new WebApplicationException(cl, "Class is not buildable");
+            throw new WebApplicationException(cl, "Class is not buildable", null);
         }
     }
 

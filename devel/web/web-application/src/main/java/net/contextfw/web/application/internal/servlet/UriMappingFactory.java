@@ -86,26 +86,21 @@ public class UriMappingFactory {
         return new PathStyleUriMapping(viewClass,
                                constructedPath.toString(),
                                initServlet,
-                               getRegexVariables(splits));
+                               getVariables(splits));
     }
 
-    private Map<String, Pattern> getRegexVariables(List<Split> splits) {
+    private Map<String, Pattern> getVariables(List<Split> splits) {
         Map<String, Pattern> variables = new HashMap<String, Pattern>();
         for (int i = 0; i < splits.size(); i++) {
             if (splits.get(i).getVariableName() != null) {
                 variables.put(splits.get(i).getVariableName(),
-                        getRegexVariableMatcher(splits, i));
-            }
-        }
-        for (Split split : splits) {
-            if (split.getVariableName() != null) {
-
+                        getVariableMatcher(splits, i));
             }
         }
         return variables;
     }
 
-    private Pattern getRegexVariableMatcher(List<Split> splits, int pos) {
+    private Pattern getVariableMatcher(List<Split> splits, int pos) {
         StringBuilder before = new StringBuilder("");
         StringBuilder after = new StringBuilder("");
         for (int i = 0; i < pos; i++) {
@@ -145,7 +140,7 @@ public class UriMappingFactory {
         return new RegexUriMapping(viewClass,
                                constructedPath.toString(),
                                initServlet,
-                               getRegexVariables(splits));
+                               getVariables(splits));
     }
 
     private List<Split> splitByVariables(String path, Pattern variableVerifier) {

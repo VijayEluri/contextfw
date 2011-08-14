@@ -32,7 +32,7 @@ public class InitServlet extends HttpServlet {
     private final RequestInvocationFilter filter;
     
     @edu.umd.cs.findbugs.annotations.SuppressWarnings(
-            value="SE_BAD_FIELD", justification="I know what I'm doing")
+            value={"SE_BAD_FIELD"}, justification="I know what I'm doing")
     private final RequestInvocation invocation = new RequestInvocation() {
         @Override
         public void invoke(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -41,7 +41,8 @@ public class InitServlet extends HttpServlet {
     };
 
     @edu.umd.cs.findbugs.annotations.SuppressWarnings(
-            value="SE_BAD_FIELD", justification="I know what I'm doing")
+            value={"SE_BAD_FIELD", "MSF_MUTABLE_SERVLET_FIELD"}, 
+            justification="I know what I'm doing")
     private UriMapping mapping;
     
     @Override
