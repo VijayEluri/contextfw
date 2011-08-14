@@ -3,6 +3,7 @@ package net.contextfw.web.application.internal.service;
 import java.util.List;
 
 import net.contextfw.web.application.component.Component;
+import net.contextfw.web.application.internal.servlet.UriMapping;
 
 import com.google.inject.ImplementedBy;
 
@@ -12,7 +13,7 @@ public interface WebApplication {
     /**
      * This is called when page is shown for the first time
      */
-    void initState();
+    void initState(UriMapping mapping);
 
     /**
      * 

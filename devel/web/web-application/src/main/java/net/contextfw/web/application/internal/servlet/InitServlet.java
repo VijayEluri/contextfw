@@ -36,9 +36,13 @@ public class InitServlet extends HttpServlet {
     private final RequestInvocation invocation = new RequestInvocation() {
         @Override
         public void invoke(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-            handler.handleRequest(chain, InitServlet.this, request, response);
+            handler.handleRequest(getMapping(), chain, InitServlet.this, request, response);
         }
     };
+
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
+            value="SE_BAD_FIELD", justification="I know what I'm doing")
+    private UriMapping mapping;
     
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -56,5 +60,13 @@ public class InitServlet extends HttpServlet {
         this.handler = handler;
         this.chain = chain;
         this.filter = filter;
+    }
+
+    public void setMapping(UriMapping mapping) {
+        this.mapping = mapping;
+    }
+
+    public UriMapping getMapping() {
+        return mapping;
     }
 }

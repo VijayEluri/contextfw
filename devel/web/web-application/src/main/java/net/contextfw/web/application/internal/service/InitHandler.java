@@ -16,6 +16,7 @@ import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.internal.scope.WebApplicationScopedBeans;
+import net.contextfw.web.application.internal.servlet.UriMapping;
 import net.contextfw.web.application.lifecycle.LifecycleListener;
 import net.contextfw.web.application.lifecycle.PageFlowFilter;
 
@@ -53,6 +54,7 @@ public class InitHandler {
     }
 
     public final void handleRequest(
+            UriMapping mapping,
             List<Class<? extends Component>> chain, 
             HttpServlet servlet,
             HttpServletRequest request, 
@@ -96,7 +98,7 @@ public class InitHandler {
                                 context.getHandle().getKey());
 
                     listeners.beforeInitialize();
-                    app.initState();
+                    app.initState(mapping);
                     listeners.afterInitialize();
                     listeners.beforeRender();
                     boolean expired = app.sendResponse();

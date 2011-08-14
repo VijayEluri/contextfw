@@ -1,6 +1,6 @@
 package net.contextfw.web.application.internal.servlet;
 
-import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -12,39 +12,9 @@ public abstract class UriMapping implements Comparable<UriMapping> {
         SERVLET, REGEX;
     }
     
-    public static class Split {
-        
-        private final String value;
-        
-        private final String variableName;
-        
-        private Pattern pattern;
-        
-        public Split(String value, String variableName) {
-            this.value = value;
-            this.variableName = variableName;
-        }
-
-        public String getValue() {
-            return value;
-        }
-
-        public String getVariableName() {
-            return variableName;
-        }
-
-        public void setPattern(Pattern pattern) {
-            this.pattern = pattern;
-        }
-
-        public Pattern getPattern() {
-            return pattern;
-        }
-    }
+    private Map<String, Pattern> variables;
     
     private final Type type;
-    
-    private final List<Split> splits;
     
     private final String path;
     
@@ -55,13 +25,14 @@ public abstract class UriMapping implements Comparable<UriMapping> {
     public UriMapping(Class<? extends Component> viewClass, 
                        String path, 
                        InitServlet initServlet, 
-                       List<Split> splits,
-                       Type type) {
+                       Type type,
+                       Map<String, Pattern> variables) {
         this.initServlet = initServlet;
         this.viewClass = viewClass;
         this.path = path;
-        this.splits = splits;
         this.type = type;
+        this.initServlet.setMapping(this);
+        this.variables = variables;
     }
     
     @Override
@@ -122,21 +93,13 @@ public abstract class UriMapping implements Comparable<UriMapping> {
     }
     
     public String findValue(String path, String name) {
-        String str = path;
-        for (Split split : splits) {
-            Matcher m = split.pattern.matcher(str);
-            if (m.find()) {
-                String v = m.group();
-                if (name.equals(split.variableName)) {
-                    return v;
-                } else {
-                    str = str.substring(v.length());
-                }
-            } else {
-                return null;
-            }
+        if (!variables.containsKey(name)) {
+            return null;
+        } else {
+            Matcher m = variables.get(name).matcher(path);
+            m.find();
+            return m.group(1);
         }
-        return null;
     }
     
     public abstract boolean matches(String uri);

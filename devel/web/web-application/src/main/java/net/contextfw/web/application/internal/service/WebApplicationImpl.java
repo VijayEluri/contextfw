@@ -23,6 +23,7 @@ import net.contextfw.web.application.internal.component.ComponentBuilder;
 import net.contextfw.web.application.internal.component.ComponentRegister;
 import net.contextfw.web.application.internal.component.WebApplicationComponent;
 import net.contextfw.web.application.internal.initializer.InitializerContextImpl;
+import net.contextfw.web.application.internal.servlet.UriMapping;
 import net.contextfw.web.application.internal.util.AttributeHandler;
 import net.contextfw.web.application.lifecycle.PageScoped;
 import net.contextfw.web.application.lifecycle.ResourceView;
@@ -89,8 +90,14 @@ public class WebApplicationImpl implements WebApplication {
     }
 
     @Override
-    public void initState() {
-        context = new InitializerContextImpl(injector, chain);
+    public void initState(UriMapping mapping) {
+        context = new InitializerContextImpl(
+                builder,
+                mapping,
+                httpContext.getRequestURI()
+                    .substring(httpContext.getRequest().getContextPath().length()),
+                injector,
+                chain);
         getRootComponent().registerChild(context.initChild());
     }
 

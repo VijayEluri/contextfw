@@ -5,6 +5,8 @@ import java.util.Locale;
 
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.component.Component;
+import net.contextfw.web.application.internal.component.ComponentBuilder;
+import net.contextfw.web.application.internal.servlet.UriMapping;
 import net.contextfw.web.application.lifecycle.ViewComponent;
 import net.contextfw.web.application.lifecycle.ViewContext;
 
@@ -21,9 +23,20 @@ public class InitializerContextImpl implements ViewContext {
     
     private Component leaf;
     
-    public InitializerContextImpl(Injector injector, List<Class<? extends Component>> chain) {
+    private final ComponentBuilder componentBuilder;
+    private final UriMapping mapping;
+    private final String uri;
+    
+    public InitializerContextImpl(ComponentBuilder componentBuilder,
+                                  UriMapping mapping,
+                                  String uri,
+                                  Injector injector,
+                                  List<Class<? extends Component>> chain) {
         this.chain = chain;
         this.injector = injector;
+        this.componentBuilder = componentBuilder;
+        this.mapping = mapping;
+        this.uri = uri;
     }
     
     @Override
@@ -45,6 +58,9 @@ public class InitializerContextImpl implements ViewContext {
                     + chain.get(currentIndex-1).getName() + " does not have any children");
         }
         Component component = injector.getInstance(cl);
+        
+        componentBuilder.getMetaComponent(component.getClass()).applyPathParams(
+                component, mapping, uri);
         
         leaf = component;
         

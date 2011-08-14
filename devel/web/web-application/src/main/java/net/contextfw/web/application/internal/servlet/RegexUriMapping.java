@@ -1,6 +1,6 @@
 package net.contextfw.web.application.internal.servlet;
 
-import java.util.List;
+import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -16,8 +16,8 @@ public class RegexUriMapping extends UriMapping {
     public RegexUriMapping(Class<? extends Component> viewClass, 
                            String path, 
                            InitServlet initServlet, 
-                           List<Split> splits) {
-        super(viewClass, path, initServlet, splits, Type.REGEX);
+                           Map<String, Pattern> variables) {
+        super(viewClass, path, initServlet, Type.REGEX, variables);
         this.pattern = Pattern.compile(path);
     }
 

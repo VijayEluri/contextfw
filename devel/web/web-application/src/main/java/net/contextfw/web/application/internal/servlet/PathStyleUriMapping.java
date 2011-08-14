@@ -1,6 +1,7 @@
 package net.contextfw.web.application.internal.servlet;
 
-import java.util.List;
+import java.util.Map;
+import java.util.regex.Pattern;
 
 import net.contextfw.web.application.component.Component;
 import edu.umd.cs.findbugs.annotations.NonNull;
@@ -20,8 +21,8 @@ public class PathStyleUriMapping extends UriMapping {
     public PathStyleUriMapping(@NonNull Class<? extends Component> viewClass,
             @NonNull String pattern,
             @NonNull InitServlet initServlet,
-            @NonNull List<Split> splits) {
-        super(viewClass, pattern, initServlet, splits, Type.SERVLET);
+            @NonNull Map<String, Pattern> variables) {
+        super(viewClass, pattern, initServlet, Type.SERVLET, variables);
         if (pattern.startsWith("*")) {
             this.pattern = pattern.substring(1);
             this.patternKind = Kind.PREFIX;

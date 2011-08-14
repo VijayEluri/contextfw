@@ -20,4 +20,6 @@ public interface ComponentBuilder {
     
     String getBuildName(Class<?> cl);
     
+    MetaComponent getMetaComponent(Class<?> cl);
+    
 }

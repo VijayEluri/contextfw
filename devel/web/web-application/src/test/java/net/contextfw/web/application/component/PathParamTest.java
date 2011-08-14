@@ -1,14 +1,15 @@
 package net.contextfw.web.application.component;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.internal.component.MetaComponent;
+import net.contextfw.web.application.internal.servlet.InitServlet;
 import net.contextfw.web.application.internal.servlet.UriMapping;
 import net.contextfw.web.application.internal.servlet.UriMappingFactory;
 import net.contextfw.web.application.remote.ErrorResolution;
 import net.contextfw.web.application.remote.PathParam;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -20,8 +21,8 @@ public class PathParamTest {
     
     private A a;
     
-    private UriMapping map1 = fact.getMapping(A.class, null, "/foo/{a}/{bee}/long/{d}/date/{c}");
-    private UriMapping map2 = fact.getMapping(A.class, null, "/foo/{a}/{bee}");
+    private UriMapping map1 = fact.getMapping(A.class, new InitServlet(null, null, null), "/foo/<a>/<bee>/long/<d>/date/<c>");
+    private UriMapping map2 = fact.getMapping(A.class, new InitServlet(null, null, null), "/foo/<a>/<bee>");
     
     private static class A extends Component {
 
@@ -63,22 +64,22 @@ public class PathParamTest {
     @Test
     public void Test1() {
         aMeta.applyPathParams(a, map1, 
-                "/foo/true/something/long/123/date/3", null);
+                "/foo/true/something/long/123/date/3");
         assertEquals(true, a.a);
         assertEquals("something", a.b);
         assertEquals((Long) 123L, (Long) a.d);
         assertEquals((Integer) 3, a.c);
-        assertNull(a.e);
-        assertNull(a.f);
+        Assert.assertNull(a.e);
+        Assert.assertNull(a.f);
     }
     
     @Test(expected=WebApplicationException.class)
     public void Test_Null_D() {
-        aMeta.applyPathParams(a, map2, "/foo/true/something/", null);
+        aMeta.applyPathParams(a, map2, "/foo/true/something/");
     }
     
     @Test(expected=WebApplicationException.class)
     public void Test_Null_C() {
-        aMeta.applyPathParams(a, map1, "/foo/true/something/long/123/date/", null);
+        aMeta.applyPathParams(a, map1, "/foo/true/something/long/123/date/");
     }
 }

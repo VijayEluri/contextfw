@@ -15,7 +15,7 @@ import java.lang.annotation.Target;
  * <p>
  *  Path parameter are encoded to URL-definitions with special syntax and it
  *  works on both path-based and regex-based syntaxes. Path parameters are encoded as
- *  <code>{<i>paramName</i>}</code>.
+ *  <code>&lt;<i>paramName</i>&gt;</code>.
  * </p>
  * 
  * <h2>General usage</h2>
@@ -35,7 +35,7 @@ import java.lang.annotation.Target;
  *  For example, following definition:
  * </p>
  * <blockquote>
- *  <code>/customers/{id}/invoice/{invoiceId}</code>
+ *  <code>/customers/&lt;id&gt;/invoice/&lt;invoiceId&gt;</code>
  * </blockquote>
  * <p>
  *  is translated into following path
@@ -50,10 +50,10 @@ import java.lang.annotation.Target;
  *  In regex-style URLs path parameter is replaced as default with <code>([^/]+)</code>, so it basically
  *  works the same way as path-based variant. With regex-based path it is also possible to 
  *  create different replacement for path-variable, which happens as 
- *  <code>{<i>paramName:regex</i>}</code>.  For example following definition:
+ *  <code>&lt;<i>paramName:regex</i>&gt;</code>.  For example following definition:
  * </p>
  * <blockquote>
- *  <code>/engine/{id}/mode/{mode:started|stopped}</code>
+ *  <code>/engine/&lt;id&gt;/mode/<mode:started|stopped></code>
  * </blockquote>
  * <p>
  *  is translated into following path
@@ -61,6 +61,15 @@ import java.lang.annotation.Target;
  * <blockquote>
  *  <code>/engine&#47;([^/]+)&#47;mode/(started|stopped)</code>
  * </blockquote>
+ * 
+ * <h3>Important caveat on initialization</h3>
+ * 
+ * <p>
+ *  It is important to notice that parameters are not initialized during injection. That is 
+ *  parameters are not initialized at @PostConstruct-time. To access them, view component
+ *  needs to implement ViewComponent-interface thus initialization is ready when method
+ *  initialize() is called. 
+ * </p>
  * 
  * <h2>Exceptional handling</h2>
  * 

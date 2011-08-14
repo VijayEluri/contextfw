@@ -1,6 +1,5 @@
 package net.contextfw.web.application.internal.component;
 
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -10,8 +9,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import javax.servlet.http.HttpServletResponse;
 
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.component.Attribute;
@@ -33,7 +30,7 @@ import com.google.gson.Gson;
 public class MetaComponent {
 
     private static Map<Class<?>, Class<?>> primitives = new HashMap<Class<?>, Class<?>>();
-    
+
     static {
         primitives.put(boolean.class, Boolean.class);
         primitives.put(byte.class, Byte.class);
@@ -44,19 +41,19 @@ public class MetaComponent {
         primitives.put(float.class, Float.class);
         primitives.put(double.class, Double.class);
     }
-    
+
     Logger log = LoggerFactory.getLogger(MetaComponent.class);
-    
+
     private final Set<String> registeredNames = new HashSet<String>();
     private final List<Method> beforeBuilds = new ArrayList<Method>();
     private final List<Method> afterBuilds = new ArrayList<Method>();
-    private final List<Builder> builders = new ArrayList<Builder>();
-    private final List<Builder> updateBuilders = new ArrayList<Builder>();
-    private final List<Builder> partialBuilders = new ArrayList<Builder>();
+    public final List<Builder> builders = new ArrayList<Builder>();
+    public final List<Builder> updateBuilders = new ArrayList<Builder>();
+    public final List<Builder> partialBuilders = new ArrayList<Builder>();
     private final List<Field> pathParamFields = new ArrayList<Field>();
     private final List<Method> pathParamMethods = new ArrayList<Method>();
-    private final String buildName;
-    private final Buildable annotation;
+    public final String buildName;
+    public final Buildable annotation;
 
     private final Class<?> cl;
     private final ComponentBuilder componentBuilder;
@@ -153,24 +150,24 @@ public class MetaComponent {
         }
         return builder != null;
     }
-    
+
     private boolean canProcess(Field field) {
         return !registeredNames.contains(field.getName());
     }
-    
+
     private void setProcessed(Field field) {
         registeredNames.add(field.getName());
     }
-    
+
     private boolean canProcess(Method method) {
         return !registeredNames.contains(method.getName());
     }
-    
+
     private void setProcessed(Method method) {
         registeredNames.add(method.getName());
     }
 
-    private void iterateFields() {
+    private final void iterateFields() {
         Class<?> currentClass = cl;
         while (currentClass != null) {
             for (Field field : currentClass.getDeclaredFields()) {
@@ -186,7 +183,7 @@ public class MetaComponent {
         }
     }
 
-    private void iterateMethods() {
+    private final void iterateMethods() {
         Class<?> currentClass = cl;
         while (currentClass != null) {
             for (Method method : currentClass.getDeclaredMethods()) {
@@ -247,7 +244,7 @@ public class MetaComponent {
         }
         partialBuilders.add(builder);
     }
-    
+
     public boolean processBeforeBuilds(Method method) {
         if (method.getAnnotation(BeforeBuild.class) != null) {
             beforeBuilds.add(method);
@@ -256,7 +253,7 @@ public class MetaComponent {
             return false;
         }
     }
-    
+
     public boolean processAfterBuilds(Method method) {
         if (method.getAnnotation(AfterBuild.class) != null) {
             afterBuilds.add(method);
@@ -265,7 +262,7 @@ public class MetaComponent {
             return false;
         }
     }
-    
+
     public boolean processPathParam(Field field) {
         if (field.isAnnotationPresent(PathParam.class)) {
             if (!primitives.containsKey(field.getType())) {
@@ -276,8 +273,8 @@ public class MetaComponent {
                 } catch (NoSuchMethodException e) {
                     throw new WebApplicationException(field,
                             "@PathParam-annotated field " +
-                            "type does not contain constructor " +
-                            "having String as parameter");
+                                    "type does not contain constructor " +
+                                    "having String as parameter");
                 }
             }
             pathParamFields.add(field);
@@ -286,7 +283,7 @@ public class MetaComponent {
             return false;
         }
     }
-    
+
     public boolean processPathParam(Method method) {
         if (method.isAnnotationPresent(PathParam.class)) {
             Class<?>[] types = method.getParameterTypes();
@@ -302,8 +299,8 @@ public class MetaComponent {
                 } catch (NoSuchMethodException e) {
                     throw new WebApplicationException(method,
                             "@PathParam-annotated method parameter " +
-                            "type does not contain constructor " +
-                            "having String as parameter");
+                                    "type does not contain constructor " +
+                                    "having String as parameter");
                 }
             }
             pathParamMethods.add(method);
@@ -312,7 +309,7 @@ public class MetaComponent {
             return false;
         }
     }
-    
+
     public void applyBeforeBuilds(Object obj) {
         for (Method method : beforeBuilds) {
             try {
@@ -326,7 +323,7 @@ public class MetaComponent {
             }
         }
     }
-    
+
     public void applyAfterBuilds(Object obj) {
         for (Method method : afterBuilds) {
             try {
@@ -341,12 +338,10 @@ public class MetaComponent {
         }
     }
 
-    
     public void applyPathParams(Object obj,
-                                UriMapping mapping, 
-                                String uri,
-                                HttpServletResponse response) {
-        
+                                UriMapping mapping,
+                                String uri) {
+
         for (Field field : pathParamFields) {
             PathParam annotation = field.getAnnotation(PathParam.class);
             String name = "".equals(annotation.name()) ? field.getName() : annotation.name();
@@ -355,10 +350,9 @@ public class MetaComponent {
                                         field.getType(),
                                         name,
                                         mapping,
-                                        uri,
-                                        response));
+                                        uri));
             } catch (Exception e) {
-                if (e instanceof WebApplicationException) {
+                if (e instanceof WebApplicationException || e instanceof MetaComponentException) {
                     throw (RuntimeException) e;
                 } else {
                     throw new WebApplicationException(e);
@@ -373,10 +367,9 @@ public class MetaComponent {
                                         method.getParameterTypes()[0],
                                         name,
                                         mapping,
-                                        uri,
-                                        response));
+                                        uri));
             } catch (Exception e) {
-                if (e instanceof WebApplicationException) {
+                if (e instanceof WebApplicationException || e instanceof MetaComponentException) {
                     throw (RuntimeException) e;
                 } else {
                     throw new WebApplicationException(e);
@@ -384,60 +377,48 @@ public class MetaComponent {
             }
         }
     }
-    
+
     private Object getValue(PathParam annotation,
                             Class<?> type,
-                            String name, 
+                            String name,
                             UriMapping mapping,
-                            String uri,
-                            HttpServletResponse response) {
-        
-        try {
-            String val = mapping.findValue(uri, name);
-            if (val == null) {
-                switch (annotation.onNull()) {
-                case SET_TO_NULL: 
-                    return null;
-                case RETHROW_CAUSE: 
-                    throw new WebApplicationException(cl, "Null value for path param: " + name);
-                case SEND_NOT_FOUND_ERROR:
-                    response.sendError(HttpServletResponse.SC_NOT_FOUND);
-                    return null;
-                case SEND_BAD_REQUEST_ERROR:
-                    response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-                    return null;
-                }
+                            String uri) {
+
+        String val = mapping.findValue(uri, name);
+        if (val == null) {
+            switch (annotation.onNull()) {
+            case SET_TO_NULL:
+                return null;
+            case RETHROW_CAUSE:
+                throw new WebApplicationException(cl, "Null value for path param: " + name);
+            case SEND_NOT_FOUND_ERROR:
+            case SEND_BAD_REQUEST_ERROR:
+                throw new MetaComponentException(annotation.onNull());
             }
-            Object rv = null;
-            if (String.class == type) {
-                rv = val;
-            } else {
-                try {
-                    if (primitives.containsKey(type)) {
-                        rv = primitives.get(type).getConstructor(String.class).newInstance(val);
-                    } else {
-                        rv = type.getConstructor(String.class).newInstance(val);
-                    }
-                } catch (Exception e) {
-                    switch (annotation.onError()) {
-                    case SET_TO_NULL: 
-                        return null;
-                    case RETHROW_CAUSE: 
-                        throw new WebApplicationException(e);
-                    case SEND_NOT_FOUND_ERROR:
-                        log.info("Logged exception:", e);
-                        response.sendError(HttpServletResponse.SC_NOT_FOUND);
-                        return null;
-                    case SEND_BAD_REQUEST_ERROR:
-                        log.info("Logged exception:", e);
-                        response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-                        return null;
-                    }   
-                }
-            }
-            return rv;
-        } catch (IOException e) {
-            throw new WebApplicationException(e);
         }
+        Object rv = null;
+        if (String.class == type) {
+            rv = val;
+        } else {
+            try {
+                if (primitives.containsKey(type)) {
+                    rv = primitives.get(type).getConstructor(String.class).newInstance(val);
+                } else {
+                    rv = type.getConstructor(String.class).newInstance(val);
+                }
+            } catch (Exception e) {
+                switch (annotation.onError()) {
+                case SET_TO_NULL:
+                    return null;
+                case RETHROW_CAUSE:
+                    throw new WebApplicationException(e);
+                case SEND_NOT_FOUND_ERROR:
+                case SEND_BAD_REQUEST_ERROR:
+                    log.info("Logged exception:", e);
+                    throw new MetaComponentException(annotation.onError());
+                }
+            }
+        }
+        return rv;
     }
 }
