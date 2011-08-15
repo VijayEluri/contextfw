@@ -79,7 +79,7 @@ public class DevelopmentFilter implements Filter, ReloadingClassLoaderContext {
 
         if (request instanceof HttpServletRequest) {
             HttpServletRequest req = (HttpServletRequest) request;
-            String uri = req.getRequestURI();
+            String uri = req.getRequestURI().substring(req.getContextPath().length());
 
             for (UriMapping mapping : mappings) {
                 if (mapping.matches(uri)) {

@@ -1,8 +1,9 @@
 package net.contextfw.web.application.internal.component;
 
+import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.remote.ErrorResolution;
 
-public class MetaComponentException extends RuntimeException {
+public class MetaComponentException extends WebApplicationException {
 
     private final ErrorResolution resolution;
     

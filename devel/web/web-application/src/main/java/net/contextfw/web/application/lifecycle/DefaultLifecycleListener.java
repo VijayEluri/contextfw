@@ -2,6 +2,7 @@ package net.contextfw.web.application.lifecycle;
 
 import java.lang.reflect.Method;
 
+import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.component.Component;
 
 import org.slf4j.Logger;
@@ -37,6 +38,11 @@ public class DefaultLifecycleListener implements LifecycleListener {
     @Override
     public void onException(Exception e) {
         logger.error("Caught exception", e);
+        if (e instanceof RuntimeException) {
+            throw (RuntimeException) e;
+        } else {
+            throw new WebApplicationException(e);
+        }
     }
 
     @Override

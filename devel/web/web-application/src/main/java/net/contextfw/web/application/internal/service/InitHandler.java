@@ -15,10 +15,12 @@ import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.configuration.Configuration;
+import net.contextfw.web.application.internal.component.MetaComponentException;
 import net.contextfw.web.application.internal.scope.WebApplicationScopedBeans;
 import net.contextfw.web.application.internal.servlet.UriMapping;
 import net.contextfw.web.application.lifecycle.LifecycleListener;
 import net.contextfw.web.application.lifecycle.PageFlowFilter;
+import net.contextfw.web.application.remote.ErrorResolution;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,20 +34,20 @@ public class InitHandler {
     @Inject
     private WebApplicationContextHandler handler;
 
-    //private final InitializerProvider initializers;
+    // private final InitializerProvider initializers;
     @Inject
     private Provider<WebApplication> webApplicationProvider;
     @Inject
     private LifecycleListener listeners;
     @Inject
     private PageFlowFilter pageFlowFilter;
-    
+
     private final long initialMaxInactivity;
-    
+
     private DirectoryWatcher watcher;
-    
+
     private ResourceCleaner cleaner;
-    
+
     private final boolean developmentMode;
 
     public InitHandler(Configuration properties) {
@@ -55,18 +57,18 @@ public class InitHandler {
 
     public final void handleRequest(
             UriMapping mapping,
-            List<Class<? extends Component>> chain, 
+            List<Class<? extends Component>> chain,
             HttpServlet servlet,
-            HttpServletRequest request, 
+            HttpServletRequest request,
             HttpServletResponse response)
             throws ServletException, IOException {
-        
-    	if (watcher != null && watcher.hasChanged()) {
-    		logger.debug("Reloading resources");
-    		cleaner.clean();
-    	}
-    	
-        if(!pageFlowFilter.beforePageCreate(
+
+        if (watcher != null && watcher.hasChanged()) {
+            logger.debug("Reloading resources");
+            cleaner.clean();
+        }
+
+        if (!pageFlowFilter.beforePageCreate(
                 handler.getContextCount(),
                     request, response)) {
             return;
@@ -81,7 +83,7 @@ public class InitHandler {
         if (chain == null) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         } else {
-            
+
             WebApplicationContext context = prepareWebApplicationScope(servlet,
                         request, response);
             WebApplication app = webApplicationProvider.get();
@@ -91,7 +93,7 @@ public class InitHandler {
 
             synchronized (context.getApplication()) {
                 try {
-                    
+
                     pageFlowFilter.onPageCreate(
                                 handler.getContextCount(),
                                 pageFlowFilter.getRemoteAddr(request),
@@ -115,12 +117,16 @@ public class InitHandler {
 
                 } catch (Exception e) {
                     // TODO Fix this construct with test
-                    listeners.onException(e);
-                    if (e instanceof WebApplicationException) {
-                        throw (WebApplicationException) e;
-                    } else {
-                        throw new WebApplicationException(e);
+                    if (e instanceof MetaComponentException) {
+                        ErrorResolution resolution =
+                                ((MetaComponentException) e).getResolution();
+                        if (resolution == ErrorResolution.SEND_NOT_FOUND_ERROR) {
+                            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                        } else if (resolution == ErrorResolution.SEND_BAD_REQUEST_ERROR) {
+                            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                        }
                     }
+                    listeners.onException(e);
                 } finally {
                     context.getHttpContext().setServlet(null);
                     context.getHttpContext().setRequest(null);
@@ -130,7 +136,8 @@ public class InitHandler {
         }
     }
 
-    private WebApplicationContext prepareWebApplicationScope(HttpServlet servlet, HttpServletRequest request,
+    private WebApplicationContext prepareWebApplicationScope(HttpServlet servlet,
+            HttpServletRequest request,
             HttpServletResponse response) {
         WebApplicationScopedBeans beans = WebApplicationScopedBeans
                 .createNewInstance();
@@ -150,7 +157,7 @@ public class InitHandler {
             this.watcher = watcher;
         }
     }
-    
+
     @Inject
     public void setCleaner(ResourceCleaner cleaner) {
         if (developmentMode) {

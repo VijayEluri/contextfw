@@ -414,7 +414,6 @@ public final class MetaComponent {
                     throw new WebApplicationException(e);
                 case SEND_NOT_FOUND_ERROR:
                 case SEND_BAD_REQUEST_ERROR:
-                    log.info("Logged exception:", e);
                     throw new MetaComponentException(annotation.onError());
                 }
             }
