@@ -10,6 +10,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import javax.servlet.http.HttpServletRequest;
+
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.component.Attribute;
 import net.contextfw.web.application.component.Buildable;
@@ -21,6 +23,7 @@ import net.contextfw.web.application.internal.servlet.UriMapping;
 import net.contextfw.web.application.lifecycle.AfterBuild;
 import net.contextfw.web.application.lifecycle.BeforeBuild;
 import net.contextfw.web.application.remote.PathParam;
+import net.contextfw.web.application.remote.RequestParam;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,6 +55,8 @@ public final class MetaComponent {
     public final List<Builder> partialBuilders = new ArrayList<Builder>();
     private final List<Field> pathParamFields = new ArrayList<Field>();
     private final List<Method> pathParamMethods = new ArrayList<Method>();
+    private final List<Field> requestParamFields = new ArrayList<Field>();
+    private final List<Method> requestParamMethods = new ArrayList<Method>();
     public final String buildName;
     public final Buildable annotation;
 
@@ -178,6 +183,9 @@ public final class MetaComponent {
                 if (canProcess(field) && processPathParam(field)) {
                     setProcessed(field);
                 }
+                if (canProcess(field) && processRequestParam(field)) {
+                    setProcessed(field);
+                }
             }
             currentClass = currentClass.getSuperclass();
         }
@@ -198,6 +206,9 @@ public final class MetaComponent {
                     setProcessed(method);
                 }
                 if (canProcess(method) && processPathParam(method)) {
+                    setProcessed(method);
+                }
+                if (canProcess(method) && processRequestParam(method)) {
                     setProcessed(method);
                 }
             }
@@ -283,6 +294,27 @@ public final class MetaComponent {
             return false;
         }
     }
+    
+    public boolean processRequestParam(Field field) {
+        if (field.isAnnotationPresent(RequestParam.class)) {
+            if (!primitives.containsKey(field.getType())) {
+                try {
+                    field.getType().getConstructor(String.class);
+                } catch (SecurityException e) {
+                    throw new WebApplicationException(e);
+                } catch (NoSuchMethodException e) {
+                    throw new WebApplicationException(field,
+                            "@RequestParam-annotated field " +
+                                    "type does not contain constructor " +
+                                    "having String as parameter", e);
+                }
+            }
+            requestParamFields.add(field);
+            return true;
+        } else {
+            return false;
+        }
+    }
 
     public boolean processPathParam(Method method) {
         if (method.isAnnotationPresent(PathParam.class)) {
@@ -304,6 +336,32 @@ public final class MetaComponent {
                 }
             }
             pathParamMethods.add(method);
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    public boolean processRequestParam(Method method) {
+        if (method.isAnnotationPresent(RequestParam.class)) {
+            Class<?>[] types = method.getParameterTypes();
+            if (types.length != 1) {
+                throw new WebApplicationException(method,
+                        "@RequestParam annotated method does not take 1 parameter", null);
+            }
+            if (!primitives.containsKey(types[0])) {
+                try {
+                    types[0].getConstructor(String.class);
+                } catch (SecurityException e) {
+                    throw new WebApplicationException(e);
+                } catch (NoSuchMethodException e) {
+                    throw new WebApplicationException(method,
+                            "@RequestParam-annotated method parameter " +
+                                    "type does not contain constructor " +
+                                    "having String as parameter", e);
+                }
+            }
+            requestParamMethods.add(method);
             return true;
         } else {
             return false;
@@ -338,6 +396,42 @@ public final class MetaComponent {
         }
     }
 
+    public void applyRequestParams(Object obj,
+                                   HttpServletRequest request) {
+        for (Field field : requestParamFields) {
+            RequestParam annotation = field.getAnnotation(RequestParam.class);
+            String name = "".equals(annotation.name()) ? field.getName() : annotation.name();
+            try {
+                field.set(obj, getValue(annotation,
+                                        field.getType(),
+                                        name,
+                                        request));
+            } catch (Exception e) {
+                if (e instanceof WebApplicationException) {
+                    throw (RuntimeException) e;
+                } else {
+                    throw new WebApplicationException(e);
+                }
+            }
+        }
+        for (Method method : requestParamMethods) {
+            RequestParam annotation = method.getAnnotation(RequestParam.class);
+            String name = "".equals(annotation.name()) ? method.getName() : annotation.name();
+            try {
+                method.invoke(obj, getValue(annotation,
+                                        method.getParameterTypes()[0],
+                                        name,
+                                        request));
+            } catch (Exception e) {
+                if (e instanceof WebApplicationException) {
+                    throw (RuntimeException) e;
+                } else {
+                    throw new WebApplicationException(e);
+                }
+            }
+        }
+    }
+    
     public void applyPathParams(Object obj,
                                 UriMapping mapping,
                                 String uri) {
@@ -352,7 +446,7 @@ public final class MetaComponent {
                                         mapping,
                                         uri));
             } catch (Exception e) {
-                if (e instanceof WebApplicationException || e instanceof MetaComponentException) {
+                if (e instanceof WebApplicationException) {
                     throw (RuntimeException) e;
                 } else {
                     throw new WebApplicationException(e);
@@ -369,7 +463,7 @@ public final class MetaComponent {
                                         mapping,
                                         uri));
             } catch (Exception e) {
-                if (e instanceof WebApplicationException || e instanceof MetaComponentException) {
+                if (e instanceof WebApplicationException) {
                     throw (RuntimeException) e;
                 } else {
                     throw new WebApplicationException(e);
@@ -378,6 +472,49 @@ public final class MetaComponent {
         }
     }
 
+    private Object getValue(RequestParam annotation,
+                            Class<?> type,
+                            String name, 
+                            HttpServletRequest request) {
+        
+        String val = request.getParameter(name);
+        
+        if (val == null) {
+            switch (annotation.onNull()) {
+            case SET_TO_NULL:
+                return null;
+            case RETHROW_CAUSE:
+                throw new WebApplicationException(cl, "Null value for request param: " + name, null);
+            case SEND_NOT_FOUND_ERROR:
+            case SEND_BAD_REQUEST_ERROR:
+                throw new MetaComponentException(annotation.onNull());
+            }
+        }
+        Object rv = null;
+        if (String.class == type) {
+            rv = val;
+        } else {
+            try {
+                if (primitives.containsKey(type)) {
+                    rv = primitives.get(type).getConstructor(String.class).newInstance(val);
+                } else {
+                    rv = type.getConstructor(String.class).newInstance(val);
+                }
+            } catch (Exception e) {
+                switch (annotation.onError()) {
+                case SET_TO_NULL:
+                    return null;
+                case RETHROW_CAUSE:
+                    throw new WebApplicationException(e);
+                case SEND_NOT_FOUND_ERROR:
+                case SEND_BAD_REQUEST_ERROR:
+                    throw new MetaComponentException(annotation.onError());
+                }
+            }
+        }
+        return rv;
+    }
+    
     private Object getValue(PathParam annotation,
                             Class<?> type,
                             String name,

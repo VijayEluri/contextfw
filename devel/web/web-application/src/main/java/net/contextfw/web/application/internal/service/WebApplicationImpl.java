@@ -97,6 +97,7 @@ public class WebApplicationImpl implements WebApplication {
                 httpContext.getRequestURI()
                     .substring(httpContext.getRequest().getContextPath().length()),
                 injector,
+                httpContext.getRequest(),
                 chain);
         getRootComponent().registerChild(context.initChild());
     }

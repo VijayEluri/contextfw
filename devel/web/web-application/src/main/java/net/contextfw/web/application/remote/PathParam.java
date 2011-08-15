@@ -7,6 +7,7 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 import java.lang.annotation.Retention;
 import java.lang.annotation.Target;
 
+
 /**
  * <p>
  *  Defines that the field contains encoded value from URL-path
