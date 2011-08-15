@@ -17,7 +17,7 @@ public class PathParamTest {
 
     private UriMappingFactory fact = new UriMappingFactory();
     
-    private MetaComponent aMeta;
+    private MetaComponent aMeta = new MetaComponent(A.class, null, null, null);
     
     private A a;
     

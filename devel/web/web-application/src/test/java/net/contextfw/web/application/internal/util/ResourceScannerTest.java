@@ -45,10 +45,10 @@ public class ResourceScannerTest {
         paths.add("file:src/main/resources");
         
         // This is a duplicate of the first package and should get ignored
-        paths.add("classpath:net/contextfw/web");
+        paths.add("classpath:net/contextfw/web/application/component");
         
         List<ResourceEntry> rootFiles = AbstractScanner.findResourceEntries(paths);
-        assertEquals(282, rootFiles.size());
+        assertEquals(133, rootFiles.size());
         
 //        assertTrue(rootFiles.get(0).getAbsolutePath().endsWith("/target/test-classes/net/contextfw/web"));
 //        assertTrue(rootFiles.get(1).getAbsolutePath().endsWith("/target/classes/net/contextfw/web"));
