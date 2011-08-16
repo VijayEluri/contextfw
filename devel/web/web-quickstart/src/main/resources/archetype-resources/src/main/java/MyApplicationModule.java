@@ -31,8 +31,6 @@ public class MyApplicationModule extends AbstractModule {
           .add(VIEW_COMPONENT_ROOT_PACKAGE, "${package}.views")
           .add(RELOADABLE_CLASSES.includedPackage("${package}.components"))
           .set(CLASS_RELOADING_ENABLED, true)
-          .add(BUILD_PATH, "target/classes")
-          .add(BUILD_PATH, "target/test-classes")
           .set(DEVELOPMENT_MODE, developmentMode)
           .set(XML_PARAM_NAME, "xml")
           .set(LOG_XML, developmentMode)
