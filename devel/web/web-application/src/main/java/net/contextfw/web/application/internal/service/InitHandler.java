@@ -16,7 +16,7 @@ import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.internal.component.MetaComponentException;
-import net.contextfw.web.application.internal.scope.WebApplicationScopedBeans;
+import net.contextfw.web.application.internal.scope.PageScopedBeans;
 import net.contextfw.web.application.internal.servlet.UriMapping;
 import net.contextfw.web.application.lifecycle.LifecycleListener;
 import net.contextfw.web.application.lifecycle.PageFlowFilter;
@@ -139,7 +139,7 @@ public class InitHandler {
     private WebApplicationContext prepareWebApplicationScope(HttpServlet servlet,
             HttpServletRequest request,
             HttpServletResponse response) {
-        WebApplicationScopedBeans beans = WebApplicationScopedBeans
+        PageScopedBeans beans = PageScopedBeans
                 .createNewInstance();
         HttpContext httpContext = new HttpContext(servlet, request, response);
         WebApplicationContext context = new WebApplicationContext(httpContext,

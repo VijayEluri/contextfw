@@ -1,7 +1,9 @@
 package net.contextfw.web.application.internal.servlet;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.SortedSet;
 import java.util.TreeSet;
@@ -20,19 +22,26 @@ public class UriMappingTest {
     private UriMapping optional = mapping("regex:/engine/mode/(<a:start>|<b:stop>)");
     
     private UriMapping user1 = mapping("/user/<id>");
-    private UriMapping user2 = mapping("/user/<id>/(me/<foo>");
+    private UriMapping user2 = mapping("/user/(me/<foo>");
     
     @Test
     public void Map_Paths() {
         assertEquals("/engine/[^/]+/mode/(start|stop)", engine1.getPath());
         assertEquals("[^/]+/mode/(start|stop)", engine2.getPath());
         assertEquals("/user/*", user1.getPath());
-        assertEquals("/user/*/\\(me/*", user2.getPath());
+        assertEquals("/user/(me/*", user2.getPath());
+    }
+    
+    @Test
+    public void Null_Paths() {
+        assertFalse(engine1.matches(null));
+        assertFalse(user1.matches(null));
     }
     
     @Test
     public void Find_Engine1_Values() {
         String path = "/engine/12/mode/start";
+        assertTrue(engine1.matches(path));
         assertEquals("12", engine1.findValue(path, "id"));
         assertEquals("start", engine1.findValue(path, "mode"));
         assertNull(engine1.findValue(path, "foo"));
@@ -41,42 +50,56 @@ public class UriMappingTest {
     @Test
     public void Find_Engine2_Values() {
         String path = "12/mode/start";
+        assertTrue(engine2.matches(path));
         assertEquals("12", engine2.findValue(path, "id"));
         assertEquals("start", engine2.findValue(path, "mode"));
         assertNull(engine1.findValue(path, "foo"));
     }
     
     @Test
-    public void Find_Calendar_Values() {
-        String path1 = "/calendar";
-        assertNull(calendar.findValue(path1, "month"));
-        assertNull(calendar.findValue(path1, "year"));
-        String path2 = "/calendar/2011/08";
-        assertEquals("2011", calendar.findValue(path2, "year"));
-        assertEquals("08", calendar.findValue(path2, "month"));
+    public void Find_Calendar_Values_1() {
+        String path = "/calendar";
+        assertTrue(calendar.matches(path));
+        assertNull(calendar.findValue(path, "month"));
+        assertNull(calendar.findValue(path, "year"));
+    }
+    
+    @Test
+    public void Find_Calendar_Values_2() {
+        String path = "/calendar/2011/08";
+        assertTrue(calendar.matches(path));
+        assertEquals("2011", calendar.findValue(path, "year"));
+        assertEquals("08", calendar.findValue(path, "month"));
+    }
+    
+    @Test
+    public void Find_Optional_Values_1() {
+        String path = "/engine/mode/start";
+        assertTrue(optional.matches(path));
+        assertEquals("start", optional.findValue(path, "a"));
+        assertNull(optional.findValue(path, "b"));
     }
     
     @Test
     public void Find_Optional_Values() {
-        String path1 = "/engine/mode/start";
-        assertEquals("start", optional.findValue(path1, "a"));
-        assertNull(optional.findValue(path1, "b"));
-        String path2 = "/engine/mode/stop";
-        assertEquals("stop", optional.findValue(path2, "b"));
-        assertNull(optional.findValue(path2, "a"));
+        String path = "/engine/mode/stop";
+        assertTrue(optional.matches(path));
+        assertEquals("stop", optional.findValue(path, "b"));
+        assertNull(optional.findValue(path, "a"));
     }
     
     @Test
     public void Find_User1_Values() {
         String path = "/user/12";
+        assertTrue(user1.matches(path));
         assertEquals("12", user1.findValue(path, "id"));
         assertNull(engine1.findValue(path, "foo"));
     }
     
     @Test
     public void Find_User2_Values() {
-        String path = "/user/12/(me/something";
-        assertEquals("12", user2.findValue(path, "id"));
+        String path = "/user/(me/something";
+        assertTrue(user2.matches(path));
         assertEquals("something", user2.findValue(path, "foo"));
         assertNull(engine1.findValue(path, "foo"));
     }

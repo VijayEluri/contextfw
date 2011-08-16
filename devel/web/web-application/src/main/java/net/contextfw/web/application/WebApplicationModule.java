@@ -13,7 +13,7 @@ import net.contextfw.web.application.internal.component.AutoRegisterListener;
 import net.contextfw.web.application.internal.configuration.KeyValue;
 import net.contextfw.web.application.internal.providers.HttpContextProvider;
 import net.contextfw.web.application.internal.providers.WebApplicationHandleProvider;
-import net.contextfw.web.application.internal.scope.WebApplicationScope;
+import net.contextfw.web.application.internal.scope.PageScope;
 import net.contextfw.web.application.internal.service.DirectoryWatcher;
 import net.contextfw.web.application.internal.service.WebApplicationContextHandler;
 import net.contextfw.web.application.internal.util.AttributeHandler;
@@ -56,12 +56,11 @@ public final class WebApplicationModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        WebApplicationScope webApplicationScope = new WebApplicationScope();
-        bindScope(PageScoped.class, webApplicationScope);
+        PageScope pageScope = new PageScope();
+        bindScope(PageScoped.class, pageScope);
 
-        bind(WebApplicationScope.class).annotatedWith(
-                Names.named("webApplicationScope")).toInstance(
-                webApplicationScope);
+        bind(PageScope.class).annotatedWith(
+                Names.named("webApplicationScope")).toInstance(pageScope);
 
         bind(HttpContext.class).toProvider(HttpContextProvider.class);
         bind(ObjectAttributeSerializer.class).to(AttributeHandler.class);

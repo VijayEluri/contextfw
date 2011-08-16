@@ -5,9 +5,10 @@ import java.util.Map;
 
 import com.google.inject.Key;
 
-public class WebApplicationScopedBeans {
+public class PageScopedBeans {
 
-    private static volatile ThreadLocal<WebApplicationScopedBeans> currentInstance = new ThreadLocal<WebApplicationScopedBeans>();
+    private static volatile ThreadLocal<PageScopedBeans> currentInstance = 
+        new ThreadLocal<PageScopedBeans>();
 
     private Map<Key<?>, Object> beans = new HashMap<Key<?>, Object>();
 
@@ -15,7 +16,7 @@ public class WebApplicationScopedBeans {
         return beans;
     }
 
-    public static WebApplicationScopedBeans getCurrentInstance() {
+    public static PageScopedBeans getCurrentInstance() {
         return currentInstance.get();
     }
 
@@ -27,8 +28,8 @@ public class WebApplicationScopedBeans {
         currentInstance.set(null);
     }
 
-    public static WebApplicationScopedBeans createNewInstance() {
-        currentInstance.set(new WebApplicationScopedBeans());
+    public static PageScopedBeans createNewInstance() {
+        currentInstance.set(new PageScopedBeans());
         return currentInstance.get();
     }
 

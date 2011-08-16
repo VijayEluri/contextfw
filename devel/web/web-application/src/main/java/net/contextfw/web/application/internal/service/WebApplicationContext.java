@@ -2,7 +2,7 @@ package net.contextfw.web.application.internal.service;
 
 import net.contextfw.web.application.HttpContext;
 import net.contextfw.web.application.WebApplicationHandle;
-import net.contextfw.web.application.internal.scope.WebApplicationScopedBeans;
+import net.contextfw.web.application.internal.scope.PageScopedBeans;
 
 public class WebApplicationContext {
 
@@ -26,7 +26,7 @@ public class WebApplicationContext {
             String remoteAddr,
             long expires, 
             WebApplicationHandle handle, 
-            WebApplicationScopedBeans beans) {
+            PageScopedBeans beans) {
         super();
         this.handle = handle;
         this.beans = beans;
@@ -37,11 +37,11 @@ public class WebApplicationContext {
 
     private long expires = 0;
 
-    public WebApplicationScopedBeans getBeans() {
+    public PageScopedBeans getBeans() {
         return beans;
     }
 
-    public void setBeans(WebApplicationScopedBeans beans) {
+    public void setBeans(PageScopedBeans beans) {
         this.beans = beans;
     }
 
@@ -77,7 +77,7 @@ public class WebApplicationContext {
         return expires;
     }
 
-    private WebApplicationScopedBeans beans;
+    private PageScopedBeans beans;
 
     private WebApplication application;
 }

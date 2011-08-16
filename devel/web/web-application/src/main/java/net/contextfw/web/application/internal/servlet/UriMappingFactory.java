@@ -74,9 +74,10 @@ public class UriMappingFactory {
             Class<? extends Component> viewClass,
             InitServlet initServlet,
             String path) {
-        List<Split> splits = splitByVariables(toEscapedRegex(path), PATH_VARIABLE_VERIFIER);
+        List<Split> variableSplits = splitByVariables(toEscapedRegex(path), PATH_VARIABLE_VERIFIER);
+        List<Split> pathSplits = splitByVariables(path, PATH_VARIABLE_VERIFIER);
         StringBuilder constructedPath = new StringBuilder();
-        for (Split split : splits) {
+        for (Split split : pathSplits) {
             if (split.getVariableName() != null) {
                 constructedPath.append("*");
             } else {
@@ -86,7 +87,7 @@ public class UriMappingFactory {
         return new PathStyleUriMapping(viewClass,
                                constructedPath.toString(),
                                initServlet,
-                               getVariables(splits));
+                               getVariables(variableSplits));
     }
 
     private Map<String, Pattern> getVariables(List<Split> splits) {
@@ -205,8 +206,7 @@ public class UriMappingFactory {
                     }
 
                     List<Class<? extends Component>> chain =
-                            initializerProvider.getInitializerChain(
-                                    cl.asSubclass(Component.class));
+                            initializerProvider.getInitializerChain(cl);
 
                     InitServlet servlet = new InitServlet(initHandler, chain, filter);
 

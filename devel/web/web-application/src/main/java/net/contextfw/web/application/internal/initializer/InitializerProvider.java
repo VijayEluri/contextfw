@@ -19,16 +19,20 @@ public class InitializerProvider {
     public InitializerProvider() {
     }
 
-    public List<Class<? extends Component>> getInitializerChain(Class<? extends Component> cl) {
+    public List<Class<? extends Component>> getInitializerChain(Class<?> rawCl) {
 
-        if (cl == null) {
+        if (rawCl == null) {
             throw new WebApplicationException("View was null");
         }
-        if (!Component.class.isAssignableFrom(cl)) {
-            throw new WebApplicationException("View " + cl.getName()
-                    + " does not extend Component");
+        
+        if (!Component.class.isAssignableFrom(rawCl)) {
+            throw new WebApplicationException(rawCl, "View"
+                    + " does not extend Component", null);
         }
 
+        @SuppressWarnings("unchecked")
+        Class<? extends Component> cl = (Class<? extends Component>) rawCl;
+        
         View annotation = processClass(cl);
 
         List<Class<? extends Component>> classes = new ArrayList<Class<? extends Component>>();
@@ -46,15 +50,15 @@ public class InitializerProvider {
     private View processClass(Class<?> cl) {
 
         if (cl.getAnnotation(PageScoped.class) == null) {
-            throw new WebApplicationException("View '" + cl.getName()
-                    + "' is missing @PageScoped-annotation");
+            throw new WebApplicationException(cl, "View "
+                    + " is missing @PageScoped-annotation", null);
         }
 
         View annotation = cl.getAnnotation(View.class);
 
         if (annotation == null) {
-            throw new WebApplicationException("View '" + cl.getName()
-                    + "' is missing @View-annotation");
+            throw new WebApplicationException(cl, "View "
+                    + " is missing @View-annotation", null);
         }
         return annotation;
     }

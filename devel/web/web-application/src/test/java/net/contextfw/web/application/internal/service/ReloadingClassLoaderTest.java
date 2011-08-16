@@ -80,6 +80,8 @@ public class ReloadingClassLoaderTest {
         
         assertEquals(NonReloadable.class, nonReloadable);
         assertNotSame(Reloadable.class, reloadable);
+        
+        assertEquals(String.class, classLoader.loadClass("java.lang.String"));
     }
     
     @Test(expected=ClassNotFoundException.class)

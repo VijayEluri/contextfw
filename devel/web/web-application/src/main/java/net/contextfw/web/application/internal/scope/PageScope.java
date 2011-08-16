@@ -7,13 +7,14 @@ import com.google.inject.OutOfScopeException;
 import com.google.inject.Provider;
 import com.google.inject.Scope;
 
-public class WebApplicationScope implements Scope {
+public class PageScope implements Scope {
 
     private static final Provider<Object> SEEDED_KEY_PROVIDER = new Provider<Object>() {
         public Object get() {
             throw new IllegalStateException("If you got here then it means that"
                     + " your code asked for scoped object which should have been"
-                    + " explicitly seeded in this scope by calling" + " SimpleScope.seed(), but was not.");
+                    + " explicitly seeded in this scope by calling" + " SimpleScope.seed(), " +
+                      "but was not.");
         }
     };
 
@@ -50,14 +51,14 @@ public class WebApplicationScope implements Scope {
 
     private <T> Map<Key<?>, Object> getScopedBeans() {
         try {
-            Map<Key<?>, Object> scopedObjects = WebApplicationScopedBeans.getCurrentInstance().getBeans();
+            Map<Key<?>, Object> scopedObjects = PageScopedBeans.getCurrentInstance().getBeans();
             if (scopedObjects == null) {
-                throw new OutOfScopeException("WebApplicationScope does not exist");
+                throw new OutOfScopeException("PageScope does not exist");
             }
             return scopedObjects;
         }
         catch (Exception e) {
-            throw new OutOfScopeException("WebApplicationScope does not exist", e);
+            throw new OutOfScopeException("PageScope does not exist", e);
         }
     }
 
