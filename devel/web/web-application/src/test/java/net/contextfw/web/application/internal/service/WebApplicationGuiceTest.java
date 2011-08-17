@@ -4,6 +4,9 @@ import static org.easymock.EasyMock.createNiceMock;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 
+import java.io.IOException;
+
+import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -11,12 +14,24 @@ import javax.servlet.http.HttpServletResponse;
 import net.contextfw.application.AbstractGuiceTest;
 import net.contextfw.web.application.HttpContext;
 import net.contextfw.web.application.WebApplicationHandle;
+import net.contextfw.web.application.component.Component;
+import net.contextfw.web.application.configuration.Configuration;
+import net.contextfw.web.application.internal.initializer.InitializerProvider;
 import net.contextfw.web.application.internal.scope.PageScopedBeans;
+import net.contextfw.web.application.internal.servlet.UriMapping;
+import net.contextfw.web.application.lifecycle.PageScoped;
+import net.contextfw.web.application.lifecycle.View;
 
 import org.junit.Before;
 import org.junit.Test;
 
 public class WebApplicationGuiceTest extends AbstractGuiceTest {
+    
+    @PageScoped
+    @View(url="test")
+    private static class Page extends Component {
+        
+    }
     
     private WebApplication webApplication;
     
@@ -24,11 +39,15 @@ public class WebApplicationGuiceTest extends AbstractGuiceTest {
     private HttpServletResponse response;
     private HttpServlet servlet;
     
+    private Configuration configuration = Configuration.getDefaults();
+    
     @Before
     public void setup() {
         WebApplicationContextHandler handler = getMember(WebApplicationContextHandler.class);
         request = createNiceMock(HttpServletRequest.class);
+        response = createMock(HttpServletResponse.class);
         expect(request.getRequestURI()).andReturn("/test");
+        expect(request.getContextPath()).andReturn("");
         expect(request.getQueryString()).andReturn(null);
         replay(request);
         PageScopedBeans.createNewInstance();
@@ -41,8 +60,18 @@ public class WebApplicationGuiceTest extends AbstractGuiceTest {
     }
     
     @Test
-    public void Test() {
-        
+    public void Test() throws ServletException, IOException {
+//        InitializerProvider provider = new InitializerProvider();
+//        InitHandler initHandler = injectMembers(new InitHandler(configuration));
+//        UriMapping mapping = createMock(UriMapping.class);
+//        replay(mapping);
+//        
+//        initHandler.handleRequest(
+//                mapping, 
+//                provider.getInitializerChain(Page.class), 
+//                servlet, 
+//                request, 
+//                response);
     }
 
 }

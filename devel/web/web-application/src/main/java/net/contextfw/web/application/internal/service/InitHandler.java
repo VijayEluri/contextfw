@@ -11,7 +11,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import net.contextfw.web.application.HttpContext;
 import net.contextfw.web.application.ResourceCleaner;
-import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.configuration.Configuration;

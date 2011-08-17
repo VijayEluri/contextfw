@@ -20,7 +20,7 @@ public class WebApplicationContextHandler {
         maxInactivity = configuration.get(Configuration.MAX_INACTIVITY);
         this.pageFlowFilter = pageFlowFilter;
     }
-
+    
     private final PageFlowFilter pageFlowFilter;
     
     private static volatile Map<WebApplicationHandle, WebApplicationContext> contexts = 
