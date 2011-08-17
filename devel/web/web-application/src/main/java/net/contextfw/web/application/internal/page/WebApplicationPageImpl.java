@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.contextfw.web.application.WebApplicationHandle;
+import net.contextfw.web.application.internal.service.WebApplication;
 
 import com.google.inject.Key;
 
@@ -19,11 +20,15 @@ public class WebApplicationPageImpl implements WebApplicationPage {
     
     private int updateCount = 0;
     
-    public WebApplicationPageImpl(WebApplicationHandle handle, String remoteAddr) {
+    private WebApplication webApplication;
+    
+    public WebApplicationPageImpl(WebApplicationHandle handle, 
+                                  String remoteAddr,
+                                  long expires) {
         this.remoteAddr = remoteAddr;
         beans.put(HANDLE_KEY, handle);
+        this.expires = expires;
     }
-    
     
     @Override
     public <T> T setBean(Key<T> key, T value) {
@@ -57,6 +62,16 @@ public class WebApplicationPageImpl implements WebApplicationPage {
     @Override
     public WebApplicationHandle getHandle() {
         return (WebApplicationHandle) beans.get(HANDLE_KEY);
+    }
+
+    @Override
+    public WebApplication getWebApplication() {
+        return webApplication;
+    }
+
+    @Override
+    public void setWebApplication(WebApplication application) {
+        this.webApplication = application;
     }
     
 }

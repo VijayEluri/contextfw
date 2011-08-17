@@ -15,7 +15,8 @@ import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.internal.component.MetaComponentException;
-import net.contextfw.web.application.internal.scope.PageScopedBeans;
+import net.contextfw.web.application.internal.page.PageScope;
+import net.contextfw.web.application.internal.page.WebApplicationPage;
 import net.contextfw.web.application.internal.servlet.UriMapping;
 import net.contextfw.web.application.lifecycle.LifecycleListener;
 import net.contextfw.web.application.lifecycle.PageFlowFilter;
@@ -25,13 +26,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
+import com.google.inject.Key;
 import com.google.inject.Provider;
 
 public class InitHandler {
 
     private Logger logger = LoggerFactory.getLogger(InitHandler.class);
-    @Inject
-    private WebApplicationContextHandler handler;
+    
+    private static final long HOUR = 1000*60*3600;
 
     // private final InitializerProvider initializers;
     @Inject
@@ -40,6 +42,8 @@ public class InitHandler {
     private LifecycleListener listeners;
     @Inject
     private PageFlowFilter pageFlowFilter;
+    @Inject
+    private PageScope pageScope;
 
     private final long initialMaxInactivity;
 
@@ -68,8 +72,7 @@ public class InitHandler {
         }
 
         if (!pageFlowFilter.beforePageCreate(
-                handler.getContextCount(),
-                    request, response)) {
+                pageScope.getPageCount(), request, response)) {
             return;
         }
 
@@ -83,35 +86,34 @@ public class InitHandler {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         } else {
 
-            WebApplicationContext context = prepareWebApplicationScope(servlet,
-                        request, response);
-            WebApplication app = webApplicationProvider.get();
-            app.setInitializerChain(chain);
-            context.setApplication(app);
-            handler.addContext(context);
+            WebApplicationPage page = createPage(
+                    chain,
+                    servlet,
+                    request,
+                    response);
 
-            synchronized (context.getApplication()) {
+            synchronized (page) {
                 try {
 
                     pageFlowFilter.onPageCreate(
-                                handler.getContextCount(),
+                                pageScope.getPageCount(),
                                 pageFlowFilter.getRemoteAddr(request),
-                                context.getHandle().getKey());
+                                page.getHandle().getKey());
 
                     listeners.beforeInitialize();
-                    app.initState(mapping);
+                    page.getWebApplication().initState(mapping);
                     listeners.afterInitialize();
                     listeners.beforeRender();
-                    boolean expired = app.sendResponse();
+                    boolean expired = page.getWebApplication().sendResponse();
                     listeners.afterRender();
 
                     // Setting expiration here so that long page processing is
                     // not
                     // penalizing client
                     if (expired) {
-                        context.setExpires(System.currentTimeMillis());
+                        pageScope.refreshPage(page, 0);
                     } else {
-                        context.setExpires(System.currentTimeMillis() + initialMaxInactivity);
+                        pageScope.refreshPage(page, initialMaxInactivity);
                     }
 
                 } catch (Exception e) {
@@ -127,27 +129,34 @@ public class InitHandler {
                     }
                     listeners.onException(e);
                 } finally {
-                    context.getHttpContext().setServlet(null);
-                    context.getHttpContext().setRequest(null);
-                    context.getHttpContext().setResponse(null);
+                    HttpContext context = page.getBean(Key.get(HttpContext.class));
+                    context.setServlet(null);
+                    context.setRequest(null);
+                    context.setResponse(null);
+                    pageScope.deactivateCurrentPage();
                 }
             }
         }
     }
 
-    private WebApplicationContext prepareWebApplicationScope(HttpServlet servlet,
+    private WebApplicationPage createPage(
+            List<Class<? extends Component>> chain,
+            HttpServlet servlet,
             HttpServletRequest request,
             HttpServletResponse response) {
-        PageScopedBeans beans = PageScopedBeans
-                .createNewInstance();
-        HttpContext httpContext = new HttpContext(servlet, request, response);
-        WebApplicationContext context = new WebApplicationContext(httpContext,
+        
+        WebApplicationPage page = pageScope.createPage(
                 pageFlowFilter.getRemoteAddr(request),
-                System.currentTimeMillis() + initialMaxInactivity,
-                handler.createNewHandle(), beans);
-        beans.seed(HttpContext.class, httpContext);
-        beans.seed(WebApplicationHandle.class, context.getHandle());
-        return context;
+                HOUR);
+        
+        page.setBean(Key.get(HttpContext.class), 
+                new HttpContext(servlet, request, response));
+        
+        WebApplication app = webApplicationProvider.get();
+        app.setInitializerChain(chain);
+        page.setWebApplication(app);
+        
+        return page;
     }
 
     @Inject

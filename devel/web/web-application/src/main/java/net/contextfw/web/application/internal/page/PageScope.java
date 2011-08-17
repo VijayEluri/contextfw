@@ -27,10 +27,7 @@ public class PageScope implements Scope {
     private final ThreadLocal<WebApplicationPage> currentPage = 
         new ThreadLocal<WebApplicationPage>();
 
-    private final long maxInactivity;
-    
-    public PageScope(long maxInactivity) {
-        this.maxInactivity = maxInactivity;
+    public PageScope() {
     }
     
     public <T> Provider<T> scope(final Key<T> key, final Provider<T> unscoped) {
@@ -51,15 +48,21 @@ public class PageScope implements Scope {
         };
     }
     
-    public void removeCurrentPage() {
+    public void deactivateCurrentPage() {
         currentPage.remove();
     }
 
-    public synchronized int refreshPage(WebApplicationHandle handle, String remoteAddr) {
+    public int refreshPage(WebApplicationPage page, long maxInactivity) {
+        return page.refresh(System.currentTimeMillis() + maxInactivity);
+    }
+    
+    public synchronized int refreshPage(WebApplicationHandle handle, 
+                                        String remoteAddr,
+                                        long maxInactivity) {
         WebApplicationPage page = pages.get(handle);
         if (page != null) {
             if (page.getRemoteAddr().equals(remoteAddr)) {
-                return page.refresh(System.currentTimeMillis() + maxInactivity);
+                return refreshPage(page, maxInactivity);
             } else {
                 log.info("Tried to refresh page {} from wrong address: {} != {}",
                         new String[] { handle.getKey(),
@@ -120,8 +123,11 @@ public class PageScope implements Scope {
         }
     }
 
-    public synchronized WebApplicationPage createPage(String remoteAddr) {
-        WebApplicationPage page = new WebApplicationPageImpl(createNewHandle(), remoteAddr);
+    public synchronized WebApplicationPage createPage(String remoteAddr, long initialMaxInActivity) {
+        WebApplicationPage page = new WebApplicationPageImpl(
+                createNewHandle(), 
+                remoteAddr,
+                System.currentTimeMillis() + initialMaxInActivity);
         pages.put(page.getHandle(), page);
         currentPage.set(page);
         return page;

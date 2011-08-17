@@ -11,11 +11,8 @@ import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.internal.WebApplicationServletModule;
 import net.contextfw.web.application.internal.component.AutoRegisterListener;
 import net.contextfw.web.application.internal.configuration.KeyValue;
-import net.contextfw.web.application.internal.providers.HttpContextProvider;
-import net.contextfw.web.application.internal.providers.WebApplicationHandleProvider;
-import net.contextfw.web.application.internal.scope.PageScope;
+import net.contextfw.web.application.internal.page.PageScope;
 import net.contextfw.web.application.internal.service.DirectoryWatcher;
-import net.contextfw.web.application.internal.service.WebApplicationContextHandler;
 import net.contextfw.web.application.internal.util.AttributeHandler;
 import net.contextfw.web.application.internal.util.ObjectAttributeSerializer;
 import net.contextfw.web.application.lifecycle.LifecycleListener;
@@ -32,18 +29,25 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonSerializer;
 import com.google.inject.AbstractModule;
+import com.google.inject.Inject;
 import com.google.inject.Injector;
+import com.google.inject.Key;
+import com.google.inject.Provider;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 import com.google.inject.matcher.Matchers;
-import com.google.inject.name.Names;
 import com.google.inject.spi.TypeEncounter;
 import com.google.inject.spi.TypeListener;
 
 public final class WebApplicationModule extends AbstractModule {
 
     private final Configuration configuration;
+    
+    private PageScope pageScope;
+    
+    @Inject
+    private PageFlowFilter pageFlowFilter;
 
     private Logger logger = LoggerFactory.getLogger(WebApplicationModule.class);
 
@@ -56,16 +60,10 @@ public final class WebApplicationModule extends AbstractModule {
 
     @Override
     protected void configure() {
-        PageScope pageScope = new PageScope();
+        pageScope = new PageScope();
         bindScope(PageScoped.class, pageScope);
-
-        bind(PageScope.class).annotatedWith(
-                Names.named("webApplicationScope")).toInstance(pageScope);
-
-        bind(HttpContext.class).toProvider(HttpContextProvider.class);
+        bind(PageScope.class).toInstance(pageScope);
         bind(ObjectAttributeSerializer.class).to(AttributeHandler.class);
-        bind(WebApplicationHandle.class).toProvider(
-                WebApplicationHandleProvider.class);
         bind(Configuration.class).toInstance(configuration);
         bind(PropertyProvider.class).toInstance(configuration.get(Configuration.PROPERTY_PROVIDER));
         bind(RequestInvocationFilter.class).toInstance(configuration.get(Configuration.REQUEST_INVOCATION_FILTER));        
@@ -88,6 +86,7 @@ public final class WebApplicationModule extends AbstractModule {
                         configuration.get(Configuration.PROPERTY_PROVIDER));
 
         install(servletModule);
+        requestInjection(this);
     }
 
     @SuppressWarnings("unchecked")
@@ -134,23 +133,16 @@ public final class WebApplicationModule extends AbstractModule {
         return builder.create();
     }
 
-    @Singleton
-    @Provides
-    public WebApplicationContextHandler provideWebApplicationContextHandler(
-            PageFlowFilter pageFlowFilter) {
-        final WebApplicationContextHandler handler = new WebApplicationContextHandler(
-                configuration, pageFlowFilter);
+    public void startExpiredPagesRemoval() {
         Timer timer = new Timer(true);
         logger.info("Starting scheduled removal for expired web applications");
 
         timer.schedule(new TimerTask() {
             public void run() {
-                handler.removeExpiredApplications();
+                pageScope.removeExpiredPages(pageFlowFilter);
             }
         }, configuration.get(Configuration.REMOVAL_SCHEDULE_PERIOD),
                 configuration.get(Configuration.REMOVAL_SCHEDULE_PERIOD));
-
-        return handler;
     }
 
     @Provides
@@ -168,5 +160,15 @@ public final class WebApplicationModule extends AbstractModule {
             matcher = Pattern.compile(".+\\.(xsl|css|js|class)", Pattern.CASE_INSENSITIVE);
         }
         return new DirectoryWatcher(paths, matcher); 
+    }
+    
+    @Provides
+    public HttpContext provideHttpContext() {
+        return pageScope.scope(Key.get(HttpContext.class), null).get();
+    }
+    
+    @Provides
+    public WebApplicationHandle provideWebApplicationHandle() {
+        return pageScope.scope(Key.get(WebApplicationHandle.class), null).get();
     }
 }

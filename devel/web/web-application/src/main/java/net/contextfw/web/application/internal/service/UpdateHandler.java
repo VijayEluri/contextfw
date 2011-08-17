@@ -8,8 +8,12 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import net.contextfw.web.application.HttpContext;
 import net.contextfw.web.application.ResourceCleaner;
+import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.configuration.Configuration;
+import net.contextfw.web.application.internal.page.PageScope;
+import net.contextfw.web.application.internal.page.WebApplicationPage;
 import net.contextfw.web.application.lifecycle.LifecycleListener;
 import net.contextfw.web.application.lifecycle.PageFlowFilter;
 import net.contextfw.web.application.remote.ResourceResponse;
@@ -19,6 +23,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.inject.Inject;
+import com.google.inject.Key;
 import com.google.inject.Singleton;
 
 @Singleton
@@ -32,8 +37,6 @@ public class UpdateHandler {
 
     private Logger logger = LoggerFactory.getLogger(UpdateHandler.class);
 
-    private final WebApplicationContextHandler handler;
-
     private final LifecycleListener listeners;
 
     private final PageFlowFilter pageFlowFilter;
@@ -45,19 +48,23 @@ public class UpdateHandler {
     
     private final ResourceCleaner cleaner;
 
+    private final PageScope pageScope;
+    
+    private final long maxInactivity;
     
     @Inject
     public UpdateHandler(
-            WebApplicationContextHandler handler,
+            PageScope pageScope,
             LifecycleListener listeners,
             PageFlowFilter pageFlowFilter,
             DirectoryWatcher watcher,
             ResourceCleaner cleaner,
             Configuration configuration) {
     	
-        this.handler = handler;
+        this.pageScope = pageScope;
         this.listeners = listeners;
         this.pageFlowFilter = pageFlowFilter;
+        this.maxInactivity = configuration.get(Configuration.MAX_INACTIVITY);
         
         if (configuration.get(Configuration.DEVELOPMENT_MODE)) {
         	this.cleaner = cleaner;
@@ -107,58 +114,57 @@ public class UpdateHandler {
             String handlerStr = uriSplits[commandStart + 1];
 
             if (!CONTEXTFW_REMOVE.equals(command)) {
-                if (!pageFlowFilter.beforePageUpdate(handler.getContextCount(),
-                        request, response)) {
+                if (!pageFlowFilter.beforePageUpdate(
+                        pageScope.getPageCount(),
+                        request, 
+                        response)) {
                     return;
                 }
             }
             
             String remoteAddr = pageFlowFilter.getRemoteAddr(request);
 
-            WebApplicationContext app = handler.getContext(handlerStr);
+            WebApplicationPage page = pageScope.activatePage(
+                    new WebApplicationHandle(handlerStr), remoteAddr);
 
-            if (app == null || app.getExpires() < System.currentTimeMillis()) {
+            if (page == null) {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
-            } else if (!app.getRemoteAddr().equals(remoteAddr)) {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
-                logger.info("Trying to refresh page scope from different ip:" +
-                            " original = {}, current = {}",
-                            app.getRemoteAddr(), remoteAddr);
             } else {
                 UpdateInvocation invocation = UpdateInvocation.NOT_DELAYED;
-                synchronized (app) {
+                synchronized (page) {
 
                     if (CONTEXTFW_REMOVE.equals(command)) {
-                        handler.removeApplication(app.getHandle());
+                        pageScope.removePage(page.getHandle());
 
                         pageFlowFilter.pageRemoved(
-                                    handler.getContextCount(),
+                                    pageScope.getPageCount(),
                                     remoteAddr,
                                     handlerStr);
 
                         response.setStatus(HttpServletResponse.SC_NO_CONTENT);
                     } else {
-                        int updateCount = handler.refreshApplication(app.getHandle());
-                        app.getBeans().setAsCurrentInstance();
-                        app.getHttpContext().setServlet(servlet);
-                        app.getHttpContext().setRequest(request);
-                        app.getHttpContext().setResponse(response);
+                        int updateCount = pageScope.refreshPage(page, maxInactivity);
+                        HttpContext context = page.getBean(Key.get(HttpContext.class));
+                        context.setServlet(servlet);
+                        context.setRequest(request);
+                        context.setResponse(response);
                         try {
                             pageFlowFilter.onPageUpdate(
-                                        handler.getContextCount(),
+                                        pageScope.getPageCount(),
                                         remoteAddr,
                                         handlerStr,
                                         updateCount);
                             if (CONTEXTFW_UPDATE.equals(command)) {
                                 invocation = 
-                                    app.getApplication().updateState(
+                                    page.getWebApplication().updateState(
                                             listeners.beforeUpdate(), 
                                             uriSplits[commandStart+2],
                                             uriSplits[commandStart+3]);
                                 if (invocation.isDelayed()) {
-                                    app.getHttpContext().setServlet(null);
-                                    app.getHttpContext().setRequest(null);
-                                    app.getHttpContext().setResponse(null);
+                                    context.setServlet(null);
+                                    context.setRequest(null);
+                                    context.setResponse(null);
+                                    pageScope.deactivateCurrentPage();
                                     return;
                                 }
                                 listeners.afterUpdate();
@@ -167,7 +173,7 @@ public class UpdateHandler {
                                     listeners.beforeRender();
                                     setHeaders(response);
                                     response.setContentType("text/xml; charset=UTF-8");
-                                    app.getApplication().sendResponse();
+                                    page.getWebApplication().sendResponse();
                                     listeners.afterRender();
                                 }
                             } else if (CONTEXTFW_REFRESH.equals(command)) {
@@ -176,9 +182,10 @@ public class UpdateHandler {
                         } catch (Exception e) {
                             listeners.onException(e);
                         } finally {
-                            app.getHttpContext().setServlet(null);
-                            app.getHttpContext().setRequest(null);
-                            app.getHttpContext().setResponse(null);
+                            context.setServlet(null);
+                            context.setRequest(null);
+                            context.setResponse(null);
+                            pageScope.deactivateCurrentPage();
                         }
                     }
                 }

@@ -30,7 +30,7 @@ public class PageScopeTest extends AbstractTest {
     
     @Before
     public void setup() {
-        pageScope = new PageScope(MAX_INACTIVITY);
+        pageScope = new PageScope();
     }
     
     @Test(expected=OutOfScopeException.class)
@@ -42,7 +42,7 @@ public class PageScopeTest extends AbstractTest {
     public void Get_Bean() {
         PageScopedBean scoped = new PageScopedBean();
         
-        WebApplicationPage page = pageScope.createPage(LOCALHOST);
+        WebApplicationPage page = pageScope.createPage(LOCALHOST, MAX_INACTIVITY);
         assertNotNull(page.getHandle());
         
         @SuppressWarnings("unchecked")
@@ -56,31 +56,31 @@ public class PageScopeTest extends AbstractTest {
     
     @Test
     public void Get_Initially_PageScoped_Beans() {
-        WebApplicationPage page = pageScope.createPage(LOCALHOST);
+        WebApplicationPage page = pageScope.createPage(LOCALHOST, MAX_INACTIVITY);
         assertEquals(page.getHandle(), 
                 pageScope.scope(Key.get(WebApplicationHandle.class), null).get());
     }
     
     @Test
     public void Refresh_Increments_Count() {
-        WebApplicationPage page = pageScope.createPage(LOCALHOST);
-        assertEquals(1, pageScope.refreshPage(page.getHandle(), LOCALHOST));
-        assertEquals(2, pageScope.refreshPage(page.getHandle(), LOCALHOST));
+        WebApplicationPage page = pageScope.createPage(LOCALHOST, MAX_INACTIVITY);
+        assertEquals(1, pageScope.refreshPage(page.getHandle(), LOCALHOST, MAX_INACTIVITY));
+        assertEquals(2, pageScope.refreshPage(page.getHandle(), LOCALHOST, MAX_INACTIVITY));
     }
     
     @Test
     public void Page_Is_Not_Expired() {
         long now = System.currentTimeMillis();
-        WebApplicationPage page = pageScope.createPage(LOCALHOST);
-        pageScope.refreshPage(page.getHandle(), LOCALHOST);
+        WebApplicationPage page = pageScope.createPage(LOCALHOST, MAX_INACTIVITY);
+        pageScope.refreshPage(page.getHandle(), LOCALHOST, MAX_INACTIVITY);
         assertFalse(page.isExpired(now));
     }
     
     @Test
     public void Page_Is_Expired() {
         long now = System.currentTimeMillis();
-        WebApplicationPage page = pageScope.createPage(LOCALHOST);
-        pageScope.refreshPage(page.getHandle(), LOCALHOST);
+        WebApplicationPage page = pageScope.createPage(LOCALHOST, MAX_INACTIVITY);
+        pageScope.refreshPage(page.getHandle(), LOCALHOST, MAX_INACTIVITY);
         assertTrue(page.isExpired(now + MAX_INACTIVITY + 1));
     }
     
@@ -88,9 +88,9 @@ public class PageScopeTest extends AbstractTest {
     public void Expired_Page_Is_Removed() throws InterruptedException {
         PageFlowFilter filter = createMock(PageFlowFilter.class);
         replay(filter);
-        WebApplicationPage page = pageScope.createPage(LOCALHOST);
+        WebApplicationPage page = pageScope.createPage(LOCALHOST, MAX_INACTIVITY);
         assertEquals(page, pageScope.activatePage(page.getHandle(), LOCALHOST));
-        pageScope.refreshPage(page.getHandle(), LOCALHOST);
+        pageScope.refreshPage(page.getHandle(), LOCALHOST, MAX_INACTIVITY);
         Thread.sleep(MAX_INACTIVITY + 1);
         pageScope.removeExpiredPages(filter);
         assertNull(pageScope.activatePage(page.getHandle(), LOCALHOST));
@@ -98,13 +98,13 @@ public class PageScopeTest extends AbstractTest {
     
     @Test
     public void Activate_From_Wrong_Address() {
-        WebApplicationPage page = pageScope.createPage(LOCALHOST);
+        WebApplicationPage page = pageScope.createPage(LOCALHOST, MAX_INACTIVITY);
         assertNull(pageScope.activatePage(page.getHandle(), "10.0.0.1"));
     }
     
     @Test
     public void Refresh_From_Wrong_Address() {
-        WebApplicationPage page = pageScope.createPage(LOCALHOST);
-        assertEquals(0, pageScope.refreshPage(page.getHandle(), "10.0.0.1"));
+        WebApplicationPage page = pageScope.createPage(LOCALHOST, MAX_INACTIVITY);
+        assertEquals(0, pageScope.refreshPage(page.getHandle(), "10.0.0.1", MAX_INACTIVITY));
     }
 }

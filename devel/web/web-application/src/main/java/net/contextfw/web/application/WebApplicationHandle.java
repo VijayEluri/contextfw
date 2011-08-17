@@ -2,6 +2,9 @@ package net.contextfw.web.application;
 
 import java.io.Serializable;
 
+import net.contextfw.web.application.lifecycle.PageScoped;
+
+@PageScoped
 public class WebApplicationHandle implements Serializable {
 
     private static final long serialVersionUID = -2578266439991410555L;
