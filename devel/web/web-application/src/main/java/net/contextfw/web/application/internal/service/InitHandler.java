@@ -9,9 +9,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.contextfw.web.application.HttpContext;
 import net.contextfw.web.application.ResourceCleaner;
-import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.internal.component.MetaComponentException;
@@ -26,7 +24,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.inject.Inject;
-import com.google.inject.Key;
 import com.google.inject.Provider;
 
 public class InitHandler {
@@ -129,10 +126,6 @@ public class InitHandler {
                     }
                     listeners.onException(e);
                 } finally {
-                    HttpContext context = page.getBean(Key.get(HttpContext.class));
-                    context.setServlet(null);
-                    context.setRequest(null);
-                    context.setResponse(null);
                     pageScope.deactivateCurrentPage();
                 }
             }
@@ -147,10 +140,7 @@ public class InitHandler {
         
         WebApplicationPage page = pageScope.createPage(
                 pageFlowFilter.getRemoteAddr(request),
-                HOUR);
-        
-        page.setBean(Key.get(HttpContext.class), 
-                new HttpContext(servlet, request, response));
+                servlet, request, response, HOUR);
         
         WebApplication app = webApplicationProvider.get();
         app.setInitializerChain(chain);

@@ -6,6 +6,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
+import net.contextfw.web.application.HttpContext;
 import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.lifecycle.PageFlowFilter;
 
@@ -49,6 +54,13 @@ public class PageScope implements Scope {
     }
     
     public void deactivateCurrentPage() {
+        WebApplicationPage page = currentPage.get();
+        if (page != null) {
+            HttpContext context = page.getBean(Key.get(HttpContext.class));
+            context.setServlet(null);
+            context.setRequest(null);
+            context.setResponse(null);
+        }
         currentPage.remove();
     }
 
@@ -79,10 +91,20 @@ public class PageScope implements Scope {
         return pages.size();
     }
     
-    public synchronized WebApplicationPage activatePage(WebApplicationHandle handle, String remoteAddr) {
+    public synchronized WebApplicationPage activatePage(WebApplicationHandle handle,
+                                                        HttpServlet servlet,
+                                                        HttpServletRequest request,
+                                                        HttpServletResponse response,
+                                                        String remoteAddr) {
         WebApplicationPage page = pages.get(handle);
         if (page != null) {
             if (page.getRemoteAddr().equals(remoteAddr)) {
+                
+                HttpContext context = page.getBean(Key.get(HttpContext.class));
+                context.setServlet(servlet);
+                context.setRequest(request);
+                context.setResponse(response);
+                
                 currentPage.set(page);
                 return page;
             } else {
@@ -96,14 +118,6 @@ public class PageScope implements Scope {
             return null;
         }
     }
-
-//    public synchronized WebApplicationContext getContext(String handleKey) {
-//        return contexts.get(new WebApplicationHandle(handleKey));
-//    }
-//
-//    public synchronized void addContext(WebApplicationContext context) {
-//        contexts.put(context.getHandle(), context);
-//    }
 
     public synchronized void removeExpiredPages(PageFlowFilter filter) {
         
@@ -123,11 +137,20 @@ public class PageScope implements Scope {
         }
     }
 
-    public synchronized WebApplicationPage createPage(String remoteAddr, long initialMaxInActivity) {
+    public synchronized WebApplicationPage createPage(String remoteAddr,
+                                                      HttpServlet servlet,
+                                                      HttpServletRequest request,
+                                                      HttpServletResponse response,
+                                                      long initialMaxInActivity) {
+        
         WebApplicationPage page = new WebApplicationPageImpl(
                 createNewHandle(), 
                 remoteAddr,
                 System.currentTimeMillis() + initialMaxInActivity);
+        
+        page.setBean(Key.get(HttpContext.class), 
+                new HttpContext(servlet, request, response));
+        
         pages.put(page.getHandle(), page);
         currentPage.set(page);
         return page;

@@ -8,7 +8,6 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.contextfw.web.application.HttpContext;
 import net.contextfw.web.application.ResourceCleaner;
 import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.configuration.Configuration;
@@ -23,7 +22,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.inject.Inject;
-import com.google.inject.Key;
 import com.google.inject.Singleton;
 
 @Singleton
@@ -98,7 +96,9 @@ public class UpdateHandler {
         return -1;
     }
     
-    public final void handleRequest(HttpServlet servlet, HttpServletRequest request, HttpServletResponse response)
+    public final void handleRequest(HttpServlet servlet, 
+                                    HttpServletRequest request, 
+                                    HttpServletResponse response)
             throws ServletException, IOException {
 
     	if (watcher != null && watcher.hasChanged()) {
@@ -125,7 +125,9 @@ public class UpdateHandler {
             String remoteAddr = pageFlowFilter.getRemoteAddr(request);
 
             WebApplicationPage page = pageScope.activatePage(
-                    new WebApplicationHandle(handlerStr), remoteAddr);
+                    new WebApplicationHandle(handlerStr),
+                    servlet, request, response,
+                    remoteAddr);
 
             if (page == null) {
                 response.sendError(HttpServletResponse.SC_NOT_FOUND);
@@ -144,10 +146,6 @@ public class UpdateHandler {
                         response.setStatus(HttpServletResponse.SC_NO_CONTENT);
                     } else {
                         int updateCount = pageScope.refreshPage(page, maxInactivity);
-                        HttpContext context = page.getBean(Key.get(HttpContext.class));
-                        context.setServlet(servlet);
-                        context.setRequest(request);
-                        context.setResponse(response);
                         try {
                             pageFlowFilter.onPageUpdate(
                                         pageScope.getPageCount(),
@@ -161,9 +159,6 @@ public class UpdateHandler {
                                             uriSplits[commandStart+2],
                                             uriSplits[commandStart+3]);
                                 if (invocation.isDelayed()) {
-                                    context.setServlet(null);
-                                    context.setRequest(null);
-                                    context.setResponse(null);
                                     pageScope.deactivateCurrentPage();
                                     return;
                                 }
@@ -182,9 +177,6 @@ public class UpdateHandler {
                         } catch (Exception e) {
                             listeners.onException(e);
                         } finally {
-                            context.setServlet(null);
-                            context.setRequest(null);
-                            context.setResponse(null);
                             pageScope.deactivateCurrentPage();
                         }
                     }
