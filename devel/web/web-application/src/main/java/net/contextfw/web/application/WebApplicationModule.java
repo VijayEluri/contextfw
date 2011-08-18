@@ -32,7 +32,6 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Key;
-import com.google.inject.Provider;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
@@ -63,6 +62,8 @@ public final class WebApplicationModule extends AbstractModule {
         pageScope = new PageScope();
         bindScope(PageScoped.class, pageScope);
         bind(PageScope.class).toInstance(pageScope);
+        bind(HttpContext.class).toProvider(pageScope.scope(Key.get(HttpContext.class), null));
+        bind(WebApplicationHandle.class).toProvider(pageScope.scope(Key.get(WebApplicationHandle.class), null));
         bind(ObjectAttributeSerializer.class).to(AttributeHandler.class);
         bind(Configuration.class).toInstance(configuration);
         bind(PropertyProvider.class).toInstance(configuration.get(Configuration.PROPERTY_PROVIDER));
@@ -160,15 +161,5 @@ public final class WebApplicationModule extends AbstractModule {
             matcher = Pattern.compile(".+\\.(xsl|css|js|class)", Pattern.CASE_INSENSITIVE);
         }
         return new DirectoryWatcher(paths, matcher); 
-    }
-    
-    @Provides
-    public HttpContext provideHttpContext() {
-        return pageScope.scope(Key.get(HttpContext.class), null).get();
-    }
-    
-    @Provides
-    public WebApplicationHandle provideWebApplicationHandle() {
-        return pageScope.scope(Key.get(WebApplicationHandle.class), null).get();
     }
 }
