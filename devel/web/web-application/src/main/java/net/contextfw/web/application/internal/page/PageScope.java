@@ -91,21 +91,11 @@ public class PageScope implements Scope {
         return pages.size();
     }
     
-    public synchronized WebApplicationPage activatePage(WebApplicationHandle handle,
-                                                        HttpServlet servlet,
-                                                        HttpServletRequest request,
-                                                        HttpServletResponse response,
-                                                        String remoteAddr) {
+    public synchronized WebApplicationPage findPage(WebApplicationHandle handle,
+                                                    String remoteAddr) {
         WebApplicationPage page = pages.get(handle);
         if (page != null) {
             if (page.getRemoteAddr().equals(remoteAddr)) {
-                
-                HttpContext context = page.getBean(Key.get(HttpContext.class));
-                context.setServlet(servlet);
-                context.setRequest(request);
-                context.setResponse(response);
-                
-                currentPage.set(page);
                 return page;
             } else {
                 log.info("Tried to activate page {} from wrong address: {} != {}",
@@ -117,6 +107,18 @@ public class PageScope implements Scope {
         } else {
             return null;
         }
+    }
+    
+    public void activatePage(WebApplicationPage page,
+                             HttpServlet servlet,
+                             HttpServletRequest request,
+                             HttpServletResponse response) {
+        
+        HttpContext context = page.getBean(Key.get(HttpContext.class));
+        context.setServlet(servlet);
+        context.setRequest(request);
+        context.setResponse(response);
+        currentPage.set(page);
     }
 
     public synchronized void removeExpiredPages(PageFlowFilter filter) {

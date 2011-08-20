@@ -124,9 +124,8 @@ public class UpdateHandler {
             
             String remoteAddr = pageFlowFilter.getRemoteAddr(request);
 
-            WebApplicationPage page = pageScope.activatePage(
-                    new WebApplicationHandle(handlerStr),
-                    servlet, request, response,
+            WebApplicationPage page = pageScope.findPage(
+                    new WebApplicationHandle(handlerStr),                  
                     remoteAddr);
 
             if (page == null) {
@@ -134,6 +133,8 @@ public class UpdateHandler {
             } else {
                 UpdateInvocation invocation = UpdateInvocation.NOT_DELAYED;
                 synchronized (page) {
+                    
+                    pageScope.activatePage(page, servlet, request, response);
 
                     if (CONTEXTFW_REMOVE.equals(command)) {
                         pageScope.removePage(page.getHandle());

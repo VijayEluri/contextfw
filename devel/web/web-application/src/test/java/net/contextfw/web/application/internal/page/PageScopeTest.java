@@ -105,17 +105,17 @@ public class PageScopeTest extends AbstractTest {
         PageFlowFilter filter = createMock(PageFlowFilter.class);
         replay(filter);
         WebApplicationPage page = pageScope.createPage(LOCALHOST, servlet, request, response, MAX_INACTIVITY);
-        assertEquals(page, pageScope.activatePage(page.getHandle(), servlet, request, response,  LOCALHOST));
+        assertEquals(page, pageScope.findPage(page.getHandle(), LOCALHOST));
         pageScope.refreshPage(page.getHandle(), LOCALHOST, MAX_INACTIVITY);
         Thread.sleep(MAX_INACTIVITY + 1);
         pageScope.removeExpiredPages(filter);
-        assertNull(pageScope.activatePage(page.getHandle(), servlet, request, response,  LOCALHOST));
+        assertNull(pageScope.findPage(page.getHandle(), LOCALHOST));
     }
     
     @Test
     public void Activate_From_Wrong_Address() {
         WebApplicationPage page = pageScope.createPage(LOCALHOST, servlet, request, response, MAX_INACTIVITY);
-        assertNull(pageScope.activatePage(page.getHandle(), servlet, request, response, "10.0.0.1"));
+        assertNull(pageScope.findPage(page.getHandle(), "10.0.0.1"));
     }
     
     @Test
@@ -141,7 +141,7 @@ public class PageScopeTest extends AbstractTest {
         assertNull(context.getRequest());
         assertNull(context.getResponse());
         
-        pageScope.activatePage(handle, servlet, request, response, LOCALHOST);
+        pageScope.activatePage(page, servlet, request, response);
         
         assertNotNull(context.getServlet());
         assertNotNull(context.getRequest());
