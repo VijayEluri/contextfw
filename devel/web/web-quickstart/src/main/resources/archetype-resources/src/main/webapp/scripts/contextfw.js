@@ -206,21 +206,38 @@ var c = {
     }
   }
 };
-
-function cInit(id, obj) {
-  obj.id = id;
-  obj.self = obj;
-    
+/* Defines js-side component */
+(function() {
+  Component = function(id) { this.init.apply(this, arguments); };
+  Component.prototype.id = null;
+  Component.prototype.init = function(id) {
+      this.id = id;
+  }
   // A convience function to access some element within the component
-  obj.el = function(id) { 
-    return jQuery("#" + obj.id + "_" + id);
+  Component.prototype.el = function(id) { 
+      return jQuery("#" + this.id + (id != undefined ? "_" + id : ""));
   }
-    
   // A convinience function to make remote calls.
-  obj.call = function(method, beforeCall, afterCall) {
-    return function() {
-      contextfw._call(obj.id, method, arguments, beforeCall, afterCall);
-    }
+  Component.prototype.call = function(method, beforeCall, afterCall) {
+      var self = this;
+      return function() {
+          contextfw._call(self.id, method, arguments, beforeCall, afterCall);
+      }
   }
-  return obj;
-}
+  Component.extend = function(ext) {
+      var s = function() { this.init.apply(this, arguments); };
+      s.prototype._super = Component.prototype.init;
+      for (prop in this.prototype) {
+          s.prototype[prop] = this.prototype[prop];
+      }
+      for (prop in this) {
+          s[prop] = this[prop];
+      }
+      if (ext != undefined) {
+         for (prop in ext) {
+            s.prototype[prop] = ext[prop];
+         }
+      }               
+      return s;
+  }
+})();

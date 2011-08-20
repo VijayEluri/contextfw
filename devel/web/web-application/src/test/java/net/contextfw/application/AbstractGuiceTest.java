@@ -1,7 +1,6 @@
 package net.contextfw.application;
 
 import net.contextfw.application.GuiceJUnitRunner.GuiceModules;
-import net.contextfw.web.application.TestModule;
 
 import org.junit.runner.RunWith;
 
