@@ -10,7 +10,7 @@ import java.lang.annotation.Target;
 
 /**
  * <p>
- *  Defines that the field contains encoded value from URL-path
+ *  Defines that the field or method contains encoded value from URL-path
  * </p>
  * 
  * <p>
@@ -28,6 +28,11 @@ import java.lang.annotation.Target;
  *  to resolve parameter name. This can be overridden by using <code>name</code>.
  * </p>
  * 
+ * <p>
+ *  At this points primitives and their wrappers are supported. Also any class having a 
+ *  String-parametrized contructor is supported.
+ * </p>
+ * 
  * <h3>Mapping in path-style URLs</h3>
  * 
  * <p>
@@ -36,13 +41,13 @@ import java.lang.annotation.Target;
  *  For example, following definition:
  * </p>
  * <blockquote>
- *  <code>/customers/&lt;id&gt;/invoice/&lt;invoiceId&gt;</code>
+ *  <code>/customers/&lt;id&gt;</code>
  * </blockquote>
  * <p>
  *  is translated into following path
  * </p>
  * <blockquote>
- *  <code>/customers&#47;*&#47;invoice&#47;*</code>
+ *  <code>/customers&#47;*</code>
  * </blockquote>
  * 
  * <h3>Mapping in regex-style URLs</h3>
@@ -54,13 +59,13 @@ import java.lang.annotation.Target;
  *  <code>&lt;<i>paramName:regex</i>&gt;</code>.  For example following definition:
  * </p>
  * <blockquote>
- *  <code>/engine/&lt;id&gt;/mode/<mode:started|stopped></code>
+ *  <code>reges:/engine/&lt;id&gt;/mode/&lt;mode:started|stopped&gt;</code>
  * </blockquote>
  * <p>
  *  is translated into following path
  * </p>
  * <blockquote>
- *  <code>/engine&#47;([^/]+)&#47;mode/(started|stopped)</code>
+ *  <code>regex:/engine&#47;([^/]+)&#47;mode/(started|stopped)</code>
  * </blockquote>
  * 
  * <h3>Important caveat on initialization</h3>
@@ -76,18 +81,10 @@ import java.lang.annotation.Target;
  * 
  * <p>
  *  Because path parameters are about URLs it is very likely that there will be malformed URLs
- *  and those cases must be handled somehow. To tackle those cases there following methods are
- *  used at the moment
- * </p>
+ *  and those cases must be handled somehow. To tackle those cases there are two handler
+ *  <code>onError</code> and <code>onNull</code>.
  * 
- * <ol>
- *  <li>
- *   <b>Setting to null</b>: This is the default. It should be remembered that if target type is primitive
- *   then an exception will be thrown.
- *  </li>
- *  <li>
- *  </li>
- * </ol>
+ * @see ErrorResolution
  * 
  */
 @Target({FIELD, METHOD})
