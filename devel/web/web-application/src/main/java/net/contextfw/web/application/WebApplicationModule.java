@@ -51,7 +51,8 @@ public final class WebApplicationModule extends AbstractModule {
     private Logger logger = LoggerFactory.getLogger(WebApplicationModule.class);
 
     @SuppressWarnings("rawtypes")
-    private AutoRegisterListener autoRegisterListener = new AutoRegisterListener();
+    private AutoRegisterListener autoRegisterListener 
+            = new AutoRegisterListener();
 
     public WebApplicationModule(Configuration configuration) {
         this.configuration = configuration;
@@ -88,6 +89,7 @@ public final class WebApplicationModule extends AbstractModule {
 
         install(servletModule);
         requestInjection(this);
+        requestInjection(autoRegisterListener);
     }
 
     @SuppressWarnings("unchecked")

@@ -15,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.component.Attribute;
 import net.contextfw.web.application.component.Buildable;
+import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.component.CustomBuild;
 import net.contextfw.web.application.component.Element;
 import net.contextfw.web.application.component.ScriptContext;
@@ -57,6 +58,8 @@ public final class MetaComponent {
     private final List<Method> pathParamMethods = new ArrayList<Method>();
     private final List<Field> requestParamFields = new ArrayList<Field>();
     private final List<Method> requestParamMethods = new ArrayList<Method>();
+    private final List<Field> autoregisterFields = new ArrayList<Field>();
+    
     public final String buildName;
     public final Buildable annotation;
 
@@ -97,6 +100,9 @@ public final class MetaComponent {
             builder = new ElementBuilder(componentBuilder, propertyAccess,
                     element.wrap() ? name : null, field.getName());
             addToBuilders(element.onCreate(), element.onUpdate(), builder);
+            if (element.autoRegister()) {
+                autoregisterFields.add(field);
+            }
         } else if (field.getAnnotation(Attribute.class) != null) {
             Attribute attribute = field.getAnnotation(Attribute.class);
             name = "".equals(attribute.name()) ? field.getName()
@@ -556,5 +562,21 @@ public final class MetaComponent {
             }
         }
         return rv;
+    }
+    
+    public void registerChildren(Component parent) {
+        for (Field field : autoregisterFields) {
+            Object child;
+            try {
+                child = field.get(parent);
+                if (child instanceof Component) {
+                    parent.registerChild((Component)child);
+                }
+            } catch (IllegalArgumentException e) {
+                throw new WebApplicationException(e);
+            } catch (IllegalAccessException e) {
+                throw new WebApplicationException(e);
+            }
+        }
     }
 }
