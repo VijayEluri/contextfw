@@ -28,7 +28,6 @@ public class ComponentRegister {
 
     public void unregister(Component component) {
         components.remove(component.getId());
-        component.setId(null);
     }
 
     public Component findComponent(String id) {
