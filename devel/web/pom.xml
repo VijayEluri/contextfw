@@ -33,7 +33,7 @@ limitations under the License.
 	<modules>
 		<module>web-application</module>
 		<module>web-quickstart</module>
-		<!--<module>web-commons</module> -->
+		<module>web-commons</module>
     </modules>
 
 	<dependencies>
@@ -43,8 +43,9 @@ limitations under the License.
 			<version>2.5</version>
 		</dependency>
 	</dependencies>
-	
+	<!-- 
 	<build>
+	
     <plugins>
         <plugin>
             <groupId>com.mycila.maven-license-plugin</groupId>
@@ -86,5 +87,7 @@ limitations under the License.
             </executions>
         </plugin>
     </plugins>
+     
 </build>
+-->
 </project>
