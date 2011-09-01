@@ -35,6 +35,7 @@ import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.internal.configuration.KeyValue;
 import net.contextfw.web.application.internal.util.ResourceEntry;
 import net.contextfw.web.application.internal.util.ResourceScanner;
+import net.contextfw.web.application.internal.util.Utils;
 import net.contextfw.web.application.util.XMLResponseLogger;
 
 import org.dom4j.Document;
@@ -105,8 +106,8 @@ public class WebResponder {
         htmlFormat.setExpandEmptyElements(true);
         
         if (configuration.get(Configuration.XSL_POST_PROCESSOR) != null) {
-            xslPostProcessor = injector.getInstance(
-                    configuration.get(Configuration.XSL_POST_PROCESSOR));
+            xslPostProcessor = Utils.toInstance(
+                    configuration.get(Configuration.XSL_POST_PROCESSOR), injector);
         } else {
             xslPostProcessor = null;
         }

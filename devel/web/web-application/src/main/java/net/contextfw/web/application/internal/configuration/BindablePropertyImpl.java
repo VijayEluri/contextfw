@@ -70,10 +70,6 @@ public class BindablePropertyImpl<T> implements BindableProperty<T> {
         return instance == null ? type : instance; 
     }
 
-    public T getInstance() {
-        return instance;
-    }
-
     public Class<T> getType() {
         return type;
     }

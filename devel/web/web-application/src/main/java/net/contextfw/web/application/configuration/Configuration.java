@@ -28,7 +28,6 @@ import net.contextfw.web.application.PropertyProvider;
 import net.contextfw.web.application.SystemPropertyProvider;
 import net.contextfw.web.application.internal.configuration.BindablePropertyImpl;
 import net.contextfw.web.application.internal.configuration.BooleanPropertyImpl;
-import net.contextfw.web.application.internal.configuration.ClassPropertyImpl;
 import net.contextfw.web.application.internal.configuration.KeyValue;
 import net.contextfw.web.application.internal.configuration.ObjectPropertyImpl;
 import net.contextfw.web.application.internal.configuration.Property;
@@ -282,8 +281,8 @@ public class Configuration {
     /**
      * Binds a XSL-postprocessor to the system
      */
-    public static final SettableProperty<Class<? extends DocumentProcessor>> XSL_POST_PROCESSOR = 
-        new ClassPropertyImpl<DocumentProcessor>(KEY_XSL_POST_PROCESSOR);
+    public static final BindableProperty<DocumentProcessor> XSL_POST_PROCESSOR = 
+        new BindablePropertyImpl<DocumentProcessor>(KEY_XSL_POST_PROCESSOR);
     
     /**
      * Defines the number of transformers that are used to render XSL into XHTML.

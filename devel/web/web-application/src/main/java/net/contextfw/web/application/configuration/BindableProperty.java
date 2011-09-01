@@ -24,4 +24,4 @@ public interface BindableProperty<T> extends SelfSettableProperty<Object> {
     <S extends T> BindableProperty<S> as(Class<S> type);
     
     BindableProperty<T> asInstance(T instance);
-}
+}    
