@@ -174,10 +174,10 @@ public final class WebApplicationModule extends AbstractModule {
             paths.addAll(configuration.get(Configuration.RESOURCE_PATH));
         }
         
-        Pattern matcher = Pattern.compile(".+\\.(xsl|css|js)", Pattern.CASE_INSENSITIVE);
+        Pattern matcher = Pattern.compile(".+\\.(xsl|css|js|properties)", Pattern.CASE_INSENSITIVE);
         
         if (!configuration.get(Configuration.CLASS_RELOADING_ENABLED)) {
-            matcher = Pattern.compile(".+\\.(xsl|css|js|class)", Pattern.CASE_INSENSITIVE);
+            matcher = Pattern.compile(".+\\.(xsl|css|js|class|properties)", Pattern.CASE_INSENSITIVE);
         }
         return new DirectoryWatcher(paths, matcher); 
     }
