@@ -18,8 +18,6 @@
 package net.contextfw.web.application.internal;
 
 import java.io.StringReader;
-import java.util.ArrayList;
-import java.util.List;
 
 import javax.xml.transform.Transformer;
 import javax.xml.transform.TransformerConfigurationException;
@@ -38,34 +36,26 @@ public class Transformers {
     private static final TransformerFactory FACTORY =
             TransformerFactory.newInstance();
 
-    private final int count;
-
-    private int current = 0;
-
     private boolean initialized = false;
 
-    private List<Transformer> transformers;
+    private TransformersThreadLocal transformers;
 
-    public Transformers(int count) {
-        if (count < 1) {
-            throw new IllegalArgumentException("At least 1 transformer must be declared");
-        }
-        this.count = count;
+    public Transformers() {
     }
 
-    public synchronized void initialize(String content) {
-        current = 0;
-        transformers = new ArrayList<Transformer>(count);
-        for (int i = 0; i < count; i++) {
-            try {
-                transformers.add(FACTORY.newTransformer(new StreamSource(
-                        new StringReader(content))));
-            } catch (TransformerConfigurationException e) {
-                throw new WebApplicationException("Could not get transformer",
-                        e);
-            }
+    public void initialize(Document xsltDocument) {
+        try {
+            transformers = new TransformersThreadLocal(
+                    FACTORY.newTemplates(new StreamSource(
+                                    new StringReader(xsltDocument.asXML()))));
+                            
+                            
+                            //new DocumentSource(xsltDocument)));
+            initialized = true;
+        } catch (TransformerConfigurationException e) {
+            throw new WebApplicationException(
+                    "Could not get transformer", e);
         }
-        initialized = true;
     }
 
     public void invalidate() {
@@ -81,28 +71,20 @@ public class Transformers {
         if (initialized) {
             DocumentSource source = new DocumentSource(document);
             DocumentResult result = new DocumentResult();
-            Transformer tr = getTransformer();
-            synchronized (tr) {
-                String lang = document.getRootElement()
+            Transformer tr = transformers.get();
+            String lang = document.getRootElement()
                         .attributeValue("xml:lang");
-                if (lang != null) {
-                    tr.setParameter("xml:lang", lang);
-                }
-                try {
-                    tr.transform(source, result);
-                } catch (TransformerException e) {
-                    throw new WebApplicationException(e);
-                }
+            if (lang != null) {
+                tr.setParameter("xml:lang", lang);
+            }
+            try {
+                tr.transform(source, result);
+            } catch (TransformerException e) {
+                throw new WebApplicationException(e);
             }
             return result.getDocument();
         } else {
             throw new WebApplicationException("Transformers are not initialized");
         }
-    }
-
-    private Transformer getTransformer() {
-        int i = current;
-        current = (current + 1) % count;
-        return transformers.get(i);
     }
 }

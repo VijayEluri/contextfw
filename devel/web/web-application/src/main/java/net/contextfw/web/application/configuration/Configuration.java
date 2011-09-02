@@ -31,7 +31,6 @@ import net.contextfw.web.application.internal.configuration.BooleanPropertyImpl;
 import net.contextfw.web.application.internal.configuration.KeyValue;
 import net.contextfw.web.application.internal.configuration.ObjectPropertyImpl;
 import net.contextfw.web.application.internal.configuration.Property;
-import net.contextfw.web.application.internal.configuration.RangedIntegerPropertyImpl;
 import net.contextfw.web.application.internal.configuration.ReloadableClassPropertyImpl;
 import net.contextfw.web.application.internal.configuration.SelfKeyValueSetPropertyImpl;
 import net.contextfw.web.application.internal.configuration.SelfSettableProperty;
@@ -93,8 +92,6 @@ public class Configuration {
 
     private static final String KEY_RESOURCE_PATH = "contextfw.resourcePath";
 
-    private static final String KEY_TRANSFORMER_COUNT = "contextfw.transformerCount";
-
     private static final String KEY_LIFECYCLE_LISTENER = "contextfw.lifecycleListener";
     
     private static final String KEY_REQUEST_INVOCATION_FILTER = "contextfw.requestInvocationFilter";
@@ -135,7 +132,6 @@ public class Configuration {
           .set(DEVELOPMENT_MODE, true)
           .set(CLASS_RELOADING_ENABLED, true)
           .set(LOG_XML, true)
-          .set(TRANSFORMER_COUNT, 1)
           .set(RESOURCES_PREFIX, "/resources")
           //.set(CONTEXT_PATH, "")
           .set(XML_PARAM_NAME, null)
@@ -283,25 +279,6 @@ public class Configuration {
      */
     public static final BindableProperty<DocumentProcessor> XSL_POST_PROCESSOR = 
         new BindablePropertyImpl<DocumentProcessor>(KEY_XSL_POST_PROCESSOR);
-    
-    /**
-     * Defines the number of transformers that are used to render XSL into XHTML.
-     * 
-     * <p>
-     *  Transformers are not thread safe thus access to each transformer must be synchronized.
-     *  It is possible to increase performance little by adding more transformers. It should be noted however
-     *  that each transformer needs to read all templates to memory thus the amount
-     *  of used memory is a multiple of the transformer count.
-     * </p>
-     * <p>
-     *  In practice a few transformer, max 5 is probably more than enough.
-     * </p>
-     * <p>
-     *  Default: <code>1</code>
-     * </p>
-     */
-    public static final SettableProperty<Integer> TRANSFORMER_COUNT =
-        new RangedIntegerPropertyImpl(KEY_TRANSFORMER_COUNT, 1, 200);
     
     /**
      * Defines the root paths that contains components' css- and javascript-resources.

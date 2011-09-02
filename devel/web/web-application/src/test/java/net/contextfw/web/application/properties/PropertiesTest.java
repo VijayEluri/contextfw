@@ -25,7 +25,6 @@ import static net.contextfw.web.application.configuration.Configuration.PAGEFLOW
 import static net.contextfw.web.application.configuration.Configuration.PROPERTY_PROVIDER;
 import static net.contextfw.web.application.configuration.Configuration.REMOVAL_SCHEDULE_PERIOD;
 import static net.contextfw.web.application.configuration.Configuration.RESOURCE_PATH;
-import static net.contextfw.web.application.configuration.Configuration.TRANSFORMER_COUNT;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
@@ -48,7 +47,6 @@ public class PropertiesTest {
           .add(ATTRIBUTE_JSON_SERIALIZER.as(Date.class, DateSerializer.class));
         
         assertTrue(props.get(DEVELOPMENT_MODE));
-        assertEquals(1, props.get(TRANSFORMER_COUNT).intValue());
         
         assertEquals(2, props.get(RESOURCE_PATH).size());
         assertTrue(props.get(RESOURCE_PATH).contains("net.contextfw.web"));

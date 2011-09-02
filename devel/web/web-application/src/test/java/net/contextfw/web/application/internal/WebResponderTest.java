@@ -32,7 +32,7 @@ public class WebResponderTest {
         Configuration configuration = Configuration.getDefaults();
         configuration.add(Configuration.RESOURCE_PATH ,"net.contextfw.web.application.internal");
         WebResponder responder = new WebResponder(configuration, null);
-        System.out.println(responder.getXSLDocumentContent());
+        System.out.println(responder.getXSLDocument());
     }
     
     @Test

@@ -94,7 +94,7 @@ public class WebResponder {
     @Inject
     public WebResponder(Configuration configuration, Injector injector) {
         rootResourcePaths.add("net.contextfw.web.application");
-        transformers = new Transformers(configuration.get(Configuration.TRANSFORMER_COUNT));
+        transformers = new Transformers();
         resourcePaths.addAll(configuration.get(Configuration.RESOURCE_PATH));
         namespaces.addAll(configuration.get(Configuration.NAMESPACE));
         
@@ -142,7 +142,7 @@ public class WebResponder {
         }
     }
 
-    protected String getXSLDocumentContent() {
+    protected Document getXSLDocument() {
 
         List<ResourceEntry> rootResources = ResourceScanner.findResources(
                 rootResourcePaths, XSL_ACCEPTOR);
@@ -209,16 +209,7 @@ public class WebResponder {
             if (xslPostProcessor != null) {
                 xslPostProcessor.process(document);
             }
-
-            StringWriter content = new StringWriter();
-            OutputFormat format = OutputFormat.createCompactFormat();
-            format.setXHTML(true);
-            format.setTrimText(false);
-            format.setPadText(true);
-            format.setNewlines(false);
-            XMLWriter writer = new XMLWriter(content, format);
-            writer.write(document);
-            return content.toString();
+            return document;
         } catch (DocumentException e) {
             throw new WebApplicationException(e);
         } catch (UnsupportedEncodingException e) {
@@ -227,10 +218,6 @@ public class WebResponder {
             throw new WebApplicationException(e);
         }
     }
-
-    // public Reader getXSLDocument() {
-    // return new StringReader(getXSLDocumentContent());
-    // }
 
     public void sendResponse(Document document, HttpServletResponse resp,
             Mode mode) throws ServletException, IOException {
@@ -280,6 +267,6 @@ public class WebResponder {
 
     public void clean() {
         logger.debug("Reloading resources");
-        transformers.initialize(getXSLDocumentContent());
+        transformers.initialize(getXSLDocument());
     }
 }
