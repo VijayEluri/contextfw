@@ -73,7 +73,9 @@ public abstract class Script {
         Object[] rv = new Object[params.length];
         for (int i = 0; i < params.length; i++) {
             Object param = params[i];
-            if (Boolean.class.isAssignableFrom(param.getClass())
+            if (param == null) {
+                rv[i] = "null";
+            } else if (Boolean.class.isAssignableFrom(param.getClass())
                     || Number.class.isAssignableFrom(param.getClass())) {
                 rv[i] = StringEscapeUtils.escapeJavaScript(param.toString());
             } else {

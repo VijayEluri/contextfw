@@ -83,6 +83,16 @@ public class ScriptTest extends BaseComponentTest {
         script.build(domBuilder.descend("Script"), gson, scriptContext);
         assertDom("//WebApplication/Script").hasText("foo();\n");
     }
+    
+    @Test
+    public void test6() {
+        List<String> strs = new ArrayList<String>();
+        strs.add("1");
+        strs.add("2");
+        FunctionCall script = new FunctionCall("foo", 4, null);
+        script.build(domBuilder.descend("Script"), gson, scriptContext);
+        assertDom("//WebApplication/Script").hasText("foo(4,null);\n");
+    }
 
     public static class A extends Component {
     }
