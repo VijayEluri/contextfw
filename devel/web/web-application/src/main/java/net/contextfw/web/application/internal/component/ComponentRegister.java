@@ -31,7 +31,7 @@ public class ComponentRegister {
     private Map<String, Component> components = new HashMap<String, Component>();
 
     private String getNextId() {
-        return "el" + idCounter++;
+        return "c" + idCounter++;
     }
 
     public void register(Component component) {
