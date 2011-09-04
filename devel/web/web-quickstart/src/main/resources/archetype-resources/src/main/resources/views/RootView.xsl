@@ -2,7 +2,7 @@
 <xsl:stylesheet version="1.0"
 	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
 	<xsl:template match="RootView">
-	<html xmlns="http://www.w3.org/1999/xhtml">
+	<html>
 	<head>
 		<title>Context Framework Quickstart</title>
 		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
