@@ -27,10 +27,16 @@ import com.google.inject.Singleton;
  * @since 0.8.1
  */
 @Singleton
-public class JsTemplate {
+class JsTemplateServiceImpl implements JsTemplateService {
 
+    private final JsTemplateServlet servlet;    
+    
+    public JsTemplateServiceImpl(JsTemplateServlet servlet) {
+        this.servlet = servlet;
+    }
+    
     @SuppressWarnings("unchecked")
-    public String generateTemplates(Document document) {
+    private String generateTemplates(Document document) {
         List<Element> nodes = document.getRootElement().selectNodes("//js:template");
         String value = handleJSElements(nodes);
         for (Element el : nodes) {
@@ -66,6 +72,7 @@ public class JsTemplate {
         }
     }
 
+    @SuppressWarnings("unchecked")
     private void traverseEl(StringBuilder b, StringBuilder buffer, Element element) {
         String name = element.getName();
         String prefix = element.getNamespacePrefix();
@@ -125,4 +132,11 @@ public class JsTemplate {
         }
     }
 
+    /* (non-Javadoc)
+     * @see net.contextfw.web.commons.js.JsTemplateServiceI#process(org.dom4j.Document)
+     */
+    @Override
+    public void process(Document document) {
+        servlet.setContent(generateTemplates(document));
+    }
 }
