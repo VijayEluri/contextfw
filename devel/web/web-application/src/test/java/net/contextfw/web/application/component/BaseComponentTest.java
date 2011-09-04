@@ -18,6 +18,7 @@
 package net.contextfw.web.application.component;
 
 import java.io.StringWriter;
+import java.util.HashSet;
 
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.internal.ToStringSerializer;
@@ -25,6 +26,7 @@ import net.contextfw.web.application.internal.component.ComponentBuilder;
 import net.contextfw.web.application.internal.component.ComponentBuilderImpl;
 import net.contextfw.web.application.internal.component.ComponentRegister;
 import net.contextfw.web.application.internal.component.WebApplicationComponent;
+import net.contextfw.web.application.internal.configuration.KeyValue;
 import net.contextfw.web.application.serialize.AttributeSerializer;
 
 import org.dom4j.Node;
@@ -63,7 +65,8 @@ public abstract class BaseComponentTest {
         Gson gson = new Gson();
         componentBuilder = new ComponentBuilderImpl(null, gson);
         scriptContext = (ScriptContext) componentBuilder;
-        domBuilder = new DOMBuilder("WebApplication", serializer, componentBuilder);
+        domBuilder = new DOMBuilder("WebApplication", serializer, componentBuilder, 
+                new HashSet<KeyValue<String, String>>());
         webApplicationComponent = new WebApplicationComponent(componentRegister);
     }
     

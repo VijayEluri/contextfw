@@ -30,6 +30,7 @@ import net.contextfw.web.application.internal.component.AutoRegisterListener;
 import net.contextfw.web.application.internal.configuration.KeyValue;
 import net.contextfw.web.application.internal.page.PageScope;
 import net.contextfw.web.application.internal.service.DirectoryWatcher;
+import net.contextfw.web.application.internal.service.WebApplicationConf;
 import net.contextfw.web.application.internal.util.AttributeHandler;
 import net.contextfw.web.application.internal.util.ObjectAttributeSerializer;
 import net.contextfw.web.application.lifecycle.LifecycleListener;
@@ -180,5 +181,14 @@ public final class WebApplicationModule extends AbstractModule {
             matcher = Pattern.compile(".+\\.(xsl|css|js|class|properties)", Pattern.CASE_INSENSITIVE);
         }
         return new DirectoryWatcher(paths, matcher); 
+    }
+    
+    @Provides
+    @Singleton
+    public WebApplicationConf provideWebApplicationConf() {
+        return new WebApplicationConf(
+                configuration.get(Configuration.DEVELOPMENT_MODE),
+                configuration.get(Configuration.XML_PARAM_NAME),
+                configuration.get(Configuration.NAMESPACE));
     }
 }

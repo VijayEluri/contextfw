@@ -31,7 +31,6 @@ import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.component.DOMBuilder;
-import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.internal.ComponentUpdateHandler;
 import net.contextfw.web.application.internal.ComponentUpdateHandlerFactory;
 import net.contextfw.web.application.internal.WebResponder;
@@ -96,14 +95,11 @@ public class WebApplicationImpl implements WebApplication {
 
     //private final String contextPath;
     
-    private final String xmlParamName;
-    
-    private final boolean debugMode;
+    private final WebApplicationConf conf;
     
     @Inject
-    public WebApplicationImpl(Configuration props) {
-        xmlParamName = props.get(Configuration.XML_PARAM_NAME);
-        debugMode = props.get(Configuration.DEVELOPMENT_MODE);
+    public WebApplicationImpl(WebApplicationConf conf) {
+        this.conf = conf;
     }
 
     @Override
@@ -199,9 +195,12 @@ public class WebApplicationImpl implements WebApplication {
         DOMBuilder d;
 
         if (mode == Mode.INIT) {
-            d = new DOMBuilder("WebApplication", attributes, builder);
+            d = new DOMBuilder("WebApplication", attributes, builder, conf.getNamespaces());
         } else {
-            d = new DOMBuilder("WebApplication.update", attributes, builder);
+            d = new DOMBuilder("WebApplication.update", 
+                               attributes, 
+                               builder,
+                               conf.getNamespaces());
         }
 
         d.attr("handle", webApplicationHandle.getKey());
@@ -225,8 +224,8 @@ public class WebApplicationImpl implements WebApplication {
 
         getRootComponent().clearCascadedUpdate();
 
-        if (xmlParamName == null
-                || httpContext.getRequest().getParameter(xmlParamName) == null) {
+        if (conf.getXmlParamName() == null
+                || httpContext.getRequest().getParameter(conf.getXmlParamName()) == null) {
             responder.sendResponse(d.toDocument(), httpContext.getResponse(), mode);
         } else {
             responder.sendResponse(d.toDocument(), httpContext.getResponse(), Mode.XML);
@@ -249,7 +248,7 @@ public class WebApplicationImpl implements WebApplication {
             Component element = componentRegister.findComponent(id);
             String key = ComponentUpdateHandler.getKey(element.getClass(), method);
 
-                if (!updateHandlers.containsKey(key) || debugMode) {
+                if (!updateHandlers.containsKey(key) || conf.isDevelopmentMode()) {
                     updateHandlers.put(key, euhf.createHandler(element.getClass(), method));
                 }
 
