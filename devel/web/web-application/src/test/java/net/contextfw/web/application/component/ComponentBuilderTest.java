@@ -185,7 +185,7 @@ public class ComponentBuilderTest extends BaseComponentTest {
     public void testName() {
         Gee comp = new Gee();
         webApplicationComponent.registerChild(comp);
-        assertEquals("el1", comp.getId());
+        assertEquals("c1", comp.getId());
         webApplicationComponent.buildChild(domBuilder);
         logXML(domBuilder);
         assertDom("//WebApplication/Eeg").exists();
@@ -196,14 +196,14 @@ public class ComponentBuilderTest extends BaseComponentTest {
         Aa comp = new Aa();
         assertNull(comp.getId());
         webApplicationComponent.registerChild(comp);
-        assertEquals("el1", comp.getId());
+        assertEquals("c1", comp.getId());
         webApplicationComponent.buildChild(domBuilder);
         logXML(domBuilder);
         assertDom("//WebApplication/Aa/FieldEmbed").exists();
         assertDom("//WebApplication/Aa/MethodEmbed").exists();
         assertDom("//WebApplication/Aa/Script[1]").hasText("init2(\"a\");\n");
         assertDom("//WebApplication/Aa/Script[2]").hasText("init(\"a\");\n");
-        assertDom("//WebApplication/Aa").hasAttribute("id", "el1");
+        assertDom("//WebApplication/Aa").hasAttribute("id", "c1");
         assertDom("//WebApplication/Aa/custom/barFoo").hasAttribute("fooBar", "true");
         assertDom("//WebApplication/Aa/barFoo1").hasAttribute("fooBar1", "true");
         assertDom("//WebApplication/Aa/listOfEmbeddeds//MethodEmbed").exists();
@@ -217,7 +217,7 @@ public class ComponentBuilderTest extends BaseComponentTest {
         webApplicationComponent.registerChild(comp);
         webApplicationComponent.buildChild(domBuilder);
         logXML(domBuilder);
-        assertDom("//WebApplication/Bee/comp1/Aa").attributeStartsWith("id", "el");
+        assertDom("//WebApplication/Bee/comp1/Aa").attributeStartsWith("id", "c");
         assertDom("//WebApplication/Bee/hidden/Aa").notExists();
     }
     
@@ -317,7 +317,7 @@ public class ComponentBuilderTest extends BaseComponentTest {
         cee.partialRefresh("aa1Update", "aa1");
         webApplicationComponent.buildChildUpdate(domBuilder, componentBuilder);
         logXML(domBuilder);
-        assertDom("//WebApplication/Cee.aa1Update").hasAttribute("id", "el1");
+        assertDom("//WebApplication/Cee.aa1Update").hasAttribute("id", "c1");
         assertDom("//WebApplication/Cee.aa1Update/aa1/Aa").exists();
         assertDom("//WebApplication/Cee.aa1Update/aa2/Aa").notExists();
     }
@@ -332,7 +332,7 @@ public class ComponentBuilderTest extends BaseComponentTest {
         cee.aa2.refresh();
         webApplicationComponent.buildChildUpdate(domBuilder, componentBuilder);
         logXML(domBuilder);
-        assertDom("//WebApplication/Cee.aa1Update").hasAttribute("id", "el1");
+        assertDom("//WebApplication/Cee.aa1Update").hasAttribute("id", "c1");
         assertDom("//WebApplication/Cee.aa1Update/aa1/Aa").exists();
         assertDom("//WebApplication/Cee.aa1Update/aa2/Aa").notExists();
         assertDom("//WebApplication/Aa.update").exists();
