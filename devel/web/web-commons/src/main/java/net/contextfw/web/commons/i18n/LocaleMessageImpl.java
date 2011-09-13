@@ -17,6 +17,10 @@ class LocaleMessageImpl implements LocaleMessage {
     
     @CustomBuild(wrap = false)
     public void build(DOMBuilder b) {
-        b.text(service.getText(name));
+        b.text(toString());
+    }
+    
+    public String toString() {
+        return service.getText(name);
     }
 }
