@@ -74,6 +74,7 @@ public class ComponentUpdateHandler {
         return null;
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private Object invokeWithParams(Component rootComponent, Component component, HttpServletRequest request)
             throws IllegalAccessException, InstantiationException {
 
@@ -86,11 +87,16 @@ public class ComponentUpdateHandler {
     
                 String value = request.getParameter("p" + c);
                 if (value != null) {
+                    Class<?> type = paramTypes.get(c);
                     try {
-                        Constructor<?> constructor = paramTypes.get(c).getConstructor(String.class);
-                        params[c] = constructor.newInstance(value);
+                        if (type.isEnum()) {
+                            params[c] = Enum.valueOf((Class<Enum>) type, value);
+                        } else {
+                            Constructor<?> constructor = type.getConstructor(String.class);
+                            params[c] = constructor.newInstance(value);
+                        }
                     } catch (NoSuchMethodException e) {
-                        params[c] = gson.fromJson(value, paramTypes.get(c));
+                        params[c] = gson.fromJson(value, type);
                     } catch (InvocationTargetException ie) {
                         throw new WebApplicationException(ie);
                     }
