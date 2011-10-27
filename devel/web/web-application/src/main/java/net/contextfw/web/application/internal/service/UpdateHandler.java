@@ -26,12 +26,15 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import net.contextfw.web.application.ResourceCleaner;
+import net.contextfw.web.application.WebApplication;
 import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.internal.page.PageScope;
 import net.contextfw.web.application.internal.page.WebApplicationPage;
 import net.contextfw.web.application.lifecycle.LifecycleListener;
 import net.contextfw.web.application.lifecycle.PageFlowFilter;
+import net.contextfw.web.application.lifecycle.ScopedExecution;
+import net.contextfw.web.application.lifecycle.WebApplicationStorage;
 import net.contextfw.web.application.remote.ResourceResponse;
 
 import org.slf4j.Logger;
@@ -58,15 +61,17 @@ public class UpdateHandler {
 
     @Inject
     private Gson gson;
-    
+
     private final DirectoryWatcher watcher;
-    
+
     private final ResourceCleaner cleaner;
 
     private final PageScope pageScope;
-    
+
     private final long maxInactivity;
-    
+
+    private final WebApplicationStorage storage;
+
     @Inject
     public UpdateHandler(
             PageScope pageScope,
@@ -74,114 +79,111 @@ public class UpdateHandler {
             PageFlowFilter pageFlowFilter,
             DirectoryWatcher watcher,
             ResourceCleaner cleaner,
+            WebApplicationStorage storage,
             Configuration configuration) {
-    	
+
         this.pageScope = pageScope;
         this.listeners = listeners;
         this.pageFlowFilter = pageFlowFilter;
         this.maxInactivity = configuration.get(Configuration.MAX_INACTIVITY);
-        
+        this.storage = storage;
+
         if (configuration.get(Configuration.DEVELOPMENT_MODE)) {
-        	this.cleaner = cleaner;
-        	this.watcher = watcher;
+            this.cleaner = cleaner;
+            this.watcher = watcher;
         } else {
-        	this.cleaner = null;
-        	this.watcher = null;
+            this.cleaner = null;
+            this.watcher = null;
         }
     }
 
     private int getCommandStart(String[] splits) {
         if (splits.length > 2) {
             String command = splits[splits.length - 2];
-            if  (CONTEXTFW_REMOVE.equals(command) || 
-                 CONTEXTFW_REFRESH.equals(command)) {
+            if (CONTEXTFW_REMOVE.equals(command) ||
+                    CONTEXTFW_REFRESH.equals(command)) {
                 return splits.length - 2;
             }
         }
         if (splits.length > 4) {
             String command = splits[splits.length - 4];
-            if  (CONTEXTFW_UPDATE.equals(command)) {
-                return splits.length -4;
+            if (CONTEXTFW_UPDATE.equals(command)) {
+                return splits.length - 4;
             }
         }
         if (splits.length > 5) {
             String command = splits[splits.length - 5];
             if (CONTEXTFW_UPDATE.equals(command)) {
-                return splits.length -5;
+                return splits.length - 5;
             }
         }
         return -1;
     }
-    
-    public final void handleRequest(HttpServlet servlet, 
-                                    HttpServletRequest request, 
-                                    HttpServletResponse response)
+
+    public final void handleRequest(final HttpServlet servlet,
+            final HttpServletRequest request,
+            final HttpServletResponse response)
             throws ServletException, IOException {
 
-    	if (watcher != null && watcher.hasChanged()) {
-    		logger.info("Reloading resources");
-    		cleaner.clean();
-    	}
-    	
-        String[] uriSplits = request.getRequestURI().split("/");
-        int commandStart = getCommandStart(uriSplits); 
+        if (watcher != null && watcher.hasChanged()) {
+            logger.info("Reloading resources");
+            cleaner.clean();
+        }
+
+        final String[] uriSplits = request.getRequestURI().split("/");
+        final int commandStart = getCommandStart(uriSplits);
         if (commandStart != -1) {
-            
+
             String command = uriSplits[commandStart];
-            String handlerStr = uriSplits[commandStart + 1];
+            WebApplicationHandle handle = new WebApplicationHandle(uriSplits[commandStart + 1]);
+            final String remoteAddr = pageFlowFilter.getRemoteAddr(request);
 
-            if (!CONTEXTFW_REMOVE.equals(command)) {
-                if (!pageFlowFilter.beforePageUpdate(
-                        pageScope.getPageCount(),
-                        request, 
-                        response)) {
-                    return;
+            if (CONTEXTFW_REMOVE.equals(command)) {
+                if (storage.remove(handle)) {
+                    pageFlowFilter.pageRemoved(
+                            storage.getPageCount(),
+                            remoteAddr,
+                            handle.getKey());
                 }
-            }
-            
-            String remoteAddr = pageFlowFilter.getRemoteAddr(request);
+                response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            } else if (CONTEXTFW_REFRESH.equals(command)) {
+                storage.refresh(handle, remoteAddr, maxInactivity);
+                response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            } else if (CONTEXTFW_UPDATE.equals(command)) {
+                storage.refresh(handle, remoteAddr, maxInactivity);
+                storage.execute(handle, remoteAddr, new ScopedExecution() {
+                    @Override
+                    public void execute(WebApplication application) throws IOException {
+                        if (application == null) {
+                            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                        } else {
+                            WebApplicationPage page = (WebApplicationPage) application;
 
-            WebApplicationPage page = pageScope.findPage(
-                    new WebApplicationHandle(handlerStr),                  
-                    remoteAddr);
+                            UpdateInvocation invocation = UpdateInvocation.NOT_DELAYED;
 
-            if (page == null) {
-                response.sendError(HttpServletResponse.SC_NOT_FOUND);
-            } else {
-                UpdateInvocation invocation = UpdateInvocation.NOT_DELAYED;
-                synchronized (page) {
-                    
-                    pageScope.activatePage(page, servlet, request, response);
+                            pageScope.activatePage(page, servlet, request, response);
 
-                    if (CONTEXTFW_REMOVE.equals(command)) {
-                        pageScope.removePage(page.getHandle());
-
-                        pageFlowFilter.pageRemoved(
-                                    pageScope.getPageCount(),
+                            int updateCount = storage.refresh(page.getHandle(),
                                     remoteAddr,
-                                    handlerStr);
-
-                        response.setStatus(HttpServletResponse.SC_NO_CONTENT);
-                    } else {
-                        int updateCount = pageScope.refreshPage(page, maxInactivity);
-                        try {
-                            pageFlowFilter.onPageUpdate(
-                                        pageScope.getPageCount(),
+                                    maxInactivity);
+                            try {
+                                pageFlowFilter.onPageUpdate(
+                                        storage.getPageCount(),
                                         remoteAddr,
-                                        handlerStr,
+                                        page.getHandle().getKey(),
                                         updateCount);
-                            if (CONTEXTFW_UPDATE.equals(command)) {
-                                invocation = 
-                                    page.getWebApplication().updateState(
-                                            listeners.beforeUpdate(), 
-                                            uriSplits[commandStart+2],
-                                            uriSplits[commandStart+3]);
+
+                                invocation =
+                                        page.getWebApplication().updateState(
+                                                listeners.beforeUpdate(),
+                                                uriSplits[commandStart + 2],
+                                                uriSplits[commandStart + 3]);
                                 if (invocation.isDelayed()) {
                                     pageScope.deactivateCurrentPage();
                                     return;
                                 }
                                 listeners.afterUpdate();
-                                
+
                                 if (!invocation.isResource()) {
                                     listeners.beforeRender();
                                     setHeaders(response);
@@ -189,23 +191,22 @@ public class UpdateHandler {
                                     page.getWebApplication().sendResponse();
                                     listeners.afterRender();
                                 }
-                            } else if (CONTEXTFW_REFRESH.equals(command)) {
-                                response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+                            } catch (Exception e) {
+                                listeners.onException(e);
+                            } finally {
+                                pageScope.deactivateCurrentPage();
                             }
-                        } catch (Exception e) {
-                            listeners.onException(e);
-                        } finally {
-                            pageScope.deactivateCurrentPage();
+                            if (invocation.isResource()) {
+                                handleResource(request, response, invocation);
+                            } else {
+                                response.getWriter().close();
+                            }
                         }
                     }
-                }
-                if (invocation.isResource()) {
-                    handleResource(request, response, invocation);
-                } else {
-                    response.getWriter().close();
-                }
+                });
             }
-        } else {
+        }
+        else {
             response.sendError(HttpServletResponse.SC_BAD_REQUEST);
         }
     }

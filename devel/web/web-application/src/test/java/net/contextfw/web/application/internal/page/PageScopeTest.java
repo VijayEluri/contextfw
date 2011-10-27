@@ -26,15 +26,23 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 
+import java.io.IOException;
+
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import net.contextfw.application.AbstractTest;
 import net.contextfw.web.application.HttpContext;
+import net.contextfw.web.application.WebApplication;
 import net.contextfw.web.application.WebApplicationHandle;
+import net.contextfw.web.application.configuration.Configuration;
+import net.contextfw.web.application.lifecycle.DefaultPageFlowFilter;
+import net.contextfw.web.application.lifecycle.DefaultWebApplicationStorage;
 import net.contextfw.web.application.lifecycle.PageFlowFilter;
+import net.contextfw.web.application.lifecycle.ScopedExecution;
 
+import org.apache.commons.lang.mutable.MutableBoolean;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -55,9 +63,19 @@ public class PageScopeTest extends AbstractTest {
     
     private PageScope pageScope;
     
+    private DefaultWebApplicationStorage storage;
+    
+    private WebApplicationPage page;
+    
     @Before
-    public void setup() {
+    public void setup() throws IOException {
+        storage = new DefaultWebApplicationStorage(
+                Configuration.getDefaults(),
+                new DefaultPageFlowFilter());
+        
         pageScope = new PageScope();
+        
+        pageScope.setStorage(storage);
         request = createMock(HttpServletRequest.class);
         servlet = createMock(HttpServlet.class);
         response = createMock(HttpServletResponse.class);
@@ -66,17 +84,29 @@ public class PageScopeTest extends AbstractTest {
         replay(request, servlet, response);
         servlet = createMock(HttpServlet.class);
         response = createMock(HttpServletResponse.class);
+        
+        page = pageScope.createPage(LOCALHOST, servlet, request, response, MAX_INACTIVITY);
+        
+        final MutableBoolean executionRun = new MutableBoolean(false);
+        storage.execute(page.getHandle(), page, LOCALHOST, new ScopedExecution() {
+            @Override
+            public void execute(WebApplication application) throws IOException {
+                executionRun.setValue(true);
+                assertEquals(page, application);
+            }
+        });
+        assertTrue(executionRun.booleanValue());
     }
     
     @Test(expected=OutOfScopeException.class)
     public void No_Page_Scope() {
+        pageScope.deactivateCurrentPage();
         pageScope.scope(Key.get(PageScopedBean.class), null).get();
     }
     
     @Test
     public void Get_Bean() {
         PageScopedBean scoped = new PageScopedBean();
-        WebApplicationPage page = pageScope.createPage(LOCALHOST, servlet, request, response, MAX_INACTIVITY);
         assertNotNull(page.getHandle());
         @SuppressWarnings("unchecked")
         Provider<PageScopedBean> unscoped = createMock(Provider.class);
@@ -89,56 +119,99 @@ public class PageScopeTest extends AbstractTest {
     
     @Test
     public void Get_Initially_PageScoped_Beans() {
-        WebApplicationPage page = pageScope.createPage(LOCALHOST, servlet, request, response, MAX_INACTIVITY);
         assertEquals(page.getHandle(), 
                 pageScope.scope(Key.get(WebApplicationHandle.class), null).get());
     }
     
     @Test
     public void Refresh_Increments_Count() {
-        WebApplicationPage page = pageScope.createPage(LOCALHOST, servlet, request, response, MAX_INACTIVITY);
-        assertEquals(1, pageScope.refreshPage(page.getHandle(), LOCALHOST, MAX_INACTIVITY));
-        assertEquals(2, pageScope.refreshPage(page.getHandle(), LOCALHOST, MAX_INACTIVITY));
+        assertEquals(1, storage.refresh(page.getHandle(), LOCALHOST, MAX_INACTIVITY).intValue());
+        assertEquals(2, storage.refresh(page.getHandle(), LOCALHOST, MAX_INACTIVITY).intValue());
     }
     
     @Test
     public void Page_Is_Not_Expired() {
         long now = System.currentTimeMillis();
-        WebApplicationPage page = pageScope.createPage(LOCALHOST, servlet, request, response, MAX_INACTIVITY);
-        pageScope.refreshPage(page.getHandle(), LOCALHOST, MAX_INACTIVITY);
+        storage.refresh(page.getHandle(), LOCALHOST, MAX_INACTIVITY);
         assertFalse(page.isExpired(now));
     }
     
     @Test
     public void Page_Is_Expired() {
         long now = System.currentTimeMillis();
-        WebApplicationPage page = pageScope.createPage(LOCALHOST, servlet, request, response, MAX_INACTIVITY);
-        pageScope.refreshPage(page.getHandle(), LOCALHOST, MAX_INACTIVITY);
+        storage.refresh(page.getHandle(), LOCALHOST, MAX_INACTIVITY);
         assertTrue(page.isExpired(now + MAX_INACTIVITY + 1000));
     }
     
     @Test
-    public void Expired_Page_Is_Removed() throws InterruptedException {
+    public void Expired_Page_Is_Removed() throws InterruptedException, IOException {
         PageFlowFilter filter = createMock(PageFlowFilter.class);
         replay(filter);
-        WebApplicationPage page = pageScope.createPage(LOCALHOST, servlet, request, response, MAX_INACTIVITY);
-        assertEquals(page, pageScope.findPage(page.getHandle(), LOCALHOST));
-        pageScope.refreshPage(page.getHandle(), LOCALHOST, MAX_INACTIVITY);
+        {
+            final MutableBoolean executionRun = new MutableBoolean(false);
+            storage.execute(page.getHandle(), page, LOCALHOST, new ScopedExecution() {
+                @Override
+                public void execute(WebApplication application) throws IOException {
+                    executionRun.setValue(true);
+                    assertEquals(page, application);
+                }
+            });
+            assertTrue(executionRun.booleanValue());
+        }
+        storage.refresh(page.getHandle(), LOCALHOST, MAX_INACTIVITY);
         Thread.sleep(MAX_INACTIVITY + 1);
-        pageScope.removeExpiredPages(filter);
-        assertNull(pageScope.findPage(page.getHandle(), LOCALHOST));
+        storage.removeExpiredPages(filter);
+        {
+            final MutableBoolean executionRun = new MutableBoolean(false);
+            storage.execute(page.getHandle(), LOCALHOST, new ScopedExecution() {
+                @Override
+                public void execute(WebApplication application) throws IOException {
+                    executionRun.setValue(true);
+                    assertNull(application);
+                }
+            });
+            assertTrue(executionRun.booleanValue());
+        }
     }
     
     @Test
-    public void Activate_From_Wrong_Address() {
-        WebApplicationPage page = pageScope.createPage(LOCALHOST, servlet, request, response, MAX_INACTIVITY);
-        assertNull(pageScope.findPage(page.getHandle(), "10.0.0.1"));
+    public void Activate_From_Wrong_Address() throws IOException {
+        {
+            final MutableBoolean executionRun = new MutableBoolean(false);
+            storage.execute(page.getHandle(), LOCALHOST, new ScopedExecution() {
+                @Override
+                public void execute(WebApplication application) throws IOException {
+                    executionRun.setValue(true);
+                }
+            });
+            assertTrue(executionRun.booleanValue());
+        }
+        {
+            final MutableBoolean executionRun = new MutableBoolean(false);
+            storage.execute(page.getHandle(), "10.0.0.1", new ScopedExecution() {
+                @Override
+                public void execute(WebApplication application) throws IOException {
+                    executionRun.setValue(true);
+                    assertNull(application);
+                }
+            });
+            assertTrue(executionRun.booleanValue());
+        }
     }
     
     @Test
-    public void Refresh_From_Wrong_Address() {
-        WebApplicationPage page = pageScope.createPage(LOCALHOST, servlet, request, response, MAX_INACTIVITY);
-        assertEquals(0, pageScope.refreshPage(page.getHandle(), "10.0.0.1", MAX_INACTIVITY));
+    public void Refresh_From_Wrong_Address() throws IOException {
+        {
+            final MutableBoolean executionRun = new MutableBoolean(false);
+            storage.execute(page.getHandle(), LOCALHOST, new ScopedExecution() {
+                @Override
+                public void execute(WebApplication application) throws IOException {
+                    executionRun.setValue(true);
+                }
+            });
+            assertTrue(executionRun.booleanValue());
+        }
+        assertNull(storage.refresh(page.getHandle(), "10.0.0.1", MAX_INACTIVITY));
     }
     
     @Test

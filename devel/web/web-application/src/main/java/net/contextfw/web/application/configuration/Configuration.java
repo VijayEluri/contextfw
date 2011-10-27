@@ -40,9 +40,11 @@ import net.contextfw.web.application.internal.configuration.TemporalPropertyImpl
 import net.contextfw.web.application.lifecycle.DefaultLifecycleListener;
 import net.contextfw.web.application.lifecycle.DefaultPageFlowFilter;
 import net.contextfw.web.application.lifecycle.DefaultRequestInvocationFilter;
+import net.contextfw.web.application.lifecycle.DefaultWebApplicationStorage;
 import net.contextfw.web.application.lifecycle.LifecycleListener;
 import net.contextfw.web.application.lifecycle.PageFlowFilter;
 import net.contextfw.web.application.lifecycle.RequestInvocationFilter;
+import net.contextfw.web.application.lifecycle.WebApplicationStorage;
 import net.contextfw.web.application.serialize.AttributeJsonSerializer;
 import net.contextfw.web.application.serialize.AttributeSerializer;
 import net.contextfw.web.application.util.DefaultXMLResponseLogger;
@@ -119,6 +121,8 @@ public class Configuration {
     private static final String KEY_CLASS_RELOADING_ENABLED = "contextfw.classReloadingEnabled";
     
     private static final String KEY_BUILD_PATH = "contextfw.classReloadingPaths";
+    
+    private static final String KEY_WEB_APPLICATION_STORAGE = "contextfw.webApplicationStorage";
 
     /**
      * Creates the default configuration.
@@ -140,6 +144,7 @@ public class Configuration {
           .set(REQUEST_INVOCATION_FILTER, new DefaultRequestInvocationFilter())
           .set(LIFECYCLE_LISTENER.as(DefaultLifecycleListener.class))
           .set(PAGEFLOW_FILTER.as(DefaultPageFlowFilter.class))
+          .set(WEB_APPLICATION_STORAGE.as(DefaultWebApplicationStorage.class))
           .set(RESOURCE_PATH, new HashSet<String>())
           .set(VIEW_COMPONENT_ROOT_PACKAGE, new HashSet<String>())
           // .set(ERROR_TIME.inMinsAndSecs(1, 30))
@@ -250,6 +255,12 @@ public class Configuration {
      */
     public static final BindableProperty<LifecycleListener> LIFECYCLE_LISTENER = 
         new BindablePropertyImpl<LifecycleListener>(KEY_LIFECYCLE_LISTENER);
+    
+    /**
+     * Binds a web application storage to the system
+     */
+    public static final BindableProperty<WebApplicationStorage> WEB_APPLICATION_STORAGE = 
+        new BindablePropertyImpl<WebApplicationStorage>(KEY_WEB_APPLICATION_STORAGE);
 
     /**
      * Binds a request invocation filter to the system

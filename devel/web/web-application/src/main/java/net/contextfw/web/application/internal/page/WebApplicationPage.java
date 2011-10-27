@@ -22,7 +22,7 @@ import net.contextfw.web.application.internal.service.WebApplication;
 
 import com.google.inject.Key;
 
-public interface WebApplicationPage {
+public interface WebApplicationPage extends net.contextfw.web.application.WebApplication {
 
     <T> T setBean(Key<T> key, T value);
     

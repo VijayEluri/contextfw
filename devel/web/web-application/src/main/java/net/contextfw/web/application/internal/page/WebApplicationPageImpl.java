@@ -39,6 +39,8 @@ public class WebApplicationPageImpl implements WebApplicationPage {
     
     private WebApplication webApplication;
     
+    private Object lock;
+    
     public WebApplicationPageImpl(WebApplicationHandle handle, 
                                   String remoteAddr,
                                   long expires) {
@@ -89,6 +91,14 @@ public class WebApplicationPageImpl implements WebApplicationPage {
     @Override
     public void setWebApplication(WebApplication application) {
         this.webApplication = application;
+    }
+
+    public Object getLock() {
+        return lock;
+    }
+
+    public void setLock(Object lock) {
+        this.lock = lock;
     }
     
 }

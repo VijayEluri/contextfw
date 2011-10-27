@@ -19,8 +19,6 @@ package net.contextfw.web.application;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.regex.Pattern;
 
 import net.contextfw.web.application.component.Component;
@@ -37,17 +35,14 @@ import net.contextfw.web.application.lifecycle.LifecycleListener;
 import net.contextfw.web.application.lifecycle.PageFlowFilter;
 import net.contextfw.web.application.lifecycle.PageScoped;
 import net.contextfw.web.application.lifecycle.RequestInvocationFilter;
+import net.contextfw.web.application.lifecycle.WebApplicationStorage;
 import net.contextfw.web.application.serialize.AttributeJsonSerializer;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonSerializer;
 import com.google.inject.AbstractModule;
-import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Provides;
@@ -63,10 +58,9 @@ public final class WebApplicationModule extends AbstractModule {
     
     private PageScope pageScope;
     
-    @Inject
-    private PageFlowFilter pageFlowFilter;
+    //private PageFlowFilter pageFlowFilter;
 
-    private Logger logger = LoggerFactory.getLogger(WebApplicationModule.class);
+    //private Logger logger = LoggerFactory.getLogger(WebApplicationModule.class);
 
     @SuppressWarnings("rawtypes")
     private AutoRegisterListener autoRegisterListener 
@@ -89,6 +83,7 @@ public final class WebApplicationModule extends AbstractModule {
         bind(RequestInvocationFilter.class).toInstance(configuration.get(Configuration.REQUEST_INVOCATION_FILTER));        
         handlePageFlowFilter();
         handleLifecycleListener();
+        handleWebApplicationStorage();
         this.bindListener(Matchers.any(), new TypeListener() {
             @SuppressWarnings("unchecked")
             @Override
@@ -108,6 +103,7 @@ public final class WebApplicationModule extends AbstractModule {
         install(servletModule);
         requestInjection(this);
         requestInjection(autoRegisterListener);
+        requestInjection(pageScope);
     }
 
     @SuppressWarnings("unchecked")
@@ -115,6 +111,7 @@ public final class WebApplicationModule extends AbstractModule {
         Object obj = configuration.get(Configuration.PAGEFLOW_FILTER);
         if (obj instanceof PageFlowFilter) {
             bind(PageFlowFilter.class).toInstance((PageFlowFilter) obj);
+            requestInjection(obj);
         } else {
             bind(PageFlowFilter.class).to((Class<PageFlowFilter>) obj);
         }
@@ -125,8 +122,20 @@ public final class WebApplicationModule extends AbstractModule {
         Object obj = configuration.get(Configuration.LIFECYCLE_LISTENER);
         if (obj instanceof LifecycleListener) {
             bind(LifecycleListener.class).toInstance((LifecycleListener) obj);
+            requestInjection(obj);
         } else {
             bind(LifecycleListener.class).to((Class<LifecycleListener>) obj);
+        }
+    }
+    
+    @SuppressWarnings({ "unchecked" })
+    private void handleWebApplicationStorage() {
+        Object obj = configuration.get(Configuration.WEB_APPLICATION_STORAGE);
+        if (obj instanceof WebApplicationStorage) {
+            bind(WebApplicationStorage.class).toInstance((WebApplicationStorage) obj);
+            requestInjection(obj);
+        } else {
+            bind(WebApplicationStorage.class).to((Class<WebApplicationStorage>) obj);
         }
     }
 
@@ -152,18 +161,6 @@ public final class WebApplicationModule extends AbstractModule {
         }
 
         return builder.create();
-    }
-
-    public void startExpiredPagesRemoval() {
-        Timer timer = new Timer(true);
-        logger.info("Starting scheduled removal for expired web applications");
-
-        timer.schedule(new TimerTask() {
-            public void run() {
-                pageScope.removeExpiredPages(pageFlowFilter);
-            }
-        }, configuration.get(Configuration.REMOVAL_SCHEDULE_PERIOD),
-                configuration.get(Configuration.REMOVAL_SCHEDULE_PERIOD));
     }
 
     @Provides

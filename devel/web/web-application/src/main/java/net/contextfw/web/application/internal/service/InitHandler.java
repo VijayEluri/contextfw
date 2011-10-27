@@ -35,6 +35,8 @@ import net.contextfw.web.application.internal.page.WebApplicationPage;
 import net.contextfw.web.application.internal.servlet.UriMapping;
 import net.contextfw.web.application.lifecycle.LifecycleListener;
 import net.contextfw.web.application.lifecycle.PageFlowFilter;
+import net.contextfw.web.application.lifecycle.ScopedExecution;
+import net.contextfw.web.application.lifecycle.WebApplicationStorage;
 import net.contextfw.web.application.remote.ErrorResolution;
 
 import org.slf4j.Logger;
@@ -46,8 +48,8 @@ import com.google.inject.Provider;
 public class InitHandler {
 
     private Logger logger = LoggerFactory.getLogger(InitHandler.class);
-    
-    private static final long HOUR = 1000*60*3600;
+
+    private static final long HOUR = 1000 * 60 * 3600;
 
     // private final InitializerProvider initializers;
     @Inject
@@ -58,6 +60,8 @@ public class InitHandler {
     private PageFlowFilter pageFlowFilter;
     @Inject
     private PageScope pageScope;
+    @Inject
+    private WebApplicationStorage storage;
 
     private final long initialMaxInactivity;
 
@@ -73,11 +77,11 @@ public class InitHandler {
     }
 
     public final void handleRequest(
-            UriMapping mapping,
+            final UriMapping mapping,
             List<Class<? extends Component>> chain,
-            HttpServlet servlet,
-            HttpServletRequest request,
-            HttpServletResponse response)
+            final HttpServlet servlet,
+            final HttpServletRequest request,
+            final HttpServletResponse response)
             throws ServletException, IOException {
 
         if (watcher != null && watcher.hasChanged()) {
@@ -85,8 +89,10 @@ public class InitHandler {
             cleaner.clean();
         }
 
-        if (!pageFlowFilter.beforePageCreate(
-                pageScope.getPageCount(), request, response)) {
+        final String remoteAddr = pageFlowFilter.getRemoteAddr(request);
+        final int pageCount = storage.getPageCount();
+
+        if (!pageFlowFilter.beforePageCreate(pageCount, request, response)) {
             return;
         }
 
@@ -106,46 +112,58 @@ public class InitHandler {
                     request,
                     response);
 
-            synchronized (page) {
-                try {
+            storage.execute(page.getHandle(),
+                    page,
+                    remoteAddr,
+                    new ScopedExecution() {
+                        @Override
+                        public void execute(net.contextfw.web.application.WebApplication application)
+                                throws IOException {
+                            try {
 
-                    pageFlowFilter.onPageCreate(
-                                pageScope.getPageCount(),
-                                pageFlowFilter.getRemoteAddr(request),
-                                page.getHandle().getKey());
+                                WebApplicationPage page = (WebApplicationPage) application;
 
-                    listeners.beforeInitialize();
-                    page.getWebApplication().initState(mapping);
-                    listeners.afterInitialize();
-                    listeners.beforeRender();
-                    boolean expired = page.getWebApplication().sendResponse();
-                    listeners.afterRender();
+                                pageFlowFilter.onPageCreate(
+                                        pageCount,
+                                        remoteAddr,
+                                        page.getHandle().getKey());
 
-                    // Setting expiration here so that long page processing is
-                    // not
-                    // penalizing client
-                    if (expired) {
-                        pageScope.refreshPage(page, 0);
-                    } else {
-                        pageScope.refreshPage(page, initialMaxInactivity);
-                    }
+                                listeners.beforeInitialize();
+                                page.getWebApplication().initState(mapping);
+                                listeners.afterInitialize();
+                                listeners.beforeRender();
+                                boolean expired = page.getWebApplication().sendResponse();
+                                listeners.afterRender();
 
-                } catch (Exception e) {
-                    // TODO Fix this construct with test
-                    if (e instanceof MetaComponentException) {
-                        ErrorResolution resolution =
-                                ((MetaComponentException) e).getResolution();
-                        if (resolution == ErrorResolution.SEND_NOT_FOUND_ERROR) {
-                            response.sendError(HttpServletResponse.SC_NOT_FOUND);
-                        } else if (resolution == ErrorResolution.SEND_BAD_REQUEST_ERROR) {
-                            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                                // Setting expiration here so that long page
+                                // processing is
+                                // not
+                                // penalizing client
+                                if (expired) {
+                                    storage.refresh(page.getHandle(), remoteAddr, 0L);
+                                } else {
+                                    storage.refresh(page.getHandle(), remoteAddr, 
+                                            initialMaxInactivity);
+                                }
+
+                            } catch (Exception e) {
+                                // TODO Fix this construct with test
+                                if (e instanceof MetaComponentException) {
+                                    ErrorResolution resolution =
+                                            ((MetaComponentException) e).getResolution();
+                                    if (resolution == ErrorResolution.SEND_NOT_FOUND_ERROR) {
+                                        response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                                    } else if (resolution == ErrorResolution.SEND_BAD_REQUEST_ERROR) {
+                                        response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                                    }
+                                }
+                                listeners.onException(e);
+                            } finally {
+                                pageScope.deactivateCurrentPage();
+                            }
+
                         }
-                    }
-                    listeners.onException(e);
-                } finally {
-                    pageScope.deactivateCurrentPage();
-                }
-            }
+                    });
         }
     }
 
@@ -154,15 +172,15 @@ public class InitHandler {
             HttpServlet servlet,
             HttpServletRequest request,
             HttpServletResponse response) {
-        
+
         WebApplicationPage page = pageScope.createPage(
                 pageFlowFilter.getRemoteAddr(request),
                 servlet, request, response, HOUR);
-        
+
         WebApplication app = webApplicationProvider.get();
         app.setInitializerChain(chain);
         page.setWebApplication(app);
-        
+
         return page;
     }
 
