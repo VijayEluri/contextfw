@@ -42,7 +42,7 @@ public interface WebApplication {
     /**
      * This is called when page is updated
      */
-    UpdateInvocation updateState(boolean updateComponents, String componentId, String method);
+    UpdateInvocation updateState(String componentId, String method);
     
     void setInitializerChain(List<Class<? extends Component>> chain);
 }

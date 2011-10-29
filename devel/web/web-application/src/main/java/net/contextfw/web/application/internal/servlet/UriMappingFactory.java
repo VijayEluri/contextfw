@@ -225,7 +225,7 @@ public class UriMappingFactory {
                     List<Class<? extends Component>> chain =
                             initializerProvider.getInitializerChain(cl);
 
-                    InitServlet servlet = new InitServlet(initHandler, chain, filter);
+                    InitServlet servlet = new InitServlet(initHandler, chain, filter, classLoader);
 
                     for (String url : annotation.url()) {
                         if (!"".equals(url)) {

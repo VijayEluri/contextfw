@@ -53,7 +53,7 @@ public class InitServlet extends HttpServlet {
     private final RequestInvocation invocation = new RequestInvocation() {
         @Override
         public void invoke(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-            handler.handleRequest(getMapping(), chain, InitServlet.this, request, response);
+            handler.handleRequest(getMapping(), chain, InitServlet.this, request, response, classLoader);
         }
     };
 
@@ -61,6 +61,8 @@ public class InitServlet extends HttpServlet {
             value={"SE_BAD_FIELD", "MSF_MUTABLE_SERVLET_FIELD"}, 
             justification="I know what I'm doing")
     private UriMapping mapping;
+
+    private final ClassLoader classLoader;
     
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -74,10 +76,12 @@ public class InitServlet extends HttpServlet {
 
     public InitServlet(InitHandler handler,
                        List<Class<? extends Component>> chain,
-                       RequestInvocationFilter filter) {
+                       RequestInvocationFilter filter,
+                       ClassLoader classLoader) {
         this.handler = handler;
         this.chain = chain;
         this.filter = filter;
+        this.classLoader = classLoader;
     }
 
     public void setMapping(UriMapping mapping) {

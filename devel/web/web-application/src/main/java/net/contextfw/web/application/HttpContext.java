@@ -31,9 +31,9 @@ import net.contextfw.web.application.lifecycle.PageScoped;
 @PageScoped
 public class HttpContext {
 
-    private HttpServlet servlet;
-    private HttpServletRequest request;
-    private HttpServletResponse response;
+    private transient HttpServlet servlet;
+    private transient HttpServletRequest request;
+    private transient HttpServletResponse response;
 
     private final String requestURI;
     private final String queryString;

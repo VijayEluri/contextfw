@@ -39,20 +39,24 @@ public class UpdateServlet extends HttpServlet {
 
     @edu.umd.cs.findbugs.annotations.SuppressWarnings(
             value="SE_BAD_FIELD", justification="I know what I'm doing")
-    private final transient UpdateHandler handler;
+    @Inject
+    private transient UpdateHandler handler;
     
     @edu.umd.cs.findbugs.annotations.SuppressWarnings(
             value="SE_BAD_FIELD", justification="I know what I'm doing")
-    private final RequestInvocationFilter filter;
+    @Inject
+    private RequestInvocationFilter filter;
     
     @edu.umd.cs.findbugs.annotations.SuppressWarnings(
             value="SE_BAD_FIELD", justification="I know what I'm doing")
     private final RequestInvocation invocation = new RequestInvocation() {
         @Override
         public void invoke(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-            handler.handleRequest(UpdateServlet.this, request, response);
+            handler.handleRequest(UpdateServlet.this, request, response, classLoader);
         }
     };
+
+    private ClassLoader classLoader;
     
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
@@ -65,9 +69,11 @@ public class UpdateServlet extends HttpServlet {
     }
 
     @Inject
-    public UpdateServlet(UpdateHandler handler, 
-                         RequestInvocationFilter filter) {
-        this.handler = handler;
-        this.filter = filter;
+    public UpdateServlet() {
+        this.classLoader = Thread.currentThread().getContextClassLoader();
+    }
+
+    public void setClassLoader(ClassLoader classLoader) {
+        this.classLoader = classLoader;
     }
 }

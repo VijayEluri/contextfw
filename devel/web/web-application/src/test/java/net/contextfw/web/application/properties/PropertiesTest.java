@@ -21,7 +21,6 @@ import static net.contextfw.web.application.configuration.Configuration.ATTRIBUT
 import static net.contextfw.web.application.configuration.Configuration.DEVELOPMENT_MODE;
 import static net.contextfw.web.application.configuration.Configuration.LIFECYCLE_LISTENER;
 import static net.contextfw.web.application.configuration.Configuration.NAMESPACE;
-import static net.contextfw.web.application.configuration.Configuration.PAGEFLOW_FILTER;
 import static net.contextfw.web.application.configuration.Configuration.PROPERTY_PROVIDER;
 import static net.contextfw.web.application.configuration.Configuration.REMOVAL_SCHEDULE_PERIOD;
 import static net.contextfw.web.application.configuration.Configuration.RESOURCE_PATH;
@@ -53,7 +52,6 @@ public class PropertiesTest {
         assertTrue(props.get(RESOURCE_PATH).contains("templates.path"));
         assertNotNull(props.get(PROPERTY_PROVIDER));
         assertNotNull(props.get(LIFECYCLE_LISTENER));
-        assertNotNull(props.get(PAGEFLOW_FILTER));
         //assertEquals(((1*60 + 30) * 1000), props.get(ERROR_TIME).longValue());
         //assertEquals((70 * 1000), props.get(POLL_TIME).longValue());
         assertEquals((60000), props.get(REMOVAL_SCHEDULE_PERIOD).longValue());

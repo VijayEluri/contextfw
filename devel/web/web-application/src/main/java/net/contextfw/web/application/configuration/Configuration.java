@@ -38,13 +38,11 @@ import net.contextfw.web.application.internal.configuration.StringPropertyImpl;
 import net.contextfw.web.application.internal.configuration.StringSetPropertyImpl;
 import net.contextfw.web.application.internal.configuration.TemporalPropertyImpl;
 import net.contextfw.web.application.lifecycle.DefaultLifecycleListener;
-import net.contextfw.web.application.lifecycle.DefaultPageFlowFilter;
 import net.contextfw.web.application.lifecycle.DefaultRequestInvocationFilter;
-import net.contextfw.web.application.lifecycle.DefaultWebApplicationStorage;
 import net.contextfw.web.application.lifecycle.LifecycleListener;
-import net.contextfw.web.application.lifecycle.PageFlowFilter;
 import net.contextfw.web.application.lifecycle.RequestInvocationFilter;
-import net.contextfw.web.application.lifecycle.WebApplicationStorage;
+import net.contextfw.web.application.scope.DefaultWebApplicationStorage;
+import net.contextfw.web.application.scope.WebApplicationStorage;
 import net.contextfw.web.application.serialize.AttributeJsonSerializer;
 import net.contextfw.web.application.serialize.AttributeSerializer;
 import net.contextfw.web.application.util.DefaultXMLResponseLogger;
@@ -98,8 +96,6 @@ public class Configuration {
     
     private static final String KEY_REQUEST_INVOCATION_FILTER = "contextfw.requestInvocationFilter";
     
-    private static final String KEY_PAGEFLOW_FILTER = "contextfw.pageFlowFilter";
-
     private static final String KEY_PROPERTY_PROVIDER = "contextfw.propertyProvider";
     
     private static final String KEY_XSL_POST_PROCESSOR = "contextfw.xslPostProcessor";
@@ -143,7 +139,6 @@ public class Configuration {
           .set(PROPERTY_PROVIDER, new SystemPropertyProvider())
           .set(REQUEST_INVOCATION_FILTER, new DefaultRequestInvocationFilter())
           .set(LIFECYCLE_LISTENER.as(DefaultLifecycleListener.class))
-          .set(PAGEFLOW_FILTER.as(DefaultPageFlowFilter.class))
           .set(WEB_APPLICATION_STORAGE.as(DefaultWebApplicationStorage.class))
           .set(RESOURCE_PATH, new HashSet<String>())
           .set(VIEW_COMPONENT_ROOT_PACKAGE, new HashSet<String>())
@@ -268,12 +263,6 @@ public class Configuration {
     public static final SettableProperty<RequestInvocationFilter> REQUEST_INVOCATION_FILTER = 
         new ObjectPropertyImpl<RequestInvocationFilter>(KEY_REQUEST_INVOCATION_FILTER);
     
-    /**
-     * Binds a pageflow filter to the system
-     */
-    public static final BindableProperty<PageFlowFilter> PAGEFLOW_FILTER = 
-        new BindablePropertyImpl<PageFlowFilter>(KEY_PAGEFLOW_FILTER);
-
     /**
      * Binds a response logger for XML.
      * 
@@ -479,6 +468,15 @@ public class Configuration {
     }
     
     /**
+     * Returns the value of given property or default if property is null
+     */
+    @SuppressWarnings("unchecked")
+    public <T> T getOrElse(Property<T> property, T def) {
+        T value = property.validate((T) values.get(property.getKey()));
+        return value != null ? value : def;
+    }
+    
+    /**
      * Set a new property.
      * 
      * <p>
@@ -534,5 +532,9 @@ public class Configuration {
      */
     public <T extends Collection<V>, V> Configuration add(SelfAddableProperty<T, V> property) {
         return new Configuration(values, property, property.add(get(property), property.getValue()));
+    }
+    
+    public static SettableProperty<Boolean> createBooleanProperty(String key) {
+        return new BooleanPropertyImpl(key);
     }
 }

@@ -32,10 +32,9 @@ import net.contextfw.web.application.internal.service.WebApplicationConf;
 import net.contextfw.web.application.internal.util.AttributeHandler;
 import net.contextfw.web.application.internal.util.ObjectAttributeSerializer;
 import net.contextfw.web.application.lifecycle.LifecycleListener;
-import net.contextfw.web.application.lifecycle.PageFlowFilter;
 import net.contextfw.web.application.lifecycle.PageScoped;
 import net.contextfw.web.application.lifecycle.RequestInvocationFilter;
-import net.contextfw.web.application.lifecycle.WebApplicationStorage;
+import net.contextfw.web.application.scope.WebApplicationStorage;
 import net.contextfw.web.application.serialize.AttributeJsonSerializer;
 
 import com.google.gson.Gson;
@@ -72,7 +71,9 @@ public final class WebApplicationModule extends AbstractModule {
 
     @Override
     protected void configure() {
+        handleWebApplicationStorage();
         pageScope = new PageScope();
+        requestInjection(pageScope);
         bindScope(PageScoped.class, pageScope);
         bind(PageScope.class).toInstance(pageScope);
         bind(HttpContext.class).toProvider(pageScope.scope(Key.get(HttpContext.class), null));
@@ -81,9 +82,8 @@ public final class WebApplicationModule extends AbstractModule {
         bind(Configuration.class).toInstance(configuration);
         bind(PropertyProvider.class).toInstance(configuration.get(Configuration.PROPERTY_PROVIDER));
         bind(RequestInvocationFilter.class).toInstance(configuration.get(Configuration.REQUEST_INVOCATION_FILTER));        
-        handlePageFlowFilter();
         handleLifecycleListener();
-        handleWebApplicationStorage();
+        
         this.bindListener(Matchers.any(), new TypeListener() {
             @SuppressWarnings("unchecked")
             @Override
@@ -96,25 +96,16 @@ public final class WebApplicationModule extends AbstractModule {
             }
         });
 
-        WebApplicationServletModule servletModule =
-                new WebApplicationServletModule(configuration,
-                        configuration.get(Configuration.PROPERTY_PROVIDER));
-
-        install(servletModule);
         requestInjection(this);
         requestInjection(autoRegisterListener);
-        requestInjection(pageScope);
-    }
+        
+        WebApplicationServletModule servletModule =
+                new WebApplicationServletModule(configuration,
+                        configuration.get(Configuration.PROPERTY_PROVIDER),
+                        pageScope);
 
-    @SuppressWarnings("unchecked")
-    private void handlePageFlowFilter() {
-        Object obj = configuration.get(Configuration.PAGEFLOW_FILTER);
-        if (obj instanceof PageFlowFilter) {
-            bind(PageFlowFilter.class).toInstance((PageFlowFilter) obj);
-            requestInjection(obj);
-        } else {
-            bind(PageFlowFilter.class).to((Class<PageFlowFilter>) obj);
-        }
+        install(servletModule);
+        
     }
 
     @SuppressWarnings({ "unchecked" })

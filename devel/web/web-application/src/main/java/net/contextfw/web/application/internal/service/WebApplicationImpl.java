@@ -45,6 +45,7 @@ import net.contextfw.web.application.lifecycle.PageScoped;
 import net.contextfw.web.application.lifecycle.ResourceView;
 import net.contextfw.web.application.remote.ResourceBody;
 import net.contextfw.web.application.remote.ResourceResponse;
+import net.contextfw.web.application.scope.Provided;
 
 import com.google.gson.Gson;
 import com.google.inject.Inject;
@@ -54,17 +55,21 @@ import com.google.inject.Injector;
 public class WebApplicationImpl implements WebApplication {
 
     @Inject
+    @Provided
     private Gson gson;
     
     @Inject
+    @Provided
     private ComponentUpdateHandlerFactory euhf;
 
     @Inject
+    @Provided
     private ComponentBuilder builder;
 
     private static volatile Map<String, ComponentUpdateHandler> updateHandlers = new HashMap<String, ComponentUpdateHandler>();
 
     @Inject
+    @Provided
     private Injector injector;
 
     @Inject
@@ -83,11 +88,13 @@ public class WebApplicationImpl implements WebApplication {
     private InitializerContextImpl context;
 
     @Inject
+    @Provided
     private WebResponder responder;
 
     private Mode mode = Mode.INIT;
 
     @Inject
+    @Provided
     private AttributeHandler attributes;
 
     @Inject
@@ -203,7 +210,7 @@ public class WebApplicationImpl implements WebApplication {
                                conf.getNamespaces());
         }
 
-        d.attr("handle", webApplicationHandle.getKey());
+        d.attr("handle", webApplicationHandle.toString());
         d.attr("contextPath", httpContext.getRequest().getContextPath());
 
         if (context.getLocale() != null) {
@@ -233,13 +240,9 @@ public class WebApplicationImpl implements WebApplication {
     }
 
     @Override
-    public UpdateInvocation updateState(boolean updateComponents, String componentId, String method) {
+    public UpdateInvocation updateState(String componentId, String method) {
         mode = Mode.UPDATE;
-        if (updateComponents) {
-            return updateElements(componentId, method);
-        } else {
-            return UpdateInvocation.NOT_DELAYED;
-        }
+        return updateElements(componentId, method);
     }
 
     @SuppressWarnings("unchecked")

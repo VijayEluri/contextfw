@@ -28,17 +28,9 @@ public interface WebApplicationPage extends net.contextfw.web.application.WebApp
     
     <T> T getBean(Key<T> key);
     
-    String getRemoteAddr();
-    
     WebApplicationHandle getHandle();
     
     WebApplication getWebApplication();
     
     void setWebApplication(WebApplication application);
-    
-    int refresh(long expires);
-    
-    boolean isExpired(long now);
-    
-    
 }

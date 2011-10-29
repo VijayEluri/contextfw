@@ -34,19 +34,19 @@ import com.google.inject.Injector;
 
 public class InitializerContextImpl implements ViewContext {
 
-    private final List<Class<? extends Component>> chain;
-    private final Injector injector;
+    private final transient List<Class<? extends Component>> chain;
+    private final transient Injector injector;
     
     private int currentIndex = 0;
     
     private Locale locale = null;
     
-    private Component leaf;
+    private transient Component leaf;
     
-    private final ComponentBuilder componentBuilder;
-    private final UriMapping mapping;
-    private final String uri;
-    private final HttpServletRequest request;
+    private final transient ComponentBuilder componentBuilder;
+    private final transient UriMapping mapping;
+    private final transient String uri;
+    private final transient HttpServletRequest request;
     
     public InitializerContextImpl(ComponentBuilder componentBuilder,
                                   UriMapping mapping,

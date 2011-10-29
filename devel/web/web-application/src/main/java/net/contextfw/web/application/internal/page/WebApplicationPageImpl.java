@@ -31,22 +31,9 @@ public class WebApplicationPageImpl implements WebApplicationPage {
 
     private Map<Key<?>, Object> beans = new HashMap<Key<?>, Object>();
 
-    private final String remoteAddr;
-    
-    private long expires = 0;
-    
-    private int updateCount = 0;
-    
     private WebApplication webApplication;
     
-    private Object lock;
-    
-    public WebApplicationPageImpl(WebApplicationHandle handle, 
-                                  String remoteAddr,
-                                  long expires) {
-        this.remoteAddr = remoteAddr;
-        beans.put(HANDLE_KEY, handle);
-        this.expires = expires;
+    public WebApplicationPageImpl() {
     }
     
     @Override
@@ -60,23 +47,6 @@ public class WebApplicationPageImpl implements WebApplicationPage {
     public <T> T getBean(Key<T> key) {
         return (T) beans.get(key);
     }
-
-    @Override
-    public String getRemoteAddr() {
-        return remoteAddr;
-    }
-
-    @Override
-    public int refresh(long expires) {
-        this.expires = expires;
-        return ++updateCount;
-    }
-
-    @Override
-    public boolean isExpired(long now) {
-        return now > expires;
-    }
-
 
     @Override
     public WebApplicationHandle getHandle() {
@@ -93,12 +63,8 @@ public class WebApplicationPageImpl implements WebApplicationPage {
         this.webApplication = application;
     }
 
-    public Object getLock() {
-        return lock;
+    @Override
+    public void setHandle(WebApplicationHandle handle) {
+        beans.put(HANDLE_KEY, handle);
     }
-
-    public void setLock(Object lock) {
-        this.lock = lock;
-    }
-    
 }

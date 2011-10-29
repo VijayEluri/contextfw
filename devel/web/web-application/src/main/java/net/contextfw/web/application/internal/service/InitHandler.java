@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import net.contextfw.web.application.ResourceCleaner;
+import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.internal.component.MetaComponentException;
@@ -34,11 +35,11 @@ import net.contextfw.web.application.internal.page.PageScope;
 import net.contextfw.web.application.internal.page.WebApplicationPage;
 import net.contextfw.web.application.internal.servlet.UriMapping;
 import net.contextfw.web.application.lifecycle.LifecycleListener;
-import net.contextfw.web.application.lifecycle.PageFlowFilter;
-import net.contextfw.web.application.lifecycle.ScopedExecution;
-import net.contextfw.web.application.lifecycle.WebApplicationStorage;
 import net.contextfw.web.application.remote.ErrorResolution;
+import net.contextfw.web.application.scope.ScopedWebApplicationExecution;
+import net.contextfw.web.application.scope.WebApplicationStorage;
 
+import org.apache.commons.lang.mutable.MutableBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,10 +57,9 @@ public class InitHandler {
     private Provider<WebApplication> webApplicationProvider;
     @Inject
     private LifecycleListener listeners;
-    @Inject
-    private PageFlowFilter pageFlowFilter;
-    @Inject
+    
     private PageScope pageScope;
+    
     @Inject
     private WebApplicationStorage storage;
 
@@ -71,17 +71,19 @@ public class InitHandler {
 
     private final boolean developmentMode;
 
-    public InitHandler(Configuration properties) {
+    public InitHandler(Configuration properties, PageScope pageScope) {
         initialMaxInactivity = properties.get(Configuration.INITIAL_MAX_INACTIVITY);
         developmentMode = properties.get(Configuration.DEVELOPMENT_MODE);
+        this.pageScope = pageScope;
     }
 
     public final void handleRequest(
             final UriMapping mapping,
-            List<Class<? extends Component>> chain,
+            final List<Class<? extends Component>> chain,
             final HttpServlet servlet,
             final HttpServletRequest request,
-            final HttpServletResponse response)
+            final HttpServletResponse response,
+            ClassLoader classLoader)
             throws ServletException, IOException {
 
         if (watcher != null && watcher.hasChanged()) {
@@ -89,10 +91,7 @@ public class InitHandler {
             cleaner.clean();
         }
 
-        final String remoteAddr = pageFlowFilter.getRemoteAddr(request);
-        final int pageCount = storage.getPageCount();
-
-        if (!pageFlowFilter.beforePageCreate(pageCount, request, response)) {
+        if (!listeners.beforeInitialize(servlet, request, response)) {
             return;
         }
 
@@ -106,55 +105,39 @@ public class InitHandler {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         } else {
 
-            WebApplicationPage page = createPage(
-                    chain,
-                    servlet,
-                    request,
-                    response);
-
-            storage.execute(page.getHandle(),
+            WebApplicationPage page = pageScope.createPage(servlet, request, response);
+            final MutableBoolean expired = new MutableBoolean(false);
+            storage.initialize(
                     page,
-                    remoteAddr,
-                    new ScopedExecution() {
+                    request,
+                    System.currentTimeMillis() + HOUR,
+                    classLoader,
+                    new ScopedWebApplicationExecution() {
                         @Override
-                        public void execute(net.contextfw.web.application.WebApplication application)
-                                throws IOException {
+                        public void execute(net.contextfw.web.application.WebApplication application) {
                             try {
-
                                 WebApplicationPage page = (WebApplicationPage) application;
-
-                                pageFlowFilter.onPageCreate(
-                                        pageCount,
-                                        remoteAddr,
-                                        page.getHandle().getKey());
-
-                                listeners.beforeInitialize();
+                                WebApplication app = webApplicationProvider.get();
+                                app.setInitializerChain(chain);
+                                page.setWebApplication(app);
                                 page.getWebApplication().initState(mapping);
                                 listeners.afterInitialize();
                                 listeners.beforeRender();
-                                boolean expired = page.getWebApplication().sendResponse();
+                                expired.setValue(page.getWebApplication().sendResponse());
                                 listeners.afterRender();
-
-                                // Setting expiration here so that long page
-                                // processing is
-                                // not
-                                // penalizing client
-                                if (expired) {
-                                    storage.refresh(page.getHandle(), remoteAddr, 0L);
-                                } else {
-                                    storage.refresh(page.getHandle(), remoteAddr, 
-                                            initialMaxInactivity);
-                                }
-
                             } catch (Exception e) {
                                 // TODO Fix this construct with test
                                 if (e instanceof MetaComponentException) {
                                     ErrorResolution resolution =
                                             ((MetaComponentException) e).getResolution();
-                                    if (resolution == ErrorResolution.SEND_NOT_FOUND_ERROR) {
-                                        response.sendError(HttpServletResponse.SC_NOT_FOUND);
-                                    } else if (resolution == ErrorResolution.SEND_BAD_REQUEST_ERROR) {
-                                        response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                                    try {
+                                        if (resolution == ErrorResolution.SEND_NOT_FOUND_ERROR) {
+                                            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                                        } else if (resolution == ErrorResolution.SEND_BAD_REQUEST_ERROR) {
+                                            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
+                                        }
+                                    } catch (IOException e1) {
+                                        throw new WebApplicationException(e1);
                                     }
                                 }
                                 listeners.onException(e);
@@ -164,24 +147,19 @@ public class InitHandler {
 
                         }
                     });
+            // Setting expiration here so that long page
+            // processing is
+            // not
+            // penalizing client
+            if (expired.booleanValue()) {
+                storage.remove(page.getHandle(), request);
+            } else {
+                storage.refresh(
+                        page.getHandle(), 
+                        request,
+                        System.currentTimeMillis() + initialMaxInactivity);
+            }
         }
-    }
-
-    private WebApplicationPage createPage(
-            List<Class<? extends Component>> chain,
-            HttpServlet servlet,
-            HttpServletRequest request,
-            HttpServletResponse response) {
-
-        WebApplicationPage page = pageScope.createPage(
-                pageFlowFilter.getRemoteAddr(request),
-                servlet, request, response, HOUR);
-
-        WebApplication app = webApplicationProvider.get();
-        app.setInitializerChain(chain);
-        page.setWebApplication(app);
-
-        return page;
     }
 
     @Inject
@@ -196,5 +174,9 @@ public class InitHandler {
         if (developmentMode) {
             this.cleaner = cleaner;
         }
+    }
+
+    public void setPageScope(PageScope pageScope) {
+        this.pageScope = pageScope;
     }
 }

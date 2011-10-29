@@ -19,6 +19,8 @@ package net.contextfw.web.application.internal.service;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -27,15 +29,17 @@ import javax.servlet.http.HttpServletResponse;
 
 import net.contextfw.web.application.ResourceCleaner;
 import net.contextfw.web.application.WebApplication;
+import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.internal.page.PageScope;
 import net.contextfw.web.application.internal.page.WebApplicationPage;
 import net.contextfw.web.application.lifecycle.LifecycleListener;
-import net.contextfw.web.application.lifecycle.PageFlowFilter;
-import net.contextfw.web.application.lifecycle.ScopedExecution;
-import net.contextfw.web.application.lifecycle.WebApplicationStorage;
 import net.contextfw.web.application.remote.ResourceResponse;
+import net.contextfw.web.application.scope.Execution;
+import net.contextfw.web.application.scope.PageScopedExecutor;
+import net.contextfw.web.application.scope.ScopedWebApplicationExecution;
+import net.contextfw.web.application.scope.WebApplicationStorage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,12 +56,12 @@ public class UpdateHandler {
     private static final String CONTEXTFW_UPDATE = "contextfw-update";
 
     private static final String CONTEXTFW_REMOVE = "contextfw-remove";
+    
+    private ThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(10);
 
     private Logger logger = LoggerFactory.getLogger(UpdateHandler.class);
 
     private final LifecycleListener listeners;
-
-    private final PageFlowFilter pageFlowFilter;
 
     @Inject
     private Gson gson;
@@ -66,27 +70,24 @@ public class UpdateHandler {
 
     private final ResourceCleaner cleaner;
 
-    private final PageScope pageScope;
+    private PageScope pageScope;
 
     private final long maxInactivity;
 
     private final WebApplicationStorage storage;
 
     @Inject
-    public UpdateHandler(
-            PageScope pageScope,
-            LifecycleListener listeners,
-            PageFlowFilter pageFlowFilter,
+    public UpdateHandler(LifecycleListener listeners,
             DirectoryWatcher watcher,
             ResourceCleaner cleaner,
             WebApplicationStorage storage,
-            Configuration configuration) {
+            Configuration configuration,
+            PageScope pageScope) {
 
-        this.pageScope = pageScope;
         this.listeners = listeners;
-        this.pageFlowFilter = pageFlowFilter;
         this.maxInactivity = configuration.get(Configuration.MAX_INACTIVITY);
         this.storage = storage;
+        this.pageScope = pageScope;
 
         if (configuration.get(Configuration.DEVELOPMENT_MODE)) {
             this.cleaner = cleaner;
@@ -122,7 +123,8 @@ public class UpdateHandler {
 
     public final void handleRequest(final HttpServlet servlet,
             final HttpServletRequest request,
-            final HttpServletResponse response)
+            final HttpServletResponse response,
+            ClassLoader classLoader)
             throws ServletException, IOException {
 
         if (watcher != null && watcher.hasChanged()) {
@@ -136,55 +138,50 @@ public class UpdateHandler {
 
             String command = uriSplits[commandStart];
             WebApplicationHandle handle = new WebApplicationHandle(uriSplits[commandStart + 1]);
-            final String remoteAddr = pageFlowFilter.getRemoteAddr(request);
 
             if (CONTEXTFW_REMOVE.equals(command)) {
-                if (storage.remove(handle)) {
-                    pageFlowFilter.pageRemoved(
-                            storage.getPageCount(),
-                            remoteAddr,
-                            handle.getKey());
-                }
+                storage.remove(handle, request);
                 response.setStatus(HttpServletResponse.SC_NO_CONTENT);
             } else if (CONTEXTFW_REFRESH.equals(command)) {
-                storage.refresh(handle, remoteAddr, maxInactivity);
+                storage.refresh(handle, request, System.currentTimeMillis() + maxInactivity);
                 response.setStatus(HttpServletResponse.SC_NO_CONTENT);
             } else if (CONTEXTFW_UPDATE.equals(command)) {
-                storage.refresh(handle, remoteAddr, maxInactivity);
-                storage.execute(handle, remoteAddr, new ScopedExecution() {
+                
+                if (!listeners.beforeUpdate(servlet, request, response)) {
+                    return;
+                }
+                
+                final UpdateInvocation[] invocation = new UpdateInvocation[1];
+                invocation[0] = UpdateInvocation.NOT_DELAYED;
+                storage.update(
+                        handle, 
+                        request,
+                        System.currentTimeMillis() + maxInactivity, 
+                        classLoader,
+                        new ScopedWebApplicationExecution() {
                     @Override
-                    public void execute(WebApplication application) throws IOException {
+                    public void execute(WebApplication application) {
                         if (application == null) {
-                            response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                            try {
+                                response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                            } catch (IOException e) {
+                                throw new WebApplicationException(e);
+                            }
                         } else {
                             WebApplicationPage page = (WebApplicationPage) application;
-
-                            UpdateInvocation invocation = UpdateInvocation.NOT_DELAYED;
-
                             pageScope.activatePage(page, servlet, request, response);
-
-                            int updateCount = storage.refresh(page.getHandle(),
-                                    remoteAddr,
-                                    maxInactivity);
                             try {
-                                pageFlowFilter.onPageUpdate(
-                                        storage.getPageCount(),
-                                        remoteAddr,
-                                        page.getHandle().getKey(),
-                                        updateCount);
-
-                                invocation =
+                                invocation[0] =
                                         page.getWebApplication().updateState(
-                                                listeners.beforeUpdate(),
                                                 uriSplits[commandStart + 2],
                                                 uriSplits[commandStart + 3]);
-                                if (invocation.isDelayed()) {
+                                if (invocation[0].isDelayed()) {
                                     pageScope.deactivateCurrentPage();
                                     return;
                                 }
                                 listeners.afterUpdate();
 
-                                if (!invocation.isResource()) {
+                                if (!invocation[0].isResource()) {
                                     listeners.beforeRender();
                                     setHeaders(response);
                                     response.setContentType("text/xml; charset=UTF-8");
@@ -196,14 +193,24 @@ public class UpdateHandler {
                             } finally {
                                 pageScope.deactivateCurrentPage();
                             }
-                            if (invocation.isResource()) {
-                                handleResource(request, response, invocation);
-                            } else {
-                                response.getWriter().close();
-                            }
                         }
                     }
                 });
+
+                Execution afterRun = null;
+
+                if (invocation[0].getRetVal() instanceof Execution) {
+                    afterRun = (Execution) invocation[0].getRetVal();
+                    response.getWriter().close();
+                } else if (invocation[0].isResource()) {
+                    afterRun = handleResource(request, response, invocation[0]);
+                } else {
+                    response.getWriter().close();
+                }
+
+                if (afterRun != null) {
+                    runAfterRun(handle, afterRun, classLoader);
+                }
             }
         }
         else {
@@ -211,19 +218,54 @@ public class UpdateHandler {
         }
     }
 
-    private void handleResource(HttpServletRequest request, HttpServletResponse response,
-            UpdateInvocation invocation) throws IOException {
+    private void runAfterRun(final WebApplicationHandle handle,
+                             final Execution afterRun,
+                             final ClassLoader classLoader) throws IOException {
+
+        final PageScopedExecutor pageScopedExecutor = new PageScopedExecutor() {
+            @Override
+            public void execute(final Runnable execution) {
+                    storage.execute(handle,
+                                    classLoader,
+                                    new ScopedWebApplicationExecution() {
+                        @Override
+                        public void execute(WebApplication application) {
+                            if (application != null) {
+                                WebApplicationPage page = (WebApplicationPage) application;
+                                pageScope.activatePage(page, null, null, null);
+                                try {
+                                    execution.run();
+                                } finally {
+                                    pageScope.deactivateCurrentPage();
+                                }
+                            }
+                        }
+                    });
+            }
+        };
+        executor.execute(new Runnable() {
+            public void run() {
+                afterRun.execute(pageScopedExecutor);
+            }
+        });
+    }
+
+    private Execution handleResource(final HttpServletRequest request,
+                                    final HttpServletResponse response,
+                                    UpdateInvocation invocation) throws IOException {
+
         if (invocation.getRetVal() == null) {
             response.getWriter().close();
-            return;
+            return null;
         }
         if (invocation.getRetVal() instanceof ResourceResponse) {
-            ((ResourceResponse) invocation.getRetVal()).serve(request, response);
+            return ((ResourceResponse) invocation.getRetVal()).serve(request, response);
         } else {
             setHeaders(response);
             response.setContentType("application/json; charset=UTF-8");
             gson.toJson(invocation.getRetVal(), response.getWriter());
             response.getWriter().close();
+            return null;
         }
     }
 
@@ -234,5 +276,10 @@ public class UpdateHandler {
         // response.addHeader("Cache-Control","post-check=0, pre-check=0");
         response.addHeader("Pragma", "no-cache");
         response.setHeader("Connection", "Keep-Alive");
+    }
+
+    @Inject
+    public void setPageScope(PageScope pageScope) {
+        this.pageScope = pageScope;
     }
 }

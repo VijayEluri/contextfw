@@ -30,7 +30,8 @@ public class LifecycleListenerTest {
     
     @Test
     public void Basic_Test() {
-        assertTrue(listener.beforeUpdate());
+        assertTrue(listener.beforeInitialize(null, null, null));
+        assertTrue(listener.beforeUpdate(null, null, null));
         assertTrue(listener.beforeRemotedMethod(null, null, null));
         // Tests that with null exception no exception is thrown
         listener.afterRemoteMethod(null, null, null);

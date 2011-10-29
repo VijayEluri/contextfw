@@ -19,6 +19,10 @@ package net.contextfw.web.application.lifecycle;
 
 import java.lang.reflect.Method;
 
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.component.Component;
 
@@ -36,16 +40,21 @@ public class DefaultLifecycleListener implements LifecycleListener {
     private Logger logger = LoggerFactory.getLogger(DefaultLifecycleListener.class);
 
     @Override
-    public void beforeInitialize() {
+    public boolean beforeInitialize(HttpServlet servlet, 
+                                    HttpServletRequest request,
+                                    HttpServletResponse response) {
+        return true;
     }
 
+    @Override
+    public boolean beforeUpdate(HttpServlet servlet, 
+                                HttpServletRequest request,
+                                HttpServletResponse response) {
+         return true;
+    }
+    
     @Override
     public void afterInitialize() {
-    }
-
-    @Override
-    public boolean beforeUpdate() {
-        return true;
     }
 
     @Override
@@ -80,5 +89,17 @@ public class DefaultLifecycleListener implements LifecycleListener {
         if (thrown != null) { 
             throw thrown; 
         }
+    }
+
+    @Override
+    public void onPageScopeActivation() {
+        // TODO Auto-generated method stub
+        
+    }
+
+    @Override
+    public void onPageScopeDeactivation() {
+        // TODO Auto-generated method stub
+        
     }
 }

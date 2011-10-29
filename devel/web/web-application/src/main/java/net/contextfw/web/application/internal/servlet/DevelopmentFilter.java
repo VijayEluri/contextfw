@@ -46,6 +46,7 @@ import net.contextfw.web.application.lifecycle.RequestInvocationFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 @Singleton
@@ -64,6 +65,8 @@ public class DevelopmentFilter implements Filter, ReloadingClassLoaderContext {
     private final DirectoryWatcher classWatcher;
     private final PropertyProvider properties;
     private final RequestInvocationFilter filter;
+    
+    private UpdateServlet updateServlet;
 
     public DevelopmentFilter(Set<String> rootPackages,
                              InitHandler initHandler,
@@ -127,7 +130,7 @@ public class DevelopmentFilter implements Filter, ReloadingClassLoaderContext {
                         new ReloadingClassLoader(reloadConf);
             }
         });
-
+        updateServlet.setClassLoader(classLoader);
         List<Class<?>> classes = ClassScanner.getClasses(rootPackages);
         
         mappings = fact.createMappings(
@@ -137,5 +140,10 @@ public class DevelopmentFilter implements Filter, ReloadingClassLoaderContext {
                 initHandler,
                 properties,
                 filter);
+    }
+
+    @Inject
+    public void setUpdateServlet(UpdateServlet updateServlet) {
+        this.updateServlet = updateServlet;
     }
 }

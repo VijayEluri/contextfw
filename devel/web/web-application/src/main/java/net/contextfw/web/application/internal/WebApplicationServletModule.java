@@ -25,11 +25,14 @@ import java.util.SortedSet;
 import java.util.regex.Pattern;
 
 import net.contextfw.web.application.PropertyProvider;
+import net.contextfw.web.application.ResourceCleaner;
 import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.internal.initializer.InitializerProvider;
+import net.contextfw.web.application.internal.page.PageScope;
 import net.contextfw.web.application.internal.service.DirectoryWatcher;
 import net.contextfw.web.application.internal.service.InitHandler;
 import net.contextfw.web.application.internal.service.ReloadingClassLoaderConf;
+import net.contextfw.web.application.internal.service.UpdateHandler;
 import net.contextfw.web.application.internal.servlet.CSSServlet;
 import net.contextfw.web.application.internal.servlet.DevelopmentFilter;
 import net.contextfw.web.application.internal.servlet.InitServlet;
@@ -39,11 +42,15 @@ import net.contextfw.web.application.internal.servlet.UpdateServlet;
 import net.contextfw.web.application.internal.servlet.UriMapping;
 import net.contextfw.web.application.internal.servlet.UriMappingFactory;
 import net.contextfw.web.application.internal.util.ClassScanner;
+import net.contextfw.web.application.lifecycle.LifecycleListener;
 import net.contextfw.web.application.lifecycle.RequestInvocationFilter;
+import net.contextfw.web.application.scope.WebApplicationStorage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
 import com.google.inject.servlet.ServletModule;
 
 public class WebApplicationServletModule extends ServletModule {
@@ -70,13 +77,17 @@ public class WebApplicationServletModule extends ServletModule {
     
     private InitHandler initHandler;
     
+    private PageScope pageScope;
+    
     public WebApplicationServletModule(
             Configuration configuration,
-            PropertyProvider propertyProvider) {
+            PropertyProvider propertyProvider,
+            PageScope pageScope) {
         
         resourcePrefix = configuration.get(Configuration.RESOURCES_PREFIX);
         this.configuration = configuration;
         this.properties = propertyProvider;
+        this.pageScope = pageScope;
 
         rootPackages = configuration.get(Configuration.VIEW_COMPONENT_ROOT_PACKAGE);
         boolean reloadEnabled = configuration.get(Configuration.CLASS_RELOADING_ENABLED);
@@ -90,7 +101,7 @@ public class WebApplicationServletModule extends ServletModule {
     @Override
     protected void configureServlets() {
 
-        initHandler = new InitHandler(configuration);
+        initHandler = new InitHandler(configuration, pageScope);
         requestInjection(initHandler);
         initializerProvider = new InitializerProvider();
         
@@ -98,6 +109,7 @@ public class WebApplicationServletModule extends ServletModule {
                 ScriptServlet.class);
         serve(resourcePrefix + ".css").with(
                 CSSServlet.class);
+        
         serveRegex(".*/contextfw-update/.*").with(UpdateServlet.class);
         serveRegex(".*/contextfw-refresh/.*").with(UpdateServlet.class);
         serveRegex(".*/contextfw-remove/.*").with(UpdateServlet.class);
@@ -160,5 +172,21 @@ public class WebApplicationServletModule extends ServletModule {
                 serve(mapping.getPath()).with(mapping.getInitServlet());
             }   
         }
+    }
+    
+    @Provides
+    @Singleton
+    public UpdateHandler provideUpdateHandler(
+            LifecycleListener listeners,
+            DirectoryWatcher watcher,
+            ResourceCleaner cleaner,
+            WebApplicationStorage storage) {
+        
+        return new UpdateHandler(listeners, 
+                watcher, 
+                cleaner,
+                storage,
+                configuration,
+                pageScope);
     }
 }

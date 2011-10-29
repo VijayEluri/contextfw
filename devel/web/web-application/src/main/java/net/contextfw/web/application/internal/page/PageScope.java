@@ -22,7 +22,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import net.contextfw.web.application.HttpContext;
-import net.contextfw.web.application.lifecycle.WebApplicationStorage;
+import net.contextfw.web.application.lifecycle.LifecycleListener;
 
 import com.google.inject.Inject;
 import com.google.inject.Key;
@@ -43,11 +43,11 @@ public class PageScope implements Scope {
     
     //private Logger log = LoggerFactory.getLogger(PageScope.class);
 
+    private LifecycleListener listener;
+    
     private final ThreadLocal<WebApplicationPage> currentPage = 
         new ThreadLocal<WebApplicationPage>();
 
-    private WebApplicationStorage storage;
-    
     public PageScope() {
     }
     
@@ -76,8 +76,9 @@ public class PageScope implements Scope {
             context.setServlet(null);
             context.setRequest(null);
             context.setResponse(null);
+            currentPage.remove();
+            listener.onPageScopeDeactivation();
         }
-        currentPage.remove();
     }
 
     public void activatePage(WebApplicationPage page,
@@ -90,18 +91,14 @@ public class PageScope implements Scope {
         context.setRequest(request);
         context.setResponse(response);
         currentPage.set(page);
+        listener.onPageScopeActivation();
     }
 
-    public synchronized WebApplicationPage createPage(String remoteAddr,
-                                                      HttpServlet servlet,
+    public synchronized WebApplicationPage createPage(HttpServlet servlet,
                                                       HttpServletRequest request,
-                                                      HttpServletResponse response,
-                                                      long initialMaxInActivity) {
+                                                      HttpServletResponse response) {
         
-        WebApplicationPage page = new WebApplicationPageImpl(
-                storage.createHandle(), 
-                remoteAddr,
-                System.currentTimeMillis() + initialMaxInActivity);
+        WebApplicationPage page = new WebApplicationPageImpl();
         
         page.setBean(Key.get(HttpContext.class), 
                 new HttpContext(servlet, request, response));
@@ -111,7 +108,7 @@ public class PageScope implements Scope {
     }
 
     @Inject
-    public void setStorage(WebApplicationStorage storage) {
-        this.storage = storage;
+    public void setListener(LifecycleListener listener) {
+        this.listener = listener;
     }
 }

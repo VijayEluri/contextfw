@@ -32,10 +32,6 @@ public class WebApplicationHandle implements Serializable {
         this.key = key;
     }
 
-    public String getKey() {
-        return key;
-    }
-
     @Override
     public int hashCode() {
         return key.hashCode();
@@ -52,5 +48,9 @@ public class WebApplicationHandle implements Serializable {
         else {
             return false;
         }
+    }
+    
+    public String toString() {
+        return key;
     }
 }

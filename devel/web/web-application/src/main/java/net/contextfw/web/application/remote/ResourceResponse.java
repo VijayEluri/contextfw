@@ -22,6 +22,8 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import net.contextfw.web.application.scope.Execution;
+
 /**
  * Defines the implementation for custom response to web client.
  * 
@@ -37,5 +39,5 @@ import javax.servlet.http.HttpServletResponse;
  *
  */
 public interface ResourceResponse {
-    void serve(HttpServletRequest request, HttpServletResponse response) throws IOException;
+    Execution serve(HttpServletRequest request, HttpServletResponse response) throws IOException;
 }

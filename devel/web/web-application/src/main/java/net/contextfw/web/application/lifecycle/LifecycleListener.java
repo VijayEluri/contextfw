@@ -19,6 +19,10 @@ package net.contextfw.web.application.lifecycle;
 
 import java.lang.reflect.Method;
 
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+
 import net.contextfw.web.application.component.Component;
 
 /**
@@ -47,8 +51,16 @@ public interface LifecycleListener {
 
     /**
      * Called by framework before page initialization begins
+     * <p>
+     *  This method returns a boolean. When <code>true</code> initialize can continue and requests
+     *  from web client are processed. If <code>false</code> request processing is cancelled. In
+     *  such case alternative response can be generated.
+     * </p>
+     * @return <code>true</code> if client update can continue, <code>false</code> otherwise
      */
-    void beforeInitialize();
+    boolean beforeInitialize(HttpServlet servlet, 
+                             HttpServletRequest request, 
+                             HttpServletResponse response);
     
     /**
      * Called by framework after page initialization has ended
@@ -61,21 +73,17 @@ public interface LifecycleListener {
      * </p>
      * <p>
      *  This method returns a boolean. When <code>true</code> update can continue and requests
-     *  from web client are processed. If <code>false</code> request processing is bypassed.
+     *  from web client are processed. If <code>false</code> request processing is cancelled. In
+     *  such case alternative response can be generated.
      * </p>
-     * <p>
-     *  Returning <code>false</code> false is useful in cases where request cannot be
-     *  accepted for instance if user credentials have expired. This is needed because
-     *  update requests cannot easily be prevented with url-based filtering techniques.
-     * </p>
-     * <p>
-     *  In case of <code>false</code> (and also when <code>true</code>) this method can be used to
-     *  call methods on components and create updates. This is useful if page should be redirected
-     *  or some message component should display something on web page.
-     * </p>
-     * @return <code>true</code> if client update can continue, <code>false</code> otherwise
      */
-    boolean beforeUpdate();
+    boolean beforeUpdate(HttpServlet servlet, 
+                         HttpServletRequest request, 
+                         HttpServletResponse response);
+    
+    void onPageScopeActivation();
+    
+    void onPageScopeDeactivation();
     
     /**
      * <p>
@@ -84,8 +92,13 @@ public interface LifecycleListener {
      * 
      * <p>
      *  When remote method is to be invoked it is run through this handler. It's 
-     *  main purpose is for data validation or mngling. The arguments <code>args</code>
+     *  main purpose is for data validation or mangling. The arguments <code>args</code>
      *  is modifiable and changes reflected to it, are also reflected to actual call.
+     * </p>
+     * 
+     * <p>
+     *  This method is also useful the check if user has the privilege to call the method
+     *  or create updates at all.
      * </p>
      * 
      * <p>
