@@ -8,7 +8,7 @@ class MinifierServiceImpl implements MinifierService {
 
     private DocumentProcessor jsMinifier;
     
-    private DocumentProcessor CssMinifier;
+    private DocumentProcessor cssMinifier;
     
     private final boolean developmentMode;
     
@@ -20,7 +20,7 @@ class MinifierServiceImpl implements MinifierService {
     public void process(Document document) {
         if (!developmentMode) {
             jsMinifier.process(document);
-            CssMinifier.process(document);
+            cssMinifier.process(document);
         }
     }
 
@@ -29,6 +29,6 @@ class MinifierServiceImpl implements MinifierService {
     }
 
     public void setCssMinifier(DocumentProcessor cssMinifier) {
-        CssMinifier = cssMinifier;
+        this.cssMinifier = cssMinifier;
     }
 }
