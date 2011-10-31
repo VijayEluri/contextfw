@@ -48,9 +48,6 @@ public class LocaleServiceImpl implements LocaleService {
         this.current.set(current);
     }
 
-    /* (non-Javadoc)
-     * @see net.contextfw.web.commons.i18n.LocaleServiceI#reset()
-     */
     @Override
     public final void reset() {
         bundles = new HashMap<Locale, ResourceBundle>();
@@ -64,21 +61,18 @@ public class LocaleServiceImpl implements LocaleService {
         }
     }
 
-    /* (non-Javadoc)
-     * @see net.contextfw.web.commons.i18n.LocaleServiceI#process(org.dom4j.Document)
-     */
     @Override
     public void process(Document document) {
         reset();
         List<Element> texts = getI18nElements(document);
 
         addLocalizations(document.getRootElement(),
-                getLocalizations(getNames(texts), getBundles()));
+                getLocalizations(getNames(texts)));
 
-        addConversions(document.getRootElement(), texts);
+        addConversions(texts);
     }
 
-    private void addConversions(Element root, List<Element> texts) {
+    private void addConversions(List<Element> texts) {
         for (Element element : texts) {
             if (LocaleConf.NS.equals(element.getNamespaceURI())) {
                 toCallTemplate(element);
@@ -162,32 +156,19 @@ public class LocaleServiceImpl implements LocaleService {
     }
 
     private Map<String, Map<Locale, String>> getLocalizations(
-            Set<String> names,
-            Map<Locale, ResourceBundle> bundles) {
+            Set<String> names) {
 
         Map<String, Map<Locale, String>> localizations =
                 new HashMap<String, Map<Locale, String>>();
 
         for (String name : names) {
-            localizations.put(name, getTexts(name, bundles));
+            localizations.put(name, getTexts(name));
         }
 
         return localizations;
     }
 
-    private Map<Locale, ResourceBundle> getBundles() {
-        Map<Locale, ResourceBundle> bundles = new HashMap<Locale, ResourceBundle>();
-        ResourceBundle.clearCache(Thread.currentThread().getContextClassLoader());
-        for (Locale locale : conf.getLocales()) {
-            bundles.put(locale, ResourceBundle.getBundle(
-                    conf.getBaseName(),
-                    locale,
-                    Thread.currentThread().getContextClassLoader()));
-        }
-        return bundles;
-    }
-
-    private Map<Locale, String> getTexts(String name, Map<Locale, ResourceBundle> bundles) {
+    private Map<Locale, String> getTexts(String name) {
         Map<Locale, String> texts = new HashMap<Locale, String>();
         for (Locale locale : conf.getLocales()) {
             texts.put(locale, getText(name, locale));
