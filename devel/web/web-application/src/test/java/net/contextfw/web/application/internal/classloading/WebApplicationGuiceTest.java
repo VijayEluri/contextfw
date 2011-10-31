@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package net.contextfw.web.application.internal.service;
+package net.contextfw.web.application.internal.classloading;
 
 import java.io.IOException;
 
@@ -27,6 +27,7 @@ import javax.servlet.http.HttpServletResponse;
 import net.contextfw.application.AbstractGuiceTest;
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.configuration.Configuration;
+import net.contextfw.web.application.internal.service.WebApplication;
 import net.contextfw.web.application.lifecycle.PageScoped;
 import net.contextfw.web.application.lifecycle.View;
 

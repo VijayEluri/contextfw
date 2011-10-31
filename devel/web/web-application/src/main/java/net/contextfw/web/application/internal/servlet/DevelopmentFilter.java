@@ -34,11 +34,13 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
 import net.contextfw.web.application.PropertyProvider;
+import net.contextfw.web.application.internal.development.ClassLoaderProvider;
+import net.contextfw.web.application.internal.development.InternalDevelopmentTools;
+import net.contextfw.web.application.internal.development.ReloadingClassLoader;
+import net.contextfw.web.application.internal.development.ReloadingClassLoaderConf;
 import net.contextfw.web.application.internal.initializer.InitializerProvider;
 import net.contextfw.web.application.internal.service.DirectoryWatcher;
 import net.contextfw.web.application.internal.service.InitHandler;
-import net.contextfw.web.application.internal.service.ReloadingClassLoader;
-import net.contextfw.web.application.internal.service.ReloadingClassLoaderConf;
 import net.contextfw.web.application.internal.service.ReloadingClassLoaderContext;
 import net.contextfw.web.application.internal.util.ClassScanner;
 import net.contextfw.web.application.lifecycle.RequestInvocationFilter;
@@ -61,24 +63,22 @@ public class DevelopmentFilter implements Filter, ReloadingClassLoaderContext {
     private final Set<String> rootPackages;
     private final InitHandler initHandler;
     private final InitializerProvider initializerProvider;
-    private final ReloadingClassLoaderConf reloadConf;
+    private final InternalDevelopmentTools internalDevelopmentTools;
     private final DirectoryWatcher classWatcher;
     private final PropertyProvider properties;
     private final RequestInvocationFilter filter;
     
-    private UpdateServlet updateServlet;
-
     public DevelopmentFilter(Set<String> rootPackages,
                              InitHandler initHandler,
                              InitializerProvider initializerProvider,
-                             ReloadingClassLoaderConf reloadConf,
+                             InternalDevelopmentTools internalDevelopmentTools,
                              DirectoryWatcher classWatcher,
                              PropertyProvider properties,
                              RequestInvocationFilter filter) {
         this.rootPackages = rootPackages;
         this.initHandler = initHandler;
         this.initializerProvider = initializerProvider;
-        this.reloadConf = reloadConf;
+        this.internalDevelopmentTools = internalDevelopmentTools;
         this.classWatcher = classWatcher;
         this.properties = properties;
         this.filter = filter;
@@ -122,15 +122,7 @@ public class DevelopmentFilter implements Filter, ReloadingClassLoaderContext {
     public synchronized void reloadClasses() {
         logger.debug("Reloading view components");
         
-        ClassLoader classLoader = AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
-            @Override
-            public ClassLoader run() {
-                return reloadConf == null ? 
-                        Thread.currentThread().getContextClassLoader() : 
-                        new ReloadingClassLoader(reloadConf);
-            }
-        });
-        updateServlet.setClassLoader(classLoader);
+        ClassLoader classLoader = internalDevelopmentTools.reloadClasses();
         List<Class<?>> classes = ClassScanner.getClasses(rootPackages);
         
         mappings = fact.createMappings(
@@ -140,10 +132,5 @@ public class DevelopmentFilter implements Filter, ReloadingClassLoaderContext {
                 initHandler,
                 properties,
                 filter);
-    }
-
-    @Inject
-    public void setUpdateServlet(UpdateServlet updateServlet) {
-        this.updateServlet = updateServlet;
     }
 }

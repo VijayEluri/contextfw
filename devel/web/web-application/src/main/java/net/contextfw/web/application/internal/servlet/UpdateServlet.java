@@ -52,12 +52,10 @@ public class UpdateServlet extends HttpServlet {
     private final RequestInvocation invocation = new RequestInvocation() {
         @Override
         public void invoke(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-            handler.handleRequest(UpdateServlet.this, request, response, classLoader);
+            handler.handleRequest(UpdateServlet.this, request, response);
         }
     };
 
-    private ClassLoader classLoader;
-    
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         filter.filter(Mode.UPDATE, req, resp, invocation);
@@ -70,10 +68,5 @@ public class UpdateServlet extends HttpServlet {
 
     @Inject
     public UpdateServlet() {
-        this.classLoader = Thread.currentThread().getContextClassLoader();
-    }
-
-    public void setClassLoader(ClassLoader classLoader) {
-        this.classLoader = classLoader;
     }
 }

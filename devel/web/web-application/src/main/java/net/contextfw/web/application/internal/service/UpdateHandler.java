@@ -123,8 +123,7 @@ public class UpdateHandler {
 
     public final void handleRequest(final HttpServlet servlet,
             final HttpServletRequest request,
-            final HttpServletResponse response,
-            ClassLoader classLoader)
+            final HttpServletResponse response)
             throws ServletException, IOException {
 
         if (watcher != null && watcher.hasChanged()) {
@@ -157,7 +156,6 @@ public class UpdateHandler {
                         handle, 
                         request,
                         System.currentTimeMillis() + maxInactivity, 
-                        classLoader,
                         new ScopedWebApplicationExecution() {
                     @Override
                     public void execute(WebApplication application) {
@@ -209,7 +207,7 @@ public class UpdateHandler {
                 }
 
                 if (afterRun != null) {
-                    runAfterRun(handle, afterRun, classLoader);
+                    runAfterRun(handle, afterRun);
                 }
             }
         }
@@ -219,14 +217,12 @@ public class UpdateHandler {
     }
 
     private void runAfterRun(final WebApplicationHandle handle,
-                             final Execution afterRun,
-                             final ClassLoader classLoader) throws IOException {
+                             final Execution afterRun) throws IOException {
 
         final PageScopedExecutor pageScopedExecutor = new PageScopedExecutor() {
             @Override
             public void execute(final Runnable execution) {
                     storage.execute(handle,
-                                    classLoader,
                                     new ScopedWebApplicationExecution() {
                         @Override
                         public void execute(WebApplication application) {
@@ -245,7 +241,11 @@ public class UpdateHandler {
         };
         executor.execute(new Runnable() {
             public void run() {
-                afterRun.execute(pageScopedExecutor);
+                try {
+                    afterRun.execute(pageScopedExecutor);
+                } catch (RuntimeException e) {
+                    logger.error("Error during running Execution", e);
+                }
             }
         });
     }

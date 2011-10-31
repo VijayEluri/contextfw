@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package net.contextfw.web.application.internal.service;
+package net.contextfw.web.application.internal.classloading;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
@@ -25,6 +25,9 @@ import static org.junit.Assert.assertTrue;
 import java.util.Set;
 
 import net.contextfw.web.application.configuration.Configuration;
+import net.contextfw.web.application.internal.development.ClassLoaderProvider;
+import net.contextfw.web.application.internal.development.ReloadingClassLoader;
+import net.contextfw.web.application.internal.development.ReloadingClassLoaderConf;
 import static net.contextfw.web.application.configuration.Configuration.*;
 
 import org.junit.Before;
@@ -82,18 +85,21 @@ public class ReloadingClassLoaderTest {
     
     @Test
     public void Load_Classes() throws ClassNotFoundException {
-        conf = conf
-            .add(RELOADABLE_CLASSES.includedPackage("net.contextfw.web.application.internal.service", false))
-            .add(RELOADABLE_CLASSES.excludedClass(NonReloadable.class));
         
-        ReloadingClassLoader classLoader = new ReloadingClassLoader(
+        conf = conf
+            .add(RELOADABLE_CLASSES.includedPackage("net.contextfw.web.application.internal.classloading", false))
+            .add(RELOADABLE_CLASSES.excludedClass(NonReloadable.class));
+
+        ClassLoaderProvider provider = new ClassLoaderProvider(
                 new ReloadingClassLoaderConf(conf));
         
+        ClassLoader classLoader = provider.reload();
+        
         Class<?> reloadable = 
-                classLoader.loadClass("net.contextfw.web.application.internal.service.Reloadable");
+                classLoader.loadClass("net.contextfw.web.application.internal.classloading.Reloadable");
         
         Class<?> nonReloadable = 
-                classLoader.loadClass("net.contextfw.web.application.internal.service.NonReloadable");
+                classLoader.loadClass("net.contextfw.web.application.internal.classloading.NonReloadable");
         
         assertEquals(NonReloadable.class, nonReloadable);
         assertNotSame(Reloadable.class, reloadable);
@@ -104,13 +110,15 @@ public class ReloadingClassLoaderTest {
     @Test(expected=ClassNotFoundException.class)
     public void Throw_Class_CastException() throws ClassNotFoundException {
         conf = conf
-            .add(RELOADABLE_CLASSES.includedPackage("net.contextfw.web.application.internal.service", false))
+            .add(RELOADABLE_CLASSES.includedPackage("net.contextfw.web.application.internal.classloading", false))
             .add(RELOADABLE_CLASSES.excludedClass(NonReloadable.class));
         
-        ReloadingClassLoader classLoader = new ReloadingClassLoader(
+        ClassLoaderProvider provider = new ClassLoaderProvider(
                 new ReloadingClassLoaderConf(conf));
         
-        classLoader.loadClass("net.contextfw.web.application.internal.service.Reloadaple");
+        ClassLoader classLoader = provider.reload();
+        
+        classLoader.loadClass("net.contextfw.web.application.internal.classloading.Reloadaple");
     }
 }
  

@@ -10,17 +10,14 @@ public interface WebApplicationStorage {
     void initialize(WebApplication application,
                     HttpServletRequest request,
                     long validThrough,
-                    ClassLoader classLoader,
                     ScopedWebApplicationExecution execution);
 
     void update(WebApplicationHandle handle,
                 HttpServletRequest request,
                 long validThrough,
-                ClassLoader classLoader,
                 ScopedWebApplicationExecution execution);
     
     void execute(WebApplicationHandle handle,
-                 ClassLoader classLoader,
                  ScopedWebApplicationExecution execution);
 
     void refresh(WebApplicationHandle handle, 

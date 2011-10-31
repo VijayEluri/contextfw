@@ -70,7 +70,6 @@ public class DefaultWebApplicationStorage implements WebApplicationStorage {
     public void initialize(WebApplication application, 
                            HttpServletRequest request,
                            long validThrough, 
-                           ClassLoader classLoader,
                            ScopedWebApplicationExecution execution) {
         
         WebApplicationHandle handle = createHandle();
@@ -86,7 +85,6 @@ public class DefaultWebApplicationStorage implements WebApplicationStorage {
     public void update(WebApplicationHandle handle, 
                        HttpServletRequest request,
                        long validThrough,
-                       ClassLoader classLoader,
                        ScopedWebApplicationExecution execution) {
         
         Holder holder = getHolder(handle, request);
@@ -188,7 +186,6 @@ public class DefaultWebApplicationStorage implements WebApplicationStorage {
 
     @Override
     public void execute(WebApplicationHandle handle,
-                        ClassLoader classLoader,
                         ScopedWebApplicationExecution execution) {
         Holder holder = pages.get(handle);
         if (holder != null) {

@@ -53,7 +53,7 @@ public class InitServlet extends HttpServlet {
     private final RequestInvocation invocation = new RequestInvocation() {
         @Override
         public void invoke(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-            handler.handleRequest(getMapping(), chain, InitServlet.this, request, response, classLoader);
+            handler.handleRequest(getMapping(), chain, InitServlet.this, request, response);
         }
     };
 
@@ -62,8 +62,6 @@ public class InitServlet extends HttpServlet {
             justification="I know what I'm doing")
     private UriMapping mapping;
 
-    private final ClassLoader classLoader;
-    
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
         filter.filter(Mode.INIT, req, resp, invocation);
@@ -76,12 +74,10 @@ public class InitServlet extends HttpServlet {
 
     public InitServlet(InitHandler handler,
                        List<Class<? extends Component>> chain,
-                       RequestInvocationFilter filter,
-                       ClassLoader classLoader) {
+                       RequestInvocationFilter filter) {
         this.handler = handler;
         this.chain = chain;
         this.filter = filter;
-        this.classLoader = classLoader;
     }
 
     public void setMapping(UriMapping mapping) {

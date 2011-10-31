@@ -31,6 +31,7 @@ import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.internal.component.MetaComponentException;
+import net.contextfw.web.application.internal.development.InternalDevelopmentTools;
 import net.contextfw.web.application.internal.page.PageScope;
 import net.contextfw.web.application.internal.page.WebApplicationPage;
 import net.contextfw.web.application.internal.servlet.UriMapping;
@@ -52,7 +53,6 @@ public class InitHandler {
 
     private static final long HOUR = 1000 * 60 * 3600;
 
-    // private final InitializerProvider initializers;
     @Inject
     private Provider<WebApplication> webApplicationProvider;
     @Inject
@@ -71,10 +71,15 @@ public class InitHandler {
 
     private final boolean developmentMode;
 
-    public InitHandler(Configuration properties, PageScope pageScope) {
+    private final InternalDevelopmentTools internalDevelopmentTools;
+
+    public InitHandler(Configuration properties, 
+                       PageScope pageScope,
+                       InternalDevelopmentTools internalDevelopmentTools) {
         initialMaxInactivity = properties.get(Configuration.INITIAL_MAX_INACTIVITY);
         developmentMode = properties.get(Configuration.DEVELOPMENT_MODE);
         this.pageScope = pageScope;
+        this.internalDevelopmentTools = internalDevelopmentTools;
     }
 
     public final void handleRequest(
@@ -82,13 +87,13 @@ public class InitHandler {
             final List<Class<? extends Component>> chain,
             final HttpServlet servlet,
             final HttpServletRequest request,
-            final HttpServletResponse response,
-            ClassLoader classLoader)
+            final HttpServletResponse response)
             throws ServletException, IOException {
 
         if (watcher != null && watcher.hasChanged()) {
             logger.debug("Reloading resources");
             cleaner.clean();
+            internalDevelopmentTools.reloadResources();
         }
 
         if (!listeners.beforeInitialize(servlet, request, response)) {
@@ -111,7 +116,6 @@ public class InitHandler {
                     page,
                     request,
                     System.currentTimeMillis() + HOUR,
-                    classLoader,
                     new ScopedWebApplicationExecution() {
                         @Override
                         public void execute(net.contextfw.web.application.WebApplication application) {

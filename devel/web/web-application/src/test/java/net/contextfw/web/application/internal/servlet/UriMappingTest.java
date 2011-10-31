@@ -187,8 +187,7 @@ public class UriMappingTest {
     }
     
     private UriMapping mapping(String path) {
-        return fact.getMapping(null, new InitServlet(null, null, null,
-                Thread.currentThread().getContextClassLoader()), path);
+        return fact.getMapping(null, new InitServlet(null, null, null), path);
     }
 
 }

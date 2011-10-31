@@ -57,7 +57,6 @@ public class DefaultWebApplicationStorageTest extends AbstractTest {
         storage.initialize(application, 
                 request, 
                 System.currentTimeMillis() + MAX_INACTIVITY,
-                getClass().getClassLoader(),
                 execution);
         
         assertNotNull(application.handle);
@@ -83,7 +82,6 @@ public class DefaultWebApplicationStorageTest extends AbstractTest {
         storage.update(application.handle, 
                getRequest(LOCALHOST),
                System.currentTimeMillis() + 1000, 
-               getClass().getClassLoader(),
                execution);
         verify(execution);
     }
@@ -96,7 +94,6 @@ public class DefaultWebApplicationStorageTest extends AbstractTest {
         storage.update(application.handle, 
                getRequest(WRONG_ADDRESS),
                System.currentTimeMillis() + 1000,
-               getClass().getClassLoader(),
                execution);
         verify(execution);
     }
@@ -109,7 +106,7 @@ public class DefaultWebApplicationStorageTest extends AbstractTest {
         replay(execution);
         storage.update(application.handle, 
                getRequest(LOCALHOST),
-               System.currentTimeMillis() + 1000, getClass().getClassLoader(),
+               System.currentTimeMillis() + 1000,
                execution);
         verify(execution);
     }
@@ -127,7 +124,6 @@ public class DefaultWebApplicationStorageTest extends AbstractTest {
         storage.update(application.handle, 
                        getRequest(LOCALHOST), 
                        System.currentTimeMillis() + 1000, 
-                       getClass().getClassLoader(),
                        execution);
         verify(execution);
     }
@@ -147,7 +143,6 @@ public class DefaultWebApplicationStorageTest extends AbstractTest {
         storage.update(application.handle, 
                getRequest(LOCALHOST),
                System.currentTimeMillis() + 1000, 
-               getClass().getClassLoader(),
                execution);
         verify(execution);
     }
@@ -167,7 +162,6 @@ public class DefaultWebApplicationStorageTest extends AbstractTest {
         storage.update(application.handle, 
                getRequest(LOCALHOST),
                System.currentTimeMillis() + 1000, 
-               getClass().getClassLoader(),
                execution);
         verify(execution);
     }
@@ -184,7 +178,6 @@ public class DefaultWebApplicationStorageTest extends AbstractTest {
         storage.update(application.handle, 
                        getRequest(LOCALHOST),
                        System.currentTimeMillis() + 1000, 
-                       getClass().getClassLoader(),
                        execution);
         verify(execution);
     }
@@ -203,7 +196,6 @@ public class DefaultWebApplicationStorageTest extends AbstractTest {
         storage.update(application.handle, 
                        getRequest(LOCALHOST),
                        System.currentTimeMillis() + 1000,
-                       getClass().getClassLoader(),
                        execution);
         verify(execution);
     }

@@ -39,9 +39,9 @@ public class PathParamTest {
     private A a;
     
     private UriMapping map1 = fact.getMapping(A.class, 
-            new InitServlet(null, null, null, Thread.currentThread().getContextClassLoader()), "/foo/<a>/<bee>/long/<d>/date/<c>");
+            new InitServlet(null, null, null), "/foo/<a>/<bee>/long/<d>/date/<c>");
     private UriMapping map2 = fact.getMapping(A.class, 
-            new InitServlet(null, null, null, Thread.currentThread().getContextClassLoader()), "/foo/<a>/<bee>");
+            new InitServlet(null, null, null), "/foo/<a>/<bee>");
     
     private static class A extends Component {
 

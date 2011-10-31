@@ -23,9 +23,14 @@ import java.util.regex.Pattern;
 
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.configuration.Configuration;
+import net.contextfw.web.application.development.DevelopmentTools;
 import net.contextfw.web.application.internal.WebApplicationServletModule;
 import net.contextfw.web.application.internal.component.AutoRegisterListener;
 import net.contextfw.web.application.internal.configuration.KeyValue;
+import net.contextfw.web.application.internal.development.ClassLoaderProvider;
+import net.contextfw.web.application.internal.development.DevelopmentToolsImpl;
+import net.contextfw.web.application.internal.development.InternalDevelopmentTools;
+import net.contextfw.web.application.internal.development.ReloadingClassLoaderConf;
 import net.contextfw.web.application.internal.page.PageScope;
 import net.contextfw.web.application.internal.service.DirectoryWatcher;
 import net.contextfw.web.application.internal.service.WebApplicationConf;
@@ -65,6 +70,8 @@ public final class WebApplicationModule extends AbstractModule {
     private AutoRegisterListener autoRegisterListener 
             = new AutoRegisterListener();
 
+    private InternalDevelopmentTools internalDevelopmentTools;
+
     public WebApplicationModule(Configuration configuration) {
         this.configuration = configuration;
     }
@@ -72,6 +79,7 @@ public final class WebApplicationModule extends AbstractModule {
     @Override
     protected void configure() {
         handleWebApplicationStorage();
+        handleDevelopmentTools();
         pageScope = new PageScope();
         requestInjection(pageScope);
         bindScope(PageScoped.class, pageScope);
@@ -102,7 +110,8 @@ public final class WebApplicationModule extends AbstractModule {
         WebApplicationServletModule servletModule =
                 new WebApplicationServletModule(configuration,
                         configuration.get(Configuration.PROPERTY_PROVIDER),
-                        pageScope);
+                        pageScope,
+                        internalDevelopmentTools);
 
         install(servletModule);
         
@@ -178,5 +187,12 @@ public final class WebApplicationModule extends AbstractModule {
                 configuration.get(Configuration.DEVELOPMENT_MODE),
                 configuration.get(Configuration.XML_PARAM_NAME),
                 configuration.get(Configuration.NAMESPACE));
+    }
+    
+    private void handleDevelopmentTools() {
+        DevelopmentToolsImpl developmentTools = new DevelopmentToolsImpl(configuration);
+        bind(DevelopmentTools.class).toInstance(developmentTools);
+        bind(InternalDevelopmentTools.class).toInstance(developmentTools);
+        internalDevelopmentTools = developmentTools;
     }
 }

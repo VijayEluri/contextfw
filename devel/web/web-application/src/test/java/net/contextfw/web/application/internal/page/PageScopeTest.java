@@ -88,7 +88,6 @@ public class PageScopeTest extends AbstractTest {
         storage.initialize(page, 
                 request, 
                 System.currentTimeMillis() + MAX_INACTIVITY,
-                Thread.currentThread().getContextClassLoader(),
                 new ScopedWebApplicationExecution() {
             @Override
             public void execute(WebApplication application) {

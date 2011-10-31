@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package net.contextfw.web.application.internal.service;
+package net.contextfw.web.application.internal.development;
 
 import java.io.DataInputStream;
 import java.io.IOException;

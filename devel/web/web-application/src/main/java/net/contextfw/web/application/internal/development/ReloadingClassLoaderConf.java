@@ -15,7 +15,7 @@
  * limitations under the License.
  */
 
-package net.contextfw.web.application.internal.service;
+package net.contextfw.web.application.internal.development;
 
 import java.util.HashSet;
 import java.util.Set;

@@ -27,11 +27,12 @@ import java.util.regex.Pattern;
 import net.contextfw.web.application.PropertyProvider;
 import net.contextfw.web.application.ResourceCleaner;
 import net.contextfw.web.application.configuration.Configuration;
+import net.contextfw.web.application.internal.development.InternalDevelopmentTools;
+import net.contextfw.web.application.internal.development.ReloadingClassLoaderConf;
 import net.contextfw.web.application.internal.initializer.InitializerProvider;
 import net.contextfw.web.application.internal.page.PageScope;
 import net.contextfw.web.application.internal.service.DirectoryWatcher;
 import net.contextfw.web.application.internal.service.InitHandler;
-import net.contextfw.web.application.internal.service.ReloadingClassLoaderConf;
 import net.contextfw.web.application.internal.service.UpdateHandler;
 import net.contextfw.web.application.internal.servlet.CSSServlet;
 import net.contextfw.web.application.internal.servlet.DevelopmentFilter;
@@ -78,17 +79,20 @@ public class WebApplicationServletModule extends ServletModule {
     private InitHandler initHandler;
     
     private PageScope pageScope;
+
+    private InternalDevelopmentTools internalDevelopmentTools;
     
     public WebApplicationServletModule(
             Configuration configuration,
             PropertyProvider propertyProvider,
-            PageScope pageScope) {
+            PageScope pageScope, 
+            InternalDevelopmentTools internalDevelopmentTools) {
         
         resourcePrefix = configuration.get(Configuration.RESOURCES_PREFIX);
         this.configuration = configuration;
         this.properties = propertyProvider;
         this.pageScope = pageScope;
-
+        this.internalDevelopmentTools = internalDevelopmentTools;
         rootPackages = configuration.get(Configuration.VIEW_COMPONENT_ROOT_PACKAGE);
         boolean reloadEnabled = configuration.get(Configuration.CLASS_RELOADING_ENABLED);
         
@@ -101,7 +105,10 @@ public class WebApplicationServletModule extends ServletModule {
     @Override
     protected void configureServlets() {
 
-        initHandler = new InitHandler(configuration, pageScope);
+        initHandler = new InitHandler(configuration, 
+                                      pageScope, 
+                                      internalDevelopmentTools);
+        
         requestInjection(initHandler);
         initializerProvider = new InitializerProvider();
         
@@ -134,7 +141,7 @@ public class WebApplicationServletModule extends ServletModule {
                 rootPackages,
                 initHandler,
                 initializerProvider,
-                reloadConf,
+                internalDevelopmentTools,
                 classWatcher,
                 properties, 
                 filter);
