@@ -3,6 +3,7 @@ package net.contextfw.web.commons.minifier;
 import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
@@ -14,9 +15,16 @@ import javax.servlet.http.HttpServletResponse;
 
 import net.contextfw.web.application.WebApplicationException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 abstract class ContentServlet extends HttpServlet {
 
+    private static final int SECOND = 1000;
+
     private static final long serialVersionUID = 1L;
+    
+    Logger logger = LoggerFactory.getLogger(ContentServlet.class);
     
     private ThreadLocal<SimpleDateFormat> format = new ThreadLocal<SimpleDateFormat>() {
         protected SimpleDateFormat initialValue() {
@@ -68,15 +76,15 @@ abstract class ContentServlet extends HttpServlet {
         if (modifiedHeader != null) {
             try {
                 mod = format.get().parse(modifiedHeader);
-            } catch (Exception e) {
-                // Just ignore
+            } catch (ParseException e) {
+                logger.error("Error while parsing", e);
             }
         }
 
         HttpServletResponse httpResponse = (HttpServletResponse) resp;
         httpResponse.setDateHeader("Expires", started + EXPIRATION);
         httpResponse.setDateHeader("Date", started);
-        httpResponse.setDateHeader("Last-Modified", started+1000);
+        httpResponse.setDateHeader("Last-Modified", started+SECOND);
         httpResponse.setHeader("Cache-Control", "max-age=2246400, must-revalidate");
         httpResponse.setHeader("Pragma", "cache");
         
