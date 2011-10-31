@@ -26,6 +26,8 @@ import com.google.inject.Singleton;
 @Singleton
 public class DefaultWebApplicationStorage implements WebApplicationStorage {
 
+    private static final int MAX_LENGTH = 16;
+
     private Logger logger = LoggerFactory.getLogger(DefaultWebApplicationStorage.class);
 
     private final Map<WebApplicationHandle, Holder> pages =
@@ -41,7 +43,7 @@ public class DefaultWebApplicationStorage implements WebApplicationStorage {
         private final String remoteAddr;
         private final WebApplication application;
         
-        public Holder(WebApplication application, 
+        private Holder(WebApplication application, 
                              String remoteAddr, 
                              long validThrough) {
             this.application = application;
@@ -138,8 +140,8 @@ public class DefaultWebApplicationStorage implements WebApplicationStorage {
         if (proxied) {
             String proxy = StringUtils.trimToEmpty(request.getHeader("X-Forwarded-For"));
             int length = proxy.length();
-            if (length > 16) {
-                return proxy.substring(length - 16, length);
+            if (length > MAX_LENGTH) {
+                return proxy.substring(length - MAX_LENGTH, length);
             } else {
                 return proxy;
             }
