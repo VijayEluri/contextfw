@@ -30,16 +30,6 @@ public class SetPropertyImpl<V> extends BaseProperty<Set<V>> implements AddableP
     }
 
     @Override
-    public Set<V> unserialize(String value) {
-        return null;
-    }
-
-    @Override
-    public String serialize(Set<V> value) {
-        return null;
-    }
-
-    @Override
     public Set<V> validate(Set<V> value) {
         if (value == null) {
             return Collections.emptySet();

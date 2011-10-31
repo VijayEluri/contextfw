@@ -36,16 +36,6 @@ public interface Property<T> {
     String getKey();
     
     /**
-     * Unserializes value from String representation
-     */
-    T unserialize(String value);
-    
-    /**
-     * Serializes value to String
-     */ 
-    String serialize(T value);
-    
-    /**
      * Validates the value
      * @param value
      *   The value

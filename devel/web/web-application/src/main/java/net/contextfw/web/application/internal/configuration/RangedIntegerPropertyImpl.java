@@ -18,7 +18,7 @@
 package net.contextfw.web.application.internal.configuration;
 
 
-public class RangedIntegerPropertyImpl extends IntegerPropertyImpl {
+public class RangedIntegerPropertyImpl extends BasicSettableProperty<Integer> {
 
     private final int min;
     private final int max;

@@ -100,11 +100,13 @@ public class WebApplicationServletModule extends ServletModule {
             reloadConf = new ReloadingClassLoaderConf(configuration);
         }
         this.filter = configuration.get(Configuration.REQUEST_INVOCATION_FILTER);
+        
     }
 
     @Override
     protected void configureServlets() {
-
+        bind(RequestInvocationFilter.class).toInstance(this.filter);
+        requestInjection(this.filter);
         initHandler = new InitHandler(configuration, 
                                       pageScope, 
                                       internalDevelopmentTools);

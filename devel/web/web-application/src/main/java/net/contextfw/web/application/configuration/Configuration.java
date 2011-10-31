@@ -26,15 +26,13 @@ import java.util.Set;
 import net.contextfw.web.application.DocumentProcessor;
 import net.contextfw.web.application.PropertyProvider;
 import net.contextfw.web.application.SystemPropertyProvider;
+import net.contextfw.web.application.internal.configuration.BasicSettableProperty;
 import net.contextfw.web.application.internal.configuration.BindablePropertyImpl;
-import net.contextfw.web.application.internal.configuration.BooleanPropertyImpl;
 import net.contextfw.web.application.internal.configuration.KeyValue;
-import net.contextfw.web.application.internal.configuration.ObjectPropertyImpl;
 import net.contextfw.web.application.internal.configuration.Property;
 import net.contextfw.web.application.internal.configuration.ReloadableClassPropertyImpl;
 import net.contextfw.web.application.internal.configuration.SelfKeyValueSetPropertyImpl;
 import net.contextfw.web.application.internal.configuration.SelfSettableProperty;
-import net.contextfw.web.application.internal.configuration.StringPropertyImpl;
 import net.contextfw.web.application.internal.configuration.StringSetPropertyImpl;
 import net.contextfw.web.application.internal.configuration.TemporalPropertyImpl;
 import net.contextfw.web.application.lifecycle.DefaultLifecycleListener;
@@ -116,8 +114,6 @@ public class Configuration {
     
     private static final String KEY_CLASS_RELOADING_ENABLED = "contextfw.classReloadingEnabled";
     
-    private static final String KEY_BUILD_PATH = "contextfw.classReloadingPaths";
-    
     private static final String KEY_WEB_APPLICATION_STORAGE = "contextfw.webApplicationStorage";
 
     /**
@@ -169,7 +165,7 @@ public class Configuration {
      * </p>
      */
     public static final SettableProperty<Boolean> DEVELOPMENT_MODE = 
-        new BooleanPropertyImpl(KEY_DEVELOPMENT_MODE);
+        createProperty(Boolean.class, KEY_DEVELOPMENT_MODE);
     
     /**
      * Defines whether page components should be reloaded when changed.
@@ -191,7 +187,7 @@ public class Configuration {
      * </p>
      */
     public static final SettableProperty<Boolean> CLASS_RELOADING_ENABLED = 
-        new BooleanPropertyImpl(KEY_CLASS_RELOADING_ENABLED);
+        createProperty(Boolean.class, KEY_CLASS_RELOADING_ENABLED);
     
     /**
      * Defines whether the XML-representation of page load or update are logged. Only suitable
@@ -202,7 +198,7 @@ public class Configuration {
      * </p>
      */
     public static final SettableProperty<Boolean> LOG_XML = 
-        new BooleanPropertyImpl(KEY_LOG_XML);
+        createProperty(Boolean.class, KEY_LOG_XML);
     
     /**
      * Defines the prefix for javascript- and css-files that are loaded with each page.
@@ -212,7 +208,7 @@ public class Configuration {
      * </p>
      */
     public static final SettableProperty<String> RESOURCES_PREFIX = 
-        new StringPropertyImpl(KEY_RESOURCES_PREFIX);
+        createProperty(String.class, KEY_RESOURCES_PREFIX);
 
     /**
      * Besides property <code>LOG_XML</code> it is possible to see the the page XML-representation
@@ -230,7 +226,7 @@ public class Configuration {
      * </p>
      */
     public static final SettableProperty<String> XML_PARAM_NAME = 
-        new StringPropertyImpl(KEY_XML_PARAM_NAME);
+        createProperty(String.class, KEY_XML_PARAM_NAME);
     
     /**
      * Defines the provider that is used to inject system properties to the system.
@@ -243,25 +239,28 @@ public class Configuration {
      * </p>  
      */
     public static final SettableProperty<PropertyProvider> PROPERTY_PROVIDER = 
-        new ObjectPropertyImpl<PropertyProvider>(KEY_PROPERTY_PROVIDER);
+        createProperty(PropertyProvider.class, KEY_PROPERTY_PROVIDER);
     
     /**
      * Binds a lifecycle listener to the system
      */
     public static final BindableProperty<LifecycleListener> LIFECYCLE_LISTENER = 
-        new BindablePropertyImpl<LifecycleListener>(KEY_LIFECYCLE_LISTENER);
+        createBindableProperty(LifecycleListener.class, KEY_LIFECYCLE_LISTENER);
     
     /**
      * Binds a web application storage to the system
      */
     public static final BindableProperty<WebApplicationStorage> WEB_APPLICATION_STORAGE = 
-        new BindablePropertyImpl<WebApplicationStorage>(KEY_WEB_APPLICATION_STORAGE);
+        createBindableProperty(WebApplicationStorage.class, KEY_WEB_APPLICATION_STORAGE);
 
     /**
      * Binds a request invocation filter to the system
      */
+    // This cannot be a bindable property, because it is needed immediately during
+    // initiallizing
     public static final SettableProperty<RequestInvocationFilter> REQUEST_INVOCATION_FILTER = 
-        new ObjectPropertyImpl<RequestInvocationFilter>(KEY_REQUEST_INVOCATION_FILTER);
+        createProperty(RequestInvocationFilter.class, KEY_REQUEST_INVOCATION_FILTER);
+
     
     /**
      * Binds a response logger for XML.
@@ -272,13 +271,13 @@ public class Configuration {
      * </p>
      */
     public static final BindableProperty<XMLResponseLogger> XML_RESPONSE_LOGGER = 
-        new BindablePropertyImpl<XMLResponseLogger>(KEY_XML_RESPONSE_LOGGER);
+        createBindableProperty(XMLResponseLogger.class, KEY_XML_RESPONSE_LOGGER);
     
     /**
      * Binds a XSL-postprocessor to the system
      */
     public static final BindableProperty<DocumentProcessor> XSL_POST_PROCESSOR = 
-        new BindablePropertyImpl<DocumentProcessor>(KEY_XSL_POST_PROCESSOR);
+        createBindableProperty(DocumentProcessor.class, KEY_XSL_POST_PROCESSOR);
     
     /**
      * Defines the root paths that contains components' css- and javascript-resources.
@@ -307,24 +306,6 @@ public class Configuration {
     public static final AddableProperty<Set<String>, String> VIEW_COMPONENT_ROOT_PACKAGE
         = new StringSetPropertyImpl(KEY_VIEW_COMPONENT_ROOT_PACKAGE);
 
-    /**
-     * Defines root paths that contains the binaries where reloadable 
-     * classes are built.
-     * 
-     * <p>
-     *  This setting has effect only if class reloading is enabled.
-     * </p>
-     * 
-     * <p>
-     *  Default: No default value
-     * </p>
-     * 
-     * <p>Deprecated: not needed after all</p>
-     */
-    @Deprecated
-    public static final AddableProperty<Set<String>, String> BUILD_PATH
-        = new StringSetPropertyImpl(KEY_BUILD_PATH);
-    
     /**
      * Defines root package from within reloadable classes are scanned.
      * 
@@ -360,7 +341,7 @@ public class Configuration {
      * </p>
      */
     public static final TemporalProperty INITIAL_MAX_INACTIVITY = 
-        new TemporalPropertyImpl(KEY_INITIAL_MAX_INACTIVITY);
+            createTemporalProperty(KEY_INITIAL_MAX_INACTIVITY);
     
     /**
      * Defines the maximum inactivity until page scope is expired.
@@ -383,7 +364,7 @@ public class Configuration {
      * </p>
      */
     public static final TemporalProperty MAX_INACTIVITY = 
-        new TemporalPropertyImpl(KEY_MAX_INACTIVITY);
+            createTemporalProperty(KEY_MAX_INACTIVITY);
     
     /**
      * Defines the the period how often expired page scopes are purged from memory.
@@ -396,7 +377,7 @@ public class Configuration {
      * </p>
      */
     public static final TemporalProperty REMOVAL_SCHEDULE_PERIOD = 
-        new TemporalPropertyImpl(KEY_REMOVAL_SCHEDULE_PERIOD);
+        createTemporalProperty(KEY_REMOVAL_SCHEDULE_PERIOD);
     
     /**
      * Defines additional namespaces to be used in XSL-templates.
@@ -534,7 +515,15 @@ public class Configuration {
         return new Configuration(values, property, property.add(get(property), property.getValue()));
     }
     
-    public static SettableProperty<Boolean> createBooleanProperty(String key) {
-        return new BooleanPropertyImpl(key);
+    public static <T> SettableProperty<T> createProperty(Class<T> type, String key) {
+        return new BasicSettableProperty<T>(key);
+    }
+    
+    public static <T> BindableProperty<T> createBindableProperty(Class<T> type, String key) {
+        return new BindablePropertyImpl<T>(key);
+    }
+    
+    public static TemporalProperty createTemporalProperty(String key) {
+        return new TemporalPropertyImpl(key);
     }
 }

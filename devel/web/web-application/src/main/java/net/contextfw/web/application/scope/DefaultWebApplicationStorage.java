@@ -34,7 +34,8 @@ public class DefaultWebApplicationStorage implements WebApplicationStorage {
             Collections.synchronizedMap(new HashMap<WebApplicationHandle, Holder>());
     
     public static final SettableProperty<Boolean> PROXIED = 
-            Configuration.createBooleanProperty("contextfw.defaultWebApplicationStorage.proxied");
+            Configuration.createProperty(Boolean.class, 
+                    "contextfw.defaultWebApplicationStorage.proxied");
     
     private final boolean proxied;
     

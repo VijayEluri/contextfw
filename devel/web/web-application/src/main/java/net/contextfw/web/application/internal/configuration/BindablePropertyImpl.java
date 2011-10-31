@@ -51,16 +51,6 @@ public class BindablePropertyImpl<T> implements BindableProperty<T> {
     }
 
     @Override
-    public Object unserialize(String value) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
-    public String serialize(Object value) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override
     public Object validate(Object value) {
         return value;
     }

@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import net.contextfw.web.application.component.Component;
+import net.contextfw.web.application.configuration.BindableProperty;
 import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.development.DevelopmentTools;
 import net.contextfw.web.application.internal.WebApplicationServletModule;
@@ -36,7 +37,6 @@ import net.contextfw.web.application.internal.util.AttributeHandler;
 import net.contextfw.web.application.internal.util.ObjectAttributeSerializer;
 import net.contextfw.web.application.lifecycle.LifecycleListener;
 import net.contextfw.web.application.lifecycle.PageScoped;
-import net.contextfw.web.application.lifecycle.RequestInvocationFilter;
 import net.contextfw.web.application.scope.WebApplicationStorage;
 import net.contextfw.web.application.serialize.AttributeJsonSerializer;
 
@@ -62,16 +62,28 @@ public final class WebApplicationModule extends AbstractModule {
     private AutoRegisterListener autoRegisterListener 
             = new AutoRegisterListener();
 
-    private InternalDevelopmentTools internalDevelopmentTools;
+    private DevelopmentToolsImpl developmentTools;
 
     public WebApplicationModule(Configuration configuration) {
         this.configuration = configuration;
     }
 
+    @SuppressWarnings("unchecked")
+    private <T> void bind(Class<T> type, BindableProperty<T> property) {
+        Object obj = configuration.get(property);
+        if (obj instanceof Class<?>) {
+            bind(type).to((Class<T>) obj);
+        } else {
+            bind(type).toInstance((T) obj);
+            requestInjection(obj);
+        }
+    }
+    
     @Override
     protected void configure() {
-        handleWebApplicationStorage();
         handleDevelopmentTools();
+        bind(WebApplicationStorage.class, Configuration.WEB_APPLICATION_STORAGE);
+        bind(LifecycleListener.class, Configuration.LIFECYCLE_LISTENER);
         PageScope pageScope = new PageScope();
         requestInjection(pageScope);
         bindScope(PageScoped.class, pageScope);
@@ -81,8 +93,6 @@ public final class WebApplicationModule extends AbstractModule {
         bind(ObjectAttributeSerializer.class).to(AttributeHandler.class);
         bind(Configuration.class).toInstance(configuration);
         bind(PropertyProvider.class).toInstance(configuration.get(Configuration.PROPERTY_PROVIDER));
-        bind(RequestInvocationFilter.class).toInstance(configuration.get(Configuration.REQUEST_INVOCATION_FILTER));        
-        handleLifecycleListener();
         
         this.bindListener(Matchers.any(), new TypeListener() {
             @SuppressWarnings("unchecked")
@@ -103,32 +113,10 @@ public final class WebApplicationModule extends AbstractModule {
                 new WebApplicationServletModule(configuration,
                         configuration.get(Configuration.PROPERTY_PROVIDER),
                         pageScope,
-                        internalDevelopmentTools);
+                        developmentTools);
 
         install(servletModule);
         
-    }
-
-    @SuppressWarnings({ "unchecked" })
-    private void handleLifecycleListener() {
-        Object obj = configuration.get(Configuration.LIFECYCLE_LISTENER);
-        if (obj instanceof LifecycleListener) {
-            bind(LifecycleListener.class).toInstance((LifecycleListener) obj);
-            requestInjection(obj);
-        } else {
-            bind(LifecycleListener.class).to((Class<LifecycleListener>) obj);
-        }
-    }
-    
-    @SuppressWarnings({ "unchecked" })
-    private void handleWebApplicationStorage() {
-        Object obj = configuration.get(Configuration.WEB_APPLICATION_STORAGE);
-        if (obj instanceof WebApplicationStorage) {
-            bind(WebApplicationStorage.class).toInstance((WebApplicationStorage) obj);
-            requestInjection(obj);
-        } else {
-            bind(WebApplicationStorage.class).to((Class<WebApplicationStorage>) obj);
-        }
     }
 
     @Singleton
@@ -181,10 +169,20 @@ public final class WebApplicationModule extends AbstractModule {
                 configuration.get(Configuration.NAMESPACE));
     }
     
+    
     private void handleDevelopmentTools() {
-        DevelopmentToolsImpl developmentTools = new DevelopmentToolsImpl(configuration);
-        bind(DevelopmentTools.class).toInstance(developmentTools);
-        bind(InternalDevelopmentTools.class).toInstance(developmentTools);
-        internalDevelopmentTools = developmentTools;
+        developmentTools = new DevelopmentToolsImpl(configuration);
+    }
+    
+    @Provides
+    @Singleton
+    public DevelopmentTools provideDevelopmentTools() {
+        return developmentTools;
+    }
+    
+    @Provides
+    @Singleton
+    public InternalDevelopmentTools provideInternalDevelopmentTools() {
+        return developmentTools;
     }
 }

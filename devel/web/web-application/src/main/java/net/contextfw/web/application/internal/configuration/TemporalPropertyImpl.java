@@ -60,15 +60,6 @@ public class TemporalPropertyImpl implements TemporalProperty {
         return new TemporalPropertyImpl(key, millis);
     }
 
-    public Long unserialize(String value) {
-        return Long.parseLong(value);
-    }
-
-    @Override
-    public String serialize(Long value) {
-        return value.toString();
-    }
-
     public Long validate(Long value) {
         if (value == null) {
             throw new IllegalArgumentException("Property cannot be null");
