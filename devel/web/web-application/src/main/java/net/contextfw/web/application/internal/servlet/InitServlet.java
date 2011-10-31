@@ -26,6 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import net.contextfw.web.application.component.Component;
+import net.contextfw.web.application.internal.Constants;
 import net.contextfw.web.application.internal.service.InitHandler;
 import net.contextfw.web.application.lifecycle.RequestInvocation;
 import net.contextfw.web.application.lifecycle.RequestInvocationFilter;
@@ -38,18 +39,21 @@ public class InitServlet extends HttpServlet {
     private static final long serialVersionUID = 1L;
     
     @edu.umd.cs.findbugs.annotations.SuppressWarnings(
-            value="SE_BAD_FIELD", justification="I know what I'm doing")
+            value=Constants.SE_BAD_FIELD,
+            justification=Constants.DEFAULT_JUSTIFICATION)
     private final List<Class<? extends Component>> chain;
     
     @edu.umd.cs.findbugs.annotations.SuppressWarnings(
-            value="SE_BAD_FIELD", justification="I know what I'm doing")
+            value=Constants.SE_BAD_FIELD, 
+            justification=Constants.DEFAULT_JUSTIFICATION)
     private final InitHandler handler;
     
     @Inject
     private final RequestInvocationFilter filter;
     
     @edu.umd.cs.findbugs.annotations.SuppressWarnings(
-            value={"SE_BAD_FIELD"}, justification="I know what I'm doing")
+            value={Constants.SE_BAD_FIELD}, 
+            justification=Constants.DEFAULT_JUSTIFICATION)
     private final RequestInvocation invocation = new RequestInvocation() {
         @Override
         public void invoke(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
@@ -58,8 +62,8 @@ public class InitServlet extends HttpServlet {
     };
 
     @edu.umd.cs.findbugs.annotations.SuppressWarnings(
-            value={"SE_BAD_FIELD", "MSF_MUTABLE_SERVLET_FIELD"}, 
-            justification="I know what I'm doing")
+            value={Constants.SE_BAD_FIELD, Constants.MSF_MUTABLE_SERVLET_FIELD}, 
+            justification=Constants.DEFAULT_JUSTIFICATION)
     private UriMapping mapping;
 
     @Override

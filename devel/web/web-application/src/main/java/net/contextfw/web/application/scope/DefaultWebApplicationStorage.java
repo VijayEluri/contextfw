@@ -38,7 +38,7 @@ public class DefaultWebApplicationStorage implements WebApplicationStorage {
     
     private final boolean proxied;
     
-    private static class Holder {
+    private static final class Holder {
         private long validThrough;
         private final String remoteAddr;
         private final WebApplication application;
