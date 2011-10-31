@@ -32,7 +32,7 @@ abstract class ContentServlet extends HttpServlet {
     
     private final long started;
     
-    private static final long expiration = 60 * 60 * 1000 * 8;
+    private static final long EXPIRATION = 60 * 60 * 1000 * 8;
     
     protected ContentServlet(String host,
                              String minifiedPath,
@@ -74,7 +74,7 @@ abstract class ContentServlet extends HttpServlet {
         }
 
         HttpServletResponse httpResponse = (HttpServletResponse) resp;
-        httpResponse.setDateHeader("Expires", started + expiration);
+        httpResponse.setDateHeader("Expires", started + EXPIRATION);
         httpResponse.setDateHeader("Date", started);
         httpResponse.setDateHeader("Last-Modified", started+1000);
         httpResponse.setHeader("Cache-Control", "max-age=2246400, must-revalidate");
