@@ -58,12 +58,6 @@ public final class WebApplicationModule extends AbstractModule {
 
     private final Configuration configuration;
     
-    private PageScope pageScope;
-    
-    //private PageFlowFilter pageFlowFilter;
-
-    //private Logger logger = LoggerFactory.getLogger(WebApplicationModule.class);
-
     @SuppressWarnings("rawtypes")
     private AutoRegisterListener autoRegisterListener 
             = new AutoRegisterListener();
@@ -78,7 +72,7 @@ public final class WebApplicationModule extends AbstractModule {
     protected void configure() {
         handleWebApplicationStorage();
         handleDevelopmentTools();
-        pageScope = new PageScope();
+        PageScope pageScope = new PageScope();
         requestInjection(pageScope);
         bindScope(PageScoped.class, pageScope);
         bind(PageScope.class).toInstance(pageScope);
