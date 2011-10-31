@@ -18,8 +18,6 @@
 package net.contextfw.web.application.internal.servlet;
 
 import java.io.IOException;
-import java.security.AccessController;
-import java.security.PrivilegedAction;
 import java.util.List;
 import java.util.Set;
 import java.util.SortedSet;
@@ -34,10 +32,7 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpServletRequest;
 
 import net.contextfw.web.application.PropertyProvider;
-import net.contextfw.web.application.internal.development.ClassLoaderProvider;
 import net.contextfw.web.application.internal.development.InternalDevelopmentTools;
-import net.contextfw.web.application.internal.development.ReloadingClassLoader;
-import net.contextfw.web.application.internal.development.ReloadingClassLoaderConf;
 import net.contextfw.web.application.internal.initializer.InitializerProvider;
 import net.contextfw.web.application.internal.service.DirectoryWatcher;
 import net.contextfw.web.application.internal.service.InitHandler;
@@ -48,7 +43,6 @@ import net.contextfw.web.application.lifecycle.RequestInvocationFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 @Singleton
