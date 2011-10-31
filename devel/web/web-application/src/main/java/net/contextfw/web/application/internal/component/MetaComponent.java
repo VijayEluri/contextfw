@@ -103,7 +103,7 @@ public final class MetaComponent {
         }
     }
 
-    private final boolean processFieldBuilders(Field field) {
+    private boolean processFieldBuilders(Field field) {
         PropertyAccess<Object> propertyAccess =
                 new FieldPropertyAccess<Object>(field);
 
@@ -195,7 +195,7 @@ public final class MetaComponent {
         registeredNames.add(method.getName());
     }
 
-    private final void iterateFields() {
+    private void iterateFields() {
         Class<?> currentClass = cl;
         while (currentClass != null) {
             for (Field field : currentClass.getDeclaredFields()) {
@@ -214,7 +214,7 @@ public final class MetaComponent {
         }
     }
 
-    private final void iterateMethods() {
+    private void iterateMethods() {
         Class<?> currentClass = cl;
         while (currentClass != null) {
             for (Method method : currentClass.getDeclaredMethods()) {
