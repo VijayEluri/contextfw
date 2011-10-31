@@ -103,10 +103,8 @@ public class ComponentBuilderImpl implements ComponentBuilder, ScriptContext {
     public void build(DOMBuilder sb, Object component, Object... buildins) {
         MetaComponent model = getMetaComponent(component.getClass());
         if (model.annotation != null) {
-            if (component instanceof Component) {
-                if (!((Component) component).isEnabled()) {
-                    return;
-                }
+            if (component instanceof Component && !((Component) component).isEnabled()) {
+                return;
             }
             DOMBuilder b = model.buildName == null ? sb : sb
                     .descend(model.buildName);
