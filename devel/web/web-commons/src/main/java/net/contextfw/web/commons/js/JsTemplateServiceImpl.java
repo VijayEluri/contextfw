@@ -1,6 +1,7 @@
 package net.contextfw.web.commons.js;
 
 import java.util.List;
+import java.util.Locale;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
@@ -87,7 +88,7 @@ class JsTemplateServiceImpl implements JsTemplateService {
             buffer.append("<").append(name);
             addAttributes(b, buffer, element.attributes());
 
-            String lName = name.toLowerCase();
+            String lName = name.toLowerCase(Locale.ENGLISH);
 
             if ("area".equals(lName) ||
                     "base".equals(lName) ||
@@ -132,9 +133,6 @@ class JsTemplateServiceImpl implements JsTemplateService {
         }
     }
 
-    /* (non-Javadoc)
-     * @see net.contextfw.web.commons.js.JsTemplateServiceI#process(org.dom4j.Document)
-     */
     @Override
     public void process(Document document) {
         servlet.setContent(generateTemplates(document));
