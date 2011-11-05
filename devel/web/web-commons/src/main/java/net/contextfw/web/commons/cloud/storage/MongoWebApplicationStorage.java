@@ -176,7 +176,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
     }
 
     @Override
-    public void initialize(WebApplication application, 
+    public void initialize(final WebApplication application, 
                            HttpServletRequest request,
                            long validThrough,
                            final ScopedWebApplicationExecution execution) {
@@ -191,7 +191,6 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
         
         executeExclusive(getPages(), handle.toString(), null, new MongoExecution<Void>() {
             public Void execute(DBObject object) {
-                WebApplication application = load(object);
                 try {
                     execution.execute(application);
                 } finally {
@@ -248,9 +247,8 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
         BasicDBObject query = new BasicDBObject();
         query.put(KEY_HANDLE, handle.toString());
         query.put(KEY_REMOTE_ADDR, request.getRemoteAddr());
-        query.put(KEY_VALID_THROUGH, new BasicDBObject("$lte", System.currentTimeMillis()));
-        getPages().update(query, new BasicDBObject("$set", 
-                new BasicDBObject(KEY_VALID_THROUGH, validThrough)));        
+        query.put(KEY_VALID_THROUGH, o("$gte", System.currentTimeMillis()));
+        getPages().update(query, o("$set", o(KEY_VALID_THROUGH, validThrough)));        
     }
 
     @Override
