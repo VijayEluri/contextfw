@@ -37,9 +37,6 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
     private final Provider<HttpContext> httpContext;
     private static final long HALF_HOUR = 30*60*1000;
     
-    private static final String KEY_HANDLE = "handle";
-    private static final String KEY_VALID_THROUGH = "validThrough";
-    
     private final String cookieName;
     private final String sessionCollection;
     private final long maxInactivity;
@@ -101,6 +98,7 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
         String handle = UUID.randomUUID().toString();
         DBObject session = new BasicDBObject();
         session.put(KEY_HANDLE, handle);
+        session.put(KEY_LOCKED, false);
         session.put(KEY_VALID_THROUGH, System.currentTimeMillis() + maxInactivity);
         getSessionCollection().insert(session);
         return handle;
@@ -273,7 +271,7 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
         if (httpContext.get().getResponse() != null) {
             Cookie cookie = new Cookie(cookieName, handle);
             cookie.setPath("/");
-            cookie.setMaxAge(remove ? 0 : Integer.MAX_VALUE);
+            cookie.setMaxAge(remove ? 0 : (int) (maxInactivity/1000));
             httpContext.get().getResponse().addCookie(cookie);
         }
     }
