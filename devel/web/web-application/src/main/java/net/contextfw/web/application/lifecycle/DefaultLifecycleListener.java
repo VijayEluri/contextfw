@@ -19,10 +19,6 @@ package net.contextfw.web.application.lifecycle;
 
 import java.lang.reflect.Method;
 
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.component.Component;
 
@@ -40,25 +36,11 @@ public class DefaultLifecycleListener implements LifecycleListener {
     private Logger logger = LoggerFactory.getLogger(DefaultLifecycleListener.class);
 
     @Override
-    public boolean beforeInitialize(HttpServlet servlet, 
-                                    HttpServletRequest request,
-                                    HttpServletResponse response) {
-        return true;
+    public void beforeInitialize() {
     }
 
-    @Override
-    public boolean beforeUpdate(HttpServlet servlet, 
-                                HttpServletRequest request,
-                                HttpServletResponse response) {
-         return true;
-    }
-    
     @Override
     public void afterInitialize() {
-    }
-
-    @Override
-    public void afterUpdate() {
     }
 
     @Override
@@ -80,26 +62,22 @@ public class DefaultLifecycleListener implements LifecycleListener {
     }
 
     @Override
-    public boolean beforeRemotedMethod(Component component, Method method, Object[] args) {
+    public boolean beforeUpdate(Component component, Method method, Object[] args) {
         return true;
     }
 
     @Override
-    public void afterRemoteMethod(Component component, Method method, RuntimeException thrown) {
+    public void afterUpdate(Component component, Method method, RuntimeException thrown) {
         if (thrown != null) { 
             throw thrown; 
         }
     }
 
     @Override
-    public void onPageScopeActivation() {
-        // TODO Auto-generated method stub
-        
+    public void afterPageScopeActivation() {
     }
 
     @Override
-    public void onPageScopeDeactivation() {
-        // TODO Auto-generated method stub
-        
+    public void beforePageScopeDeactivation() {
     }
 }

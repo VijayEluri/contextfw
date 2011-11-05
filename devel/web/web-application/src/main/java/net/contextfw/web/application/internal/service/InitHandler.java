@@ -96,10 +96,6 @@ public class InitHandler {
             internalDevelopmentTools.reloadResources();
         }
 
-        if (!listeners.beforeInitialize(servlet, request, response)) {
-            return;
-        }
-
         response.addHeader("Expires", "Sun, 19 Nov 1978 05:00:00 GMT");
         response.addHeader("Last-Modified", new Date().toString());
         response.addHeader("Cache-Control", "no-store, no-cache, must-revalidate");
@@ -124,6 +120,7 @@ public class InitHandler {
                                 WebApplication app = webApplicationProvider.get();
                                 app.setInitializerChain(chain);
                                 page.setWebApplication(app);
+                                listeners.beforeInitialize();
                                 page.getWebApplication().initState(mapping);
                                 listeners.afterInitialize();
                                 listeners.beforeRender();

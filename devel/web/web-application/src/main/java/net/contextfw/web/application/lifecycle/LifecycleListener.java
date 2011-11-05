@@ -19,10 +19,6 @@ package net.contextfw.web.application.lifecycle;
 
 import java.lang.reflect.Method;
 
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
 import net.contextfw.web.application.component.Component;
 
 /**
@@ -39,9 +35,8 @@ import net.contextfw.web.application.component.Component;
  * </p>
  * 
  * <p>
- *  There is also another class <code>PageFlowFilter</code> that serves 
- *  similar purpose but is meant for gathering statistics and throttling
- *  requests if needed.
+ *  There is also another filter called RequestInvocationFilter, where request and response
+ *  can be mangled.
  * </p>
  * 
  * @see net.contextfw.web.application.configuration.Configuration.LIFECYCLE_LISTENER
@@ -52,15 +47,11 @@ public interface LifecycleListener {
     /**
      * Called by framework before page initialization begins
      * <p>
-     *  This method returns a boolean. When <code>true</code> initialize can continue and requests
-     *  from web client are processed. If <code>false</code> request processing is cancelled. In
-     *  such case alternative response can be generated.
+     *  Note that page scope has been activated before the method is called
      * </p>
      * @return <code>true</code> if client update can continue, <code>false</code> otherwise
      */
-    boolean beforeInitialize(HttpServlet servlet, 
-                             HttpServletRequest request, 
-                             HttpServletResponse response);
+    void beforeInitialize();
     
     /**
      * Called by framework after page initialization has ended
@@ -69,21 +60,22 @@ public interface LifecycleListener {
     
     /**
      * <p>
-     *  Called by framework before update
-     * </p>
+     *  Called by the framework just after page scope has been activated.
+     * </p> 
+     * 
      * <p>
-     *  This method returns a boolean. When <code>true</code> update can continue and requests
-     *  from web client are processed. If <code>false</code> request processing is cancelled. In
-     *  such case alternative response can be generated.
+     *  Note that if page scope is activated by <code>PageScopedExecutor</code> the
+     *  http context does not contain http-request, http-response or servlet.
      * </p>
      */
-    boolean beforeUpdate(HttpServlet servlet, 
-                         HttpServletRequest request, 
-                         HttpServletResponse response);
+    void afterPageScopeActivation();
     
-    void onPageScopeActivation();
-    
-    void onPageScopeDeactivation();
+    /**
+     * <p>
+     * Called by the framework just before page scope is deactivated.
+     * </p>
+     */
+    void beforePageScopeDeactivation();
     
     /**
      * <p>
@@ -116,7 +108,7 @@ public interface LifecycleListener {
      *   <code>true</code> if method is to be be invoked. <code>false</code> prevents 
      *   method invocation.
      */
-    boolean beforeRemotedMethod(Component component, Method method, Object[] args);
+    boolean beforeUpdate(Component component, Method method, Object[] args);
 
     /**
      * Invoked after the remote method invocation has finished.
@@ -141,13 +133,8 @@ public interface LifecycleListener {
      * @param thrown
      *   The exception if it was thrown
      */
-    void afterRemoteMethod(Component component, Method method, RuntimeException thrown);
+    void afterUpdate(Component component, Method method, RuntimeException thrown);
 
-    /**
-     * Called by framework after update has finished
-     */
-    void afterUpdate();
-    
     /**
      * Called by framework if any exception is thrown.
      * 

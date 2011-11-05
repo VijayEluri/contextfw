@@ -32,8 +32,6 @@ import net.contextfw.web.application.lifecycle.RequestInvocation;
 import net.contextfw.web.application.lifecycle.RequestInvocationFilter;
 import net.contextfw.web.application.lifecycle.RequestInvocationFilter.Mode;
 
-import com.google.inject.Inject;
-
 public class InitServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
@@ -48,7 +46,6 @@ public class InitServlet extends HttpServlet {
             justification=Constants.DEFAULT_JUSTIFICATION)
     private final InitHandler handler;
     
-    @Inject
     private final RequestInvocationFilter filter;
     
     @edu.umd.cs.findbugs.annotations.SuppressWarnings(
@@ -56,8 +53,8 @@ public class InitServlet extends HttpServlet {
             justification=Constants.DEFAULT_JUSTIFICATION)
     private final RequestInvocation invocation = new RequestInvocation() {
         @Override
-        public void invoke(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-            handler.handleRequest(getMapping(), chain, InitServlet.this, request, response);
+        public void invoke(HttpServlet servlet, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+            handler.handleRequest(getMapping(), chain, servlet, request, response);
         }
     };
 
@@ -68,12 +65,12 @@ public class InitServlet extends HttpServlet {
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        filter.filter(Mode.INIT, req, resp, invocation);
+        filter.filter(Mode.INIT, this, req, resp, invocation);
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        filter.filter(Mode.INIT, req, resp, invocation);
+        filter.filter(Mode.INIT, this, req, resp, invocation);
     }
 
     public InitServlet(InitHandler handler,

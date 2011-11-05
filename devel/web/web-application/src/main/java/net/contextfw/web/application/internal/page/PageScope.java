@@ -72,12 +72,12 @@ public class PageScope implements Scope {
     public void deactivateCurrentPage() {
         WebApplicationPage page = currentPage.get();
         if (page != null) {
+            listener.beforePageScopeDeactivation();
             HttpContext context = page.getBean(Key.get(HttpContext.class));
             context.setServlet(null);
             context.setRequest(null);
             context.setResponse(null);
             currentPage.remove();
-            listener.onPageScopeDeactivation();
         }
     }
 
@@ -91,7 +91,7 @@ public class PageScope implements Scope {
         context.setRequest(request);
         context.setResponse(response);
         currentPage.set(page);
-        listener.onPageScopeActivation();
+        listener.afterPageScopeActivation();
     }
 
     public synchronized WebApplicationPage createPage(HttpServlet servlet,

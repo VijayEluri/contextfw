@@ -24,6 +24,7 @@ import static org.easymock.EasyMock.verify;
 import java.io.IOException;
 
 import javax.servlet.ServletException;
+import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -36,12 +37,13 @@ public class RequestInvocationTest {
     @Test
     public void Request_Is_Invoked() throws ServletException, IOException {
         RequestInvocation invocation = createStrictMock(RequestInvocation.class);
+        HttpServlet servlet = createStrictMock(HttpServlet.class);
         HttpServletRequest request = createStrictMock(HttpServletRequest.class);
         HttpServletResponse response = createStrictMock(HttpServletResponse.class);
-        invocation.invoke(request, response);
+        invocation.invoke(servlet, request, response);
         replay(invocation);
         DefaultRequestInvocationFilter filter = new DefaultRequestInvocationFilter();
-        filter.filter(Mode.INIT, request, response, invocation);
+        filter.filter(Mode.INIT, servlet, request, response, invocation);
         verify(invocation);
     }
 }

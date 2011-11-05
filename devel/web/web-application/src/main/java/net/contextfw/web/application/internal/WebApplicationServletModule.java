@@ -105,7 +105,7 @@ public class WebApplicationServletModule extends ServletModule {
 
     @Override
     protected void configureServlets() {
-        bind(RequestInvocationFilter.class).toInstance(this.filter);
+        //bind(RequestInvocationFilter.class).toInstance(this.filter);
         requestInjection(this.filter);
         initHandler = new InitHandler(configuration, 
                                       pageScope, 

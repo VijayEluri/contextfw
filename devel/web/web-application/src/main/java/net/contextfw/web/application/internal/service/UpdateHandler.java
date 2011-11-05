@@ -146,10 +146,6 @@ public class UpdateHandler {
                 response.setStatus(HttpServletResponse.SC_NO_CONTENT);
             } else if (CONTEXTFW_UPDATE.equals(command)) {
                 
-                if (!listeners.beforeUpdate(servlet, request, response)) {
-                    return;
-                }
-                
                 final UpdateInvocation[] invocation = new UpdateInvocation[1];
                 invocation[0] = UpdateInvocation.NOT_DELAYED;
                 storage.update(
@@ -177,7 +173,6 @@ public class UpdateHandler {
                                     pageScope.deactivateCurrentPage();
                                     return;
                                 }
-                                listeners.afterUpdate();
 
                                 if (!invocation[0].isResource()) {
                                     listeners.beforeRender();

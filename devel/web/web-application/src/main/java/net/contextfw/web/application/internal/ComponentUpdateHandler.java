@@ -102,7 +102,7 @@ public class ComponentUpdateHandler {
                     }
                 }
             }
-            if (listener.beforeRemotedMethod(component, method, params)) {
+            if (listener.beforeUpdate(component, method, params)) {
                 returnVal = method.invoke(component, params);
             } else {
                 return null;
@@ -113,7 +113,7 @@ public class ComponentUpdateHandler {
         } catch (InvocationTargetException e) {
             thrown = new WebApplicationException(e);
         }
-        listener.afterRemoteMethod(component, method, thrown);
+        listener.afterUpdate(component, method, thrown);
         return returnVal;
     }
 

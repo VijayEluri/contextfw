@@ -30,16 +30,14 @@ public class LifecycleListenerTest {
     
     @Test
     public void Basic_Test() {
-        assertTrue(listener.beforeInitialize(null, null, null));
         assertTrue(listener.beforeUpdate(null, null, null));
-        assertTrue(listener.beforeRemotedMethod(null, null, null));
         // Tests that with null exception no exception is thrown
-        listener.afterRemoteMethod(null, null, null);
+        listener.afterUpdate(null, null, null);
     }
     
     @Test(expected=IllegalArgumentException.class)
     public void After_Remote_Method_Trows_Exception() {
-        listener.afterRemoteMethod(null, null, new IllegalArgumentException());
+        listener.afterUpdate(null, null, new IllegalArgumentException());
     }
     
     @Test(expected=IllegalArgumentException.class)

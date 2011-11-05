@@ -51,19 +51,19 @@ public class UpdateServlet extends HttpServlet {
             value="SE_BAD_FIELD", justification="I know what I'm doing")
     private final RequestInvocation invocation = new RequestInvocation() {
         @Override
-        public void invoke(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-            handler.handleRequest(UpdateServlet.this, request, response);
+        public void invoke(HttpServlet servlet, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+            handler.handleRequest(servlet, request, response);
         }
     };
 
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        filter.filter(Mode.UPDATE, req, resp, invocation);
+        filter.filter(Mode.UPDATE, this, req, resp, invocation);
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        filter.filter(Mode.UPDATE, req, resp, invocation);
+        filter.filter(Mode.UPDATE, this, req, resp, invocation);
     }
 
     @Inject
