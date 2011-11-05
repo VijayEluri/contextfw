@@ -40,18 +40,20 @@ public class Serializer implements DevelopmentModeListener {
     public byte[] serialize(Object obj) {
         ByteArrayOutputStream out = null;
         DeflaterOutputStream dout = null;
+        Deflater d = new Deflater();
+        out = new ByteArrayOutputStream();
+        dout = new DeflaterOutputStream(out, d);
         try {
-            Deflater d = new Deflater();
-            out = new ByteArrayOutputStream();
-            dout = new DeflaterOutputStream(out, d);
             dout.write(xstream.get().toXML(obj).getBytes("UTF-8"));
-            return out.toByteArray();
         } catch (IOException e) {
-            throw new WebApplicationException(e);
-        } finally {
-            close(out);
             close(dout);
+            close(out);
+            throw new WebApplicationException(e);
         }
+        close(dout);
+        close(out);
+        return out.toByteArray();
+        
     }
     
     private void close(OutputStream stream) {
