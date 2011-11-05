@@ -35,7 +35,7 @@ public class DefaultWebApplicationStorage implements WebApplicationStorage {
     
     public static final SettableProperty<Boolean> PROXIED = 
             Configuration.createProperty(Boolean.class, 
-                    "contextfw.defaultWebApplicationStorage.proxied");
+                    DefaultWebApplicationStorage.class.getName() + ".proxied");
     
     private final boolean proxied;
     
