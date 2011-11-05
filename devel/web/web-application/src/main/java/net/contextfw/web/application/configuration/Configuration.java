@@ -453,8 +453,8 @@ public class Configuration {
      */
     @SuppressWarnings("unchecked")
     public <T> T getOrElse(Property<T> property, T def) {
-        T value = property.validate((T) values.get(property.getKey()));
-        return value != null ? value : def;
+        T value = (T) values.get(property.getKey());
+        return value != null ? property.validate(value) : def;
     }
     
     /**
