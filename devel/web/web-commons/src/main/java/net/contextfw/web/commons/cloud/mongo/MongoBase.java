@@ -2,6 +2,9 @@ package net.contextfw.web.commons.cloud.mongo;
 
 import java.util.Random;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.mongodb.BasicDBObject;
 import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DB;
@@ -10,16 +13,18 @@ import com.mongodb.DBObject;
 
 public abstract class MongoBase {
 
+    private static final Logger LOG = LoggerFactory.getLogger(MongoBase.class);
+    
     private static final int TRY_OUTS = 100;
 
     private static final int SLEEP_PERIOD = 100;
 
     private final DB db;
 
-    private static final String KEY_HANDLE = "handle";
-    private static final String KEY_VALID_THROUGH = "validThrough";
-    private static final String KEY_LOCKED = "locked";
-    private static final String KEY_REMOTE_ADDR = "remoteAddr";
+    protected static final String KEY_HANDLE = "handle";
+    protected static final String KEY_VALID_THROUGH = "validThrough";
+    protected static final String KEY_LOCKED = "locked";
+    protected static final String KEY_REMOTE_ADDR = "remoteAddr";
     
     private long nextCleanup = 0;
     
@@ -102,7 +107,12 @@ public abstract class MongoBase {
     protected void removeExpiredObjects(DBCollection collection) {
         long now = System.currentTimeMillis();
         if (now > nextCleanup) {
-            collection.remove(o(KEY_VALID_THROUGH, o("$lt", now)));
+            DBObject query = o(KEY_VALID_THROUGH, o("$lt", now));
+            if (LOG.isInfoEnabled()) {
+                LOG.info("Cleaning {} objects from {}", collection.count(query), 
+                    collection.getName());
+            }
+            collection.remove(query);
             nextCleanup = now + new Random().nextInt((int) removalSchedulePeriod*2);
         }
     }
