@@ -189,7 +189,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
         
         create(handle, remoteAddr, application, validThrough);
         
-        executeExclusive(getPages(), handle.toString(), null, new MongoExecution<Void>() {
+        executeSynchronized(getPages(), handle.toString(), null, new MongoExecution<Void>() {
             public Void execute(DBObject object) {
                 try {
                     execution.execute(application);
@@ -211,7 +211,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
         removeExpiredPages();
         throttle(remoteAddr);
         
-        executeExclusive(getPages(), handle.toString(), null, new MongoExecution<Void>() {
+        executeSynchronized(getPages(), handle.toString(), null, new MongoExecution<Void>() {
             public Void execute(DBObject object) {
                 WebApplication application = load(object);
                 try {
@@ -229,7 +229,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
                         final ScopedWebApplicationExecution execution) {
         
         
-        executeExclusive(getPages(), handle.toString(), null, new MongoExecution<Void>() {
+        executeSynchronized(getPages(), handle.toString(), null, new MongoExecution<Void>() {
             public Void execute(DBObject object) {
                 WebApplication application = load(object);
                 try {

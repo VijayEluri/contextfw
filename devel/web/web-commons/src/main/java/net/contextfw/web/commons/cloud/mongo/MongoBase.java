@@ -35,7 +35,7 @@ public abstract class MongoBase {
         this.removalSchedulePeriod = removalSchedulePeriod;
     }
 
-    protected <T> T executeExclusive(DBCollection collection, 
+    protected <T> T executeSynchronized(DBCollection collection, 
                                    String handle,
                                    String remoteAddr,
                                    MongoExecution<T> execution) {

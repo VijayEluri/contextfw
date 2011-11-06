@@ -72,7 +72,7 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
                 unset(handle, key);
             }
             
-            executeExclusive(getSessionCollection(), handle, null, 
+            executeSynchronized(getSessionCollection(), handle, null, 
                     new MongoExecution<Void>() {
                         public Void execute(DBObject object) {
                             DBObject query = o(KEY_HANDLE, handle);
@@ -160,7 +160,7 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
         String handle = getSessionHandle(false);
         
         if (handle != null) {
-            byte[] data = executeExclusive(getSessionCollection(), handle, null, 
+            byte[] data = executeSynchronized(getSessionCollection(), handle, null, 
                     new MongoExecution<byte[]>() {
                         public byte[] execute(DBObject object) {
                             return (byte[]) object.get(key);
@@ -193,7 +193,7 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
     }
     
     private void unset(final String handle, final String key) {
-        executeExclusive(getSessionCollection(), handle, null, 
+        executeSynchronized(getSessionCollection(), handle, null, 
                 new MongoExecution<Void>() {
                     public Void execute(DBObject object) {
                             DBObject query = o(KEY_HANDLE, handle);
