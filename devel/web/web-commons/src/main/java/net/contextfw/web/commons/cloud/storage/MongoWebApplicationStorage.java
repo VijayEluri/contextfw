@@ -11,7 +11,7 @@ import net.contextfw.web.application.configuration.SettableProperty;
 import net.contextfw.web.application.internal.configuration.Property;
 import net.contextfw.web.application.scope.ScopedWebApplicationExecution;
 import net.contextfw.web.application.scope.WebApplicationStorage;
-import net.contextfw.web.commons.cloud.CloudDatabase;
+import net.contextfw.web.commons.cloud.binding.CloudDatabase;
 import net.contextfw.web.commons.cloud.mongo.MongoBase;
 import net.contextfw.web.commons.cloud.mongo.MongoExecution;
 import net.contextfw.web.commons.cloud.serializer.Serializer;

@@ -14,6 +14,8 @@ import com.mongodb.DBObject;
 public abstract class MongoBase {
 
     private static final Logger LOG = LoggerFactory.getLogger(MongoBase.class);
+
+    
     
     private static final int TRY_OUTS = 100;
 

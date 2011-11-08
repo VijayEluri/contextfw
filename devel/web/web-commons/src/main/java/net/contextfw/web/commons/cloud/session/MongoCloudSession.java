@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletRequest;
 import net.contextfw.web.application.HttpContext;
 import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.configuration.SettableProperty;
-import net.contextfw.web.commons.cloud.CloudDatabase;
+import net.contextfw.web.commons.cloud.binding.CloudDatabase;
 import net.contextfw.web.commons.cloud.mongo.MongoBase;
 import net.contextfw.web.commons.cloud.mongo.MongoExecution;
 import net.contextfw.web.commons.cloud.serializer.Serializer;
@@ -26,7 +26,12 @@ import com.mongodb.DBObject;
 @Singleton
 public class MongoCloudSession extends MongoBase implements CloudSession {
 
-    private Provider<CloudSessionHolder> holderProvider;
+    private static final String NO_SESSION = "Cannot open session in EXISTING-mode! " +
+        	  "Session has not been initialized";
+    
+    private static final String SESSION_NOT_OPEN = "Session is not open.";
+
+    private final Provider<CloudSessionHolder> holderProvider;
     
     private final Serializer serializer;
     
@@ -45,20 +50,22 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
     public MongoCloudSession(@CloudDatabase DB db, 
                              Configuration configuration, 
                              Provider<HttpContext> httpContext,
-                             Provider<CloudSessionHolder> holder,
+                             Provider<CloudSessionHolder> holderProvider,
                              Serializer serializer) {
         super(db, configuration.get(Configuration.REMOVAL_SCHEDULE_PERIOD));
         
         this.httpContext = httpContext;
-        this.holderProvider = holder;
         cookieName = configuration.getOrElse(CloudSession.COOKIE_NAME, "cloudSession");
         sessionCollection = configuration.getOrElse(COLLECTION_NAME, "session");
         this.maxInactivity = configuration.getOrElse(CloudSession.MAX_INACTIVITY, HALF_HOUR);
         this.serializer = serializer;
+        this.holderProvider = holderProvider;
     }
     
     @Override
     public void set(final String key, final Object value) {
+        
+        assertSessionIsUsable();
         
         if (StringUtils.isBlank(key)) {
             throw new IllegalArgumentException("Key cannot be empty or null.");
@@ -123,7 +130,6 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
         if (holder.getHandle() == null && create) {
             if (httpContext.get().getResponse() != null) {
                 holder.setHandle(createSession());
-                setSessionCookie(holder.getHandle(), false);
             } else {
                 throw new NoSessionException(
                         "Cannot create new session! " + 
@@ -149,6 +155,8 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
     @SuppressWarnings("unchecked")
     @Override
     public <T> T get(final String key, Class<T> type) {
+        
+        assertSessionIsUsable();
         
         if (StringUtils.isBlank(key)) {
             throw new IllegalArgumentException("Key cannot be empty or null.");
@@ -179,6 +187,13 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
         }
         return get(typeToKey(type), type);
     }
+    
+    private void assertSessionIsUsable() {
+        CloudSessionHolder holder = holderProvider.get();
+        if (!holder.isOpen()) {
+            throw new NoSessionException(SESSION_NOT_OPEN);
+        }
+    }
 
     @Override
     public void unset(String key) {
@@ -193,6 +208,7 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
     }
     
     private void unset(final String handle, final String key) {
+        assertSessionIsUsable();
         executeSynchronized(getSessionCollection(), handle, null, 
                 new MongoExecution<Void>() {
                     public Void execute(DBObject object) {
@@ -246,12 +262,6 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
         removeExpiredSessions();
         CloudSessionHolder holder = this.holderProvider.get();
         
-        if (holder.getHandle() == null && mode == OpenMode.EXISTING) {
-            throw new NoSessionException(
-                    "Cannot open session in EXISTING-mode! " +
-            	  "Session has not been initialized");
-        }
-        
         if (httpContext.get().getRequest() == null && mode != OpenMode.EXISTING) {
             throw new NoSessionException(
                     "Cannot open session in " + mode + "-mode! " +
@@ -260,10 +270,19 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
         
         String handle = getSessionHandle(mode == OpenMode.EAGER);
         
+        if (holder.getHandle() == null && mode == OpenMode.EXISTING) {
+            throw new NoSessionException(NO_SESSION);
+        }
+
+        holder.setOpen(true);
+        
         if (handle != null) {
-            holder.setOpen(true);
             setSessionCookie(handle, false);
             refreshSession(handle);
+        }
+        
+        if (holder.getHandle() == null && mode == OpenMode.EXISTING) {
+            throw new NoSessionException(NO_SESSION);
         }
     }
 
