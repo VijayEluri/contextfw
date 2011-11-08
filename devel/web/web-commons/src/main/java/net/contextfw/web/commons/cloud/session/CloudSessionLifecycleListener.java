@@ -1,18 +1,20 @@
-package net.contextfw.web.commons.cloud;
+package net.contextfw.web.commons.cloud.session;
 
 import java.lang.reflect.Method;
 
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.lifecycle.DefaultLifecycleListener;
-import net.contextfw.web.commons.cloud.session.CloudSession;
-import net.contextfw.web.commons.cloud.session.OpenMode;
 
 import com.google.inject.Inject;
 
-public class CloudLifecycleListener extends DefaultLifecycleListener {
+public class CloudSessionLifecycleListener extends DefaultLifecycleListener {
 
+    private final CloudSession session;
+    
     @Inject
-    private CloudSession session;
+    public CloudSessionLifecycleListener(CloudSession session) {
+        this.session = session;
+    }
     
     @Override
     public void beforeInitialize() {
@@ -36,5 +38,11 @@ public class CloudLifecycleListener extends DefaultLifecycleListener {
     public void afterUpdate(Component component, Method method, RuntimeException thrown) {
         session.closeSession();
         super.afterUpdate(component, method, thrown);
+    }
+
+    @Override
+    public void onException(Exception e) {
+        session.closeSession();
+        super.onException(e);
     }
 }
