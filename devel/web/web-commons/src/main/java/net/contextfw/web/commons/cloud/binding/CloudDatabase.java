@@ -1,4 +1,4 @@
-package net.contextfw.web.commons.cloud;
+package net.contextfw.web.commons.cloud.binding;
 
 import static java.lang.annotation.ElementType.FIELD;
 import static java.lang.annotation.ElementType.METHOD;
