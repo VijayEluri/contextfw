@@ -63,8 +63,7 @@ public class UpdateHandler {
 
     private final LifecycleListener listeners;
 
-    @Inject
-    private Gson gson;
+    private final Gson gson;
 
     private final DirectoryWatcher watcher;
 
@@ -82,8 +81,10 @@ public class UpdateHandler {
             ResourceCleaner cleaner,
             WebApplicationStorage storage,
             Configuration configuration,
-            PageScope pageScope) {
+            PageScope pageScope,
+            Gson gson) {
 
+        this.gson = gson;
         this.listeners = listeners;
         this.maxInactivity = configuration.get(Configuration.MAX_INACTIVITY);
         this.storage = storage;

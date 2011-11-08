@@ -50,6 +50,7 @@ import net.contextfw.web.application.scope.WebApplicationStorage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.Gson;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.servlet.ServletModule;
@@ -189,13 +190,15 @@ public class WebApplicationServletModule extends ServletModule {
             LifecycleListener listeners,
             DirectoryWatcher watcher,
             ResourceCleaner cleaner,
-            WebApplicationStorage storage) {
+            WebApplicationStorage storage,
+            Gson gson) {
         
         return new UpdateHandler(listeners, 
                 watcher, 
                 cleaner,
                 storage,
                 configuration,
-                pageScope);
+                pageScope,
+                gson);
     }
 }
