@@ -132,7 +132,7 @@ public class HttpContext {
         this.servlet = servlet;
         this.request = request;
         this.response = response;
-
+        
         requestURI = request.getRequestURI();
         queryString = request.getQueryString();
     }

@@ -5,9 +5,8 @@ import java.util.Set;
 
 import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.development.DevelopmentModeListener;
-import net.contextfw.web.application.development.DevelopmentTools;
 
-public class DevelopmentToolsImpl implements DevelopmentTools, InternalDevelopmentTools {
+public class DevelopmentToolsImpl implements InternalDevelopmentTools {
 
     private final Set<DevelopmentModeListener> listeners = 
             new HashSet<DevelopmentModeListener>();
