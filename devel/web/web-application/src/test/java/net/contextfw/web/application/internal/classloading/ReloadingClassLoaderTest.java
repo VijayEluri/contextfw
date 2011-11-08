@@ -17,6 +17,8 @@
 
 package net.contextfw.web.application.internal.classloading;
 
+import static net.contextfw.web.application.configuration.Configuration.RELOADABLE_CLASSES;
+import static net.contextfw.web.application.configuration.Configuration.VIEW_COMPONENT_ROOT_PACKAGE;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotSame;
@@ -25,11 +27,14 @@ import static org.junit.Assert.assertTrue;
 import java.util.Set;
 
 import net.contextfw.web.application.configuration.Configuration;
+import net.contextfw.web.application.development.DevelopmentModeListener;
 import net.contextfw.web.application.internal.development.ClassLoaderProvider;
+import net.contextfw.web.application.internal.development.DevelopmentToolsImpl;
+import net.contextfw.web.application.internal.development.InternalDevelopmentTools;
 import net.contextfw.web.application.internal.development.ReloadingClassLoader;
 import net.contextfw.web.application.internal.development.ReloadingClassLoaderConf;
-import static net.contextfw.web.application.configuration.Configuration.*;
 
+import org.apache.commons.lang.mutable.MutableBoolean;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -90,10 +95,27 @@ public class ReloadingClassLoaderTest {
             .add(RELOADABLE_CLASSES.includedPackage("net.contextfw.web.application.internal.classloading", false))
             .add(RELOADABLE_CLASSES.excludedClass(NonReloadable.class));
 
-        ClassLoaderProvider provider = new ClassLoaderProvider(
-                new ReloadingClassLoaderConf(conf));
+        InternalDevelopmentTools tools = new DevelopmentToolsImpl(conf);
         
-        ClassLoader classLoader = provider.reload();
+        final MutableBoolean classesReloaded = new MutableBoolean(false);
+        final MutableBoolean resourcesReloaded = new MutableBoolean(false);
+        
+        tools.addListener(new DevelopmentModeListener() {
+            @Override
+            public void resourcesReloaded() {
+                resourcesReloaded.setValue(true);
+            }
+            @Override
+            public void classesReloaded(ClassLoader classLoader) {
+                classesReloaded.setValue(true);
+            }
+        });
+        
+        ClassLoader classLoader = tools.reloadClasses();
+        tools.reloadResources();
+        
+        assertTrue(classesReloaded.booleanValue());
+        assertTrue(resourcesReloaded.booleanValue());
         
         Class<?> reloadable = 
                 classLoader.loadClass("net.contextfw.web.application.internal.classloading.Reloadable");

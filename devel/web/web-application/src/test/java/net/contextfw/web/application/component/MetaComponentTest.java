@@ -32,7 +32,9 @@ public class MetaComponentTest {
     
     private static class B extends Component {}
     
+    @SuppressWarnings("unused")
     private static class A extends Component {
+        
         
         @Element
         private Object a1 = null;
