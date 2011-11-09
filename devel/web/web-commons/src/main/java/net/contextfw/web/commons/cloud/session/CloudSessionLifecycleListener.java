@@ -23,26 +23,18 @@ public class CloudSessionLifecycleListener extends DefaultLifecycleListener {
     }
 
     @Override
-    public void afterInitialize() {
-        session.closeSession();
-        super.afterInitialize();
-    }
-
-    @Override
     public boolean beforeUpdate(Component component, Method method, Object[] args) {
         session.openSession(OpenMode.LAZY);
         return super.beforeUpdate(component, method, args);
     }
 
     @Override
-    public void afterUpdate(Component component, Method method, RuntimeException thrown) {
-        session.closeSession();
-        super.afterUpdate(component, method, thrown);
-    }
-
-    @Override
     public void onException(Exception e) {
-        session.closeSession();
         super.onException(e);
+    }
+    
+    @Override
+    public void beforePageScopeDeactivation() {
+        session.closeSession();
     }
 }
