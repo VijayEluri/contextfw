@@ -20,35 +20,13 @@ package net.contextfw.web.application.internal.classloading;
 import java.io.IOException;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import net.contextfw.application.AbstractGuiceTest;
-import net.contextfw.web.application.component.Component;
-import net.contextfw.web.application.configuration.Configuration;
-import net.contextfw.web.application.internal.service.WebApplication;
-import net.contextfw.web.application.lifecycle.PageScoped;
-import net.contextfw.web.application.lifecycle.View;
 
 import org.junit.Before;
 import org.junit.Test;
 
 public class WebApplicationGuiceTest extends AbstractGuiceTest {
-    
-    @PageScoped
-    @View(url="test")
-    private static class Page extends Component {
-        
-    }
-    
-    private WebApplication webApplication;
-    
-    private HttpServletRequest request;
-    private HttpServletResponse response;
-    private HttpServlet servlet;
-    
-    private Configuration configuration = Configuration.getDefaults();
     
     @Before
     public void setup() {
