@@ -78,8 +78,12 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
             if (value == null) {
                 unset(handle, key);
             }
-            
-            executeSynchronized(getSessionCollection(), handle, null, 
+            DBObject fields = o(key, 1);
+            executeSynchronized(getSessionCollection(), 
+                                handle, 
+                                fields, 
+                                null,
+                                false,
                     new MongoExecution<Void>() {
                         public Void execute(DBObject object) {
                             DBObject query = o(KEY_HANDLE, handle);
@@ -168,7 +172,12 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
         String handle = getSessionHandle(false);
         
         if (handle != null) {
-            byte[] data = executeSynchronized(getSessionCollection(), handle, null, 
+            DBObject fields = o(key, 1);
+            byte[] data = executeSynchronized(getSessionCollection(), 
+                                              handle, 
+                                              fields,
+                                              null,
+                                              false,
                     new MongoExecution<byte[]>() {
                         public byte[] execute(DBObject object) {
                             return (byte[]) object.get(key);
@@ -209,7 +218,12 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
     
     private void unset(final String handle, final String key) {
         assertSessionIsUsable();
-        executeSynchronized(getSessionCollection(), handle, null, 
+        DBObject fields = o(key, 1);
+        executeSynchronized(getSessionCollection(), 
+                            handle, 
+                            fields, 
+                            null,
+                            false,
                 new MongoExecution<Void>() {
                     public Void execute(DBObject object) {
                             DBObject query = o(KEY_HANDLE, handle);

@@ -33,7 +33,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
     private static final double INITIAL_CURVE = 1.3;
 
     private static final int INITIAL_TRESHOLD = 100;
-
+    
     private static final Logger LOG = LoggerFactory
             .getLogger(MongoWebApplicationStorage.class);
     
@@ -84,18 +84,20 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
     private static final String KEY_LOCKED = "locked";
     private static final String KEY_APPLICATION = "application";
 
+    private static final DBObject applicationFields = new BasicDBObject(KEY_APPLICATION, 1);
+    
     private final boolean throttle;
     private final int throttleTreshold;
     private final boolean logThrottle;
     private final double throttleCurve;
     private final String collection;
 
-    @Inject
-    private Serializer serializer;
+    private final Serializer serializer;
     
     @Inject
     public MongoWebApplicationStorage(@CloudDatabase DB db, 
-                                      Configuration configuration) {
+                                      Configuration configuration,
+                                      Serializer serializer) {
         
         super(db, configuration.get(Configuration.REMOVAL_SCHEDULE_PERIOD));
         throttle = configuration.getOrElse(THROTTLE, false);
@@ -103,6 +105,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
         logThrottle = configuration.getOrElse(THROTTLE_LOG, false);
         throttleCurve = configuration.getOrElse(THROTTLE_CURVE, INITIAL_CURVE);
         collection = configuration.getOrElse(COLLECTION_NAME, "pages");
+        this.serializer = serializer;
     }
 
     private void throttle(String remoteAddr) {
@@ -189,7 +192,14 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
         
         create(handle, remoteAddr, application, validThrough);
         
-        executeSynchronized(getPages(), handle.toString(), null, new MongoExecution<Void>() {
+        DBObject noFields = new BasicDBObject();
+        
+        executeSynchronized(getPages(), 
+                            handle.toString(),
+                            noFields,
+                            null,
+                            true,
+                            new MongoExecution<Void>() {
             public Void execute(DBObject object) {
                 try {
                     execution.execute(application);
@@ -211,7 +221,12 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
         removeExpiredPages();
         throttle(remoteAddr);
         
-        executeSynchronized(getPages(), handle.toString(), null, new MongoExecution<Void>() {
+        executeSynchronized(getPages(), 
+                            handle.toString(), 
+                            applicationFields, 
+                            null,
+                            true,
+                            new MongoExecution<Void>() {
             public Void execute(DBObject object) {
                 WebApplication application = load(object);
                 try {
@@ -228,8 +243,12 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
     public void execute(final WebApplicationHandle handle,
                         final ScopedWebApplicationExecution execution) {
         
-        
-        executeSynchronized(getPages(), handle.toString(), null, new MongoExecution<Void>() {
+        executeSynchronized(getPages(), 
+                            handle.toString(), 
+                            applicationFields,
+                            null,
+                            true,
+                            new MongoExecution<Void>() {
             public Void execute(DBObject object) {
                 WebApplication application = load(object);
                 try {

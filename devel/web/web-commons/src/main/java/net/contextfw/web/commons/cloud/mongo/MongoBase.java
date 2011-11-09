@@ -39,7 +39,9 @@ public abstract class MongoBase {
 
     protected <T> T executeSynchronized(DBCollection collection, 
                                    String handle,
+                                   DBObject fields,
                                    String remoteAddr,
+                                   boolean execOnNull,
                                    MongoExecution<T> execution) {
         
         BasicDBObjectBuilder queryBuilder = b().add(KEY_HANDLE, handle);
@@ -55,13 +57,10 @@ public abstract class MongoBase {
 
         DBObject query = queryBuilder.get();
         
-        DBObject obj = collection.findOne(query);
+        boolean exists = collection.count(query) == 1;
         
-        if (obj != null) {
-            DBObject opened = openExclusive(collection, query);
-            if (opened == null) {
-                opened = obj;
-            }
+        if (exists || execOnNull) {
+            DBObject opened = exists ? openExclusive(collection, query, fields) : null;
             try {
                 return execution.execute(opened);
             } finally {
@@ -77,11 +76,19 @@ public abstract class MongoBase {
         collection.update(query, o("$set", o(KEY_LOCKED, false)));
     }
     
-    private DBObject openExclusive(DBCollection collection, DBObject query) {
+    private DBObject openExclusive(DBCollection collection, DBObject query, DBObject fields) {
         query.put(KEY_LOCKED, false);
         DBObject update = o("$set", o(KEY_LOCKED, true));
         for (int i = 0; i < TRY_OUTS; i++) {
-            DBObject rv = collection.findAndModify(query, update);
+            DBObject rv = collection.findAndModify(
+                    query, 
+                    fields, 
+                    null,
+                    false,
+                    update,
+                    true,
+                    false);
+            
             if (rv == null) {
                 try {
                     Thread.sleep(SLEEP_PERIOD);
@@ -91,7 +98,7 @@ public abstract class MongoBase {
                 return rv;
             }
         }
-        return null;
+        return collection.findOne(query, fields);
     }
     
     protected DBObject o(String key, Object value) {
