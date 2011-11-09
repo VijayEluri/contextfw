@@ -25,10 +25,10 @@ public class BasicSessionTest extends AbstractTest {
                 new CloudSessionLifecycleListener(session);
         
         listener.beforeInitialize();
-        listener.afterInitialize();
+        listener.beforePageScopeDeactivation();
         
         listener.beforeUpdate(null,  null, null);
-        listener.afterUpdate(null,  null, null);
+        listener.beforePageScopeDeactivation();
         
         verify(session);
     }

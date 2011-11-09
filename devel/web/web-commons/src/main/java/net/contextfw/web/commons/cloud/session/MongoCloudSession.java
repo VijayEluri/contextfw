@@ -71,7 +71,7 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
             throw new IllegalArgumentException("Key cannot be empty or null.");
         }
         
-        final String handle = getSessionHandle(true);
+        final String handle = getSessionHandle(true, true);
         
         if (handle != null) {
             
@@ -115,7 +115,7 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
         return handle;
     }
     
-    private String getSessionHandle(boolean create) {
+    private String getSessionHandle(boolean create, boolean assignCookie) {
 
         CloudSessionHolder holder = this.holderProvider.get();
         
@@ -134,6 +134,9 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
         if (holder.getHandle() == null && create) {
             if (httpContext.get().getResponse() != null) {
                 holder.setHandle(createSession());
+                if (assignCookie) {
+                    setSessionCookie(holder.getHandle(), false);
+                }
             } else {
                 throw new NoSessionException(
                         "Cannot create new session! " + 
@@ -169,7 +172,7 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
             throw new IllegalArgumentException("Type cannot be empty or null.");
         }
         
-        String handle = getSessionHandle(false);
+        String handle = getSessionHandle(false, false);
         
         if (handle != null) {
             DBObject fields = o(key, 1);
@@ -210,7 +213,7 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
             throw new IllegalArgumentException("Key cannot be empty or null.");
         }
         
-        String handle = getSessionHandle(false);
+        String handle = getSessionHandle(false, false);
         if (handle != null) {
             unset(handle, key);
         }
@@ -244,7 +247,7 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
 
     @Override
     public void expireSession() {
-        String handle = getSessionHandle(false);
+        String handle = getSessionHandle(false, false);
         if (handle != null) {
             setSessionCookie(handle, true);
             removeSession(handle);
@@ -282,7 +285,7 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
                     "No request bound to HttpContext. Use EXISTING-mode instead");
         }
         
-        String handle = getSessionHandle(mode == OpenMode.EAGER);
+        String handle = getSessionHandle(mode == OpenMode.EAGER, false);
         
         if (holder.getHandle() == null && mode == OpenMode.EXISTING) {
             throw new NoSessionException(NO_SESSION);

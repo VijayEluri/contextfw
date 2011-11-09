@@ -133,6 +133,13 @@ public class GetSetMongoSessionTest extends AbstractSessionTest {
     }
     
     @Test
+    public void Set_After_Lazy_Session() {
+        CloudSession session = openLazySession(ResponseExpect.ADD_COOKIE);
+        session.set(new A());
+        
+    }
+    
+    @Test
     public void Get_Null_When_Unset_1() {
         CloudSession session = openValidSession();
         
@@ -200,6 +207,19 @@ public class GetSetMongoSessionTest extends AbstractSessionTest {
                 mockSessionHolder(FOOBAR));
         
         session.openSession(OpenMode.EXISTING);
+        
+        return session;
+    }
+    
+    private CloudSession openLazySession(ResponseExpect responseExpect) {
+
+        CloudSession session = getBasicSession(
+                mockHttpContext(
+                        mockRequest(RequestExpect.NO_COOKIES),
+                        mockResponse(responseExpect, null)),
+                mockSessionHolder(FOOBAR));
+        
+        session.openSession(OpenMode.LAZY);
         
         return session;
     }
