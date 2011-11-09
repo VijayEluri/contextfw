@@ -1,17 +1,10 @@
 package net.contextfw.web.commons.cloud.session;
 
-import static org.junit.Assert.*;
-import static org.junit.Assert.assertTrue;
-
-import javax.servlet.http.Cookie;
-
-import net.contextfw.web.application.HttpContext;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import org.junit.Test;
-
-import com.google.inject.Provider;
-import com.mongodb.BasicDBObjectBuilder;
-import com.mongodb.DBObject;
 
 public class GetSetMongoSessionTest extends AbstractSessionTest {
     

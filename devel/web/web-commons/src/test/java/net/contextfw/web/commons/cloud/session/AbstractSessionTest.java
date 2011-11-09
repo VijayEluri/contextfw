@@ -1,13 +1,8 @@
 package net.contextfw.web.commons.cloud.session;
 
 import static org.easymock.EasyMock.anyObject;
-import static org.easymock.EasyMock.expect;
-import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
 
 import java.net.UnknownHostException;
-import java.util.HashSet;
-import java.util.Set;
 
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
@@ -19,7 +14,6 @@ import net.contextfw.web.commons.AbstractGuiceTest;
 import net.contextfw.web.commons.GuiceJUnitRunner.GuiceModules;
 import net.contextfw.web.commons.cloud.serializer.Serializer;
 
-import org.junit.After;
 import org.junit.Before;
 
 import com.google.inject.Inject;
@@ -33,13 +27,7 @@ import com.mongodb.MongoException;
 @GuiceModules({SessionTestModule.class })
 public abstract class AbstractSessionTest extends AbstractGuiceTest {
 
-    protected static final String FOOBAR = "foobar";
-
     protected static final String COOKIE_NAME = "cloudSession";
-    
-    protected enum RequestExpect {
-        NO_COOKIES, WITH_COOKIE;
-    }
     
     protected enum ResponseExpect {
         ADD_COOKIE, ADD_COOKIE_TWICE
@@ -51,49 +39,16 @@ public abstract class AbstractSessionTest extends AbstractGuiceTest {
     @Inject
     protected Serializer serializer;
     
-    protected Set<Object> mocksToVerify;
-    
     @Before
     public void setup() throws UnknownHostException, MongoException {
+        super.setup();
         Mongo mongo = new Mongo();
         mongo.dropDatabase(SessionTestModule.TEST_DB);
         db = mongo.getDB(SessionTestModule.TEST_DB);
-        mocksToVerify = new HashSet<Object>();
-    }
-    
-    @After
-    public void teardown() {
-        if (!mocksToVerify.isEmpty()) {
-            verify(mocksToVerify.toArray(new Object[mocksToVerify.size()]));
-        }
     }
     
     protected DB db;
-    
-    protected <T> T regMock(T mock) {
-        mocksToVerify.add(mock);
-        replay(mock);
-        return mock;
-    }
-
-    protected HttpServletRequest mockRequest(RequestExpect expect) {
-        return mockRequest(expect, null);
-    }
-    
-    protected HttpServletRequest mockRequest(RequestExpect expect,
-                                           final Cookie givenCookie) {
-        HttpServletRequest request = createStrictMock(HttpServletRequest.class);
-        expect(request.getRequestURI()).andReturn("/");
-        expect(request.getQueryString()).andReturn(null);
-        if (expect == RequestExpect.WITH_COOKIE) {
-            Cookie cookie = givenCookie != null ? givenCookie : new Cookie("session", FOOBAR);
-            expect(request.getCookies()).andReturn(new Cookie[] {cookie});
-        } if (expect == RequestExpect.NO_COOKIES) {
-            expect(request.getCookies()).andReturn(null);
-        }
-        return regMock(request);
-    }
-    
+        
     protected HttpServletResponse mockResponse(ResponseExpect expect) {
         return mockResponse(expect, null);
     }

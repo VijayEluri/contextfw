@@ -9,8 +9,6 @@ import net.contextfw.web.application.HttpContext;
 import org.junit.Test;
 
 import com.google.inject.Provider;
-import com.mongodb.BasicDBObjectBuilder;
-import com.mongodb.DBObject;
 
 public class OpenMongoSessionTest extends AbstractSessionTest {
     
