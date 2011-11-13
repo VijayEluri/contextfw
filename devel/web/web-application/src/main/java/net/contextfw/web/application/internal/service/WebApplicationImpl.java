@@ -269,7 +269,7 @@ public class WebApplicationImpl implements WebApplication {
                         return UpdateInvocation.DELAYED;
                     }
                 } else {
-                    return UpdateInvocation.NOT_DELAYED;
+                    return UpdateInvocation.NONE;
                 }
         } catch (Exception e) {
             if (e instanceof WebApplicationException) {

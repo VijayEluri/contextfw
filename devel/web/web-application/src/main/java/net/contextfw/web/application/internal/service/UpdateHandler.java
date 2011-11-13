@@ -175,7 +175,7 @@ public class UpdateHandler {
                                     return;
                                 }
 
-                                if (!invocation[0].isResource()) {
+                                if (!invocation[0].isResource() && !invocation[0].isCancelled()) {
                                     listeners.beforeRender();
                                     setHeaders(response);
                                     response.setContentType("text/xml; charset=UTF-8");

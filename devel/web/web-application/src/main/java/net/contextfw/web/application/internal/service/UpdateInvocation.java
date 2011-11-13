@@ -19,21 +19,24 @@ package net.contextfw.web.application.internal.service;
 
 public class UpdateInvocation {
 
-    public static final UpdateInvocation DELAYED = new UpdateInvocation(true, false, null);
-    public static final UpdateInvocation NOT_DELAYED = new UpdateInvocation(false, false, null);
+    public static final UpdateInvocation DELAYED = new UpdateInvocation(true, false, false,null);
+    public static final UpdateInvocation NOT_DELAYED = new UpdateInvocation(false, false, false, null);
+    public static final UpdateInvocation NONE = new UpdateInvocation(false, false, true, null);
     
     private final boolean delayed;
+    private final boolean cancelled;
     private final boolean resource;
     private final Object retVal;
     
-    private UpdateInvocation(boolean delayed, boolean resource, Object retVal) {
+    private UpdateInvocation(boolean delayed, boolean resource, boolean cancelled, Object retVal) {
         this.resource = resource;
         this.retVal = retVal;
         this.delayed = delayed;
+        this.cancelled = cancelled;
     }
 
     public UpdateInvocation(boolean resource, Object retVal) {
-        this(false, resource, retVal);
+        this(false, resource, false, retVal);
     }
     
     public boolean isResource() {
@@ -46,5 +49,9 @@ public class UpdateInvocation {
 
     public boolean isDelayed() {
         return delayed;
+    }
+
+    public boolean isCancelled() {
+        return cancelled;
     }
 }
