@@ -14,6 +14,7 @@ public class MinifierModule extends ServletModule {
     private MinifierFilter cssFilter;
     private final long started;
     private final String host;
+    private final String version;
     
     private final MinifierServiceImpl service;
     
@@ -28,6 +29,7 @@ public class MinifierModule extends ServletModule {
         Date now = Calendar.getInstance().getTime();
         this.started = now.getTime();
         this.service = new MinifierServiceImpl(developmentMode);
+        this.version = conf.getVersion();
     }
 
     @Override
@@ -36,10 +38,13 @@ public class MinifierModule extends ServletModule {
         if (!developmentMode) {
             
             CssMinifierServlet cssMinifier = new CssMinifierServlet(
-                    host, cssPath, cssFilter, started);
+                    host, cssPath, cssFilter, started, version);
             
             JsMinifierServlet jsMinifier = new JsMinifierServlet(
-                    host, jsPath, jsFilter, started);
+                    host, jsPath, jsFilter, started, version);
+            
+            requestInjection(jsMinifier);
+            requestInjection(cssMinifier);
             
             service.setJsMinifier(jsMinifier);
             service.setCssMinifier(cssMinifier);

@@ -51,7 +51,7 @@ public class ResourceCleaner {
     /**
      * Cleans resources
      */
-    public void clean() {
+    public synchronized void clean() {
         webResponder.clean();
         cssServlet.clean();
         scriptServlet.clean();

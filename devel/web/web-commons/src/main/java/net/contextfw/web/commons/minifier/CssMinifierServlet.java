@@ -13,6 +13,8 @@ import net.contextfw.web.application.WebApplicationException;
 import org.apache.commons.io.IOUtils;
 import org.dom4j.Document;
 import org.dom4j.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.Singleton;
 import com.yahoo.platform.yui.compressor.CssCompressor;
@@ -25,11 +27,14 @@ class CssMinifierServlet extends ContentServlet implements DocumentProcessor {
     CssMinifierServlet(String host, 
                        String minifiedPath,
                        MinifierFilter filter,
-                       long started) {
-        super(host, minifiedPath, started);
+                       long started,
+                       String version) {
+        super(host, minifiedPath, started, version);
         this.filter = filter;
     }
 
+    private static final Logger LOG = LoggerFactory.getLogger(CssMinifierServlet.class);
+    
     private static final long serialVersionUID = 1L;
 
     @Override
@@ -48,13 +53,16 @@ class CssMinifierServlet extends ContentServlet implements DocumentProcessor {
             Element link = iter.next();
             String src = link.attributeValue("href");
             if (src.startsWith("{$contextPath}") && filter.include(src)) {
+                LOG.info("Including CSS: {}", src);
                 URL url = getUrl(src.replace("{$contextPath}",
                         this.getServletContext().getContextPath()));
 
                 if (filter.minify(src)) {
+                    LOG.info("Minifying CSS: {}", url.toString());
                     sb.append(compress(url)).append("\n");
                 } else {
                     try {
+                        LOG.info("Not minifying CSS: {}", url.toString());
                         sb.append(IOUtils.toString(url.openStream())).append("\n");
                     } catch (IOException e) {
                         throw new WebApplicationException(e);

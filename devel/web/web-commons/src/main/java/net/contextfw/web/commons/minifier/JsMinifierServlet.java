@@ -11,6 +11,8 @@ import net.contextfw.web.application.WebApplicationException;
 import org.apache.commons.io.IOUtils;
 import org.dom4j.Document;
 import org.dom4j.Element;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.Singleton;
 import com.google.javascript.jscomp.Compiler;
@@ -23,12 +25,15 @@ public class JsMinifierServlet extends ContentServlet implements DocumentProcess
     private static final long serialVersionUID = 1L;
 
     private final MinifierFilter filter;
+    
+    private static final Logger LOG = LoggerFactory.getLogger(JsMinifierServlet.class);
 
     JsMinifierServlet(String host,
             String minifiedPath,
             MinifierFilter filter,
-            long started) {
-        super(host, minifiedPath, started);
+            long started,
+            String version) {
+        super(host, minifiedPath, started, version);
         this.filter = filter;
     }
 
@@ -45,14 +50,17 @@ public class JsMinifierServlet extends ContentServlet implements DocumentProcess
         while (iter.hasNext()) {
             Element script = iter.next();
             String src = script.attributeValue("src");
+            LOG.info("Including JS: {}", src);
             if (src.startsWith("{$contextPath}") && filter.include(src)) {
                 URL url = getUrl(src.replace("{$contextPath}",
                         this.getServletContext().getContextPath()));
 
                 if (filter.minify(src)) {
+                    LOG.info("Minifying JS: {}", url.toString());
                     sb.append(compress(url)).append("\n");
                 } else {
                     try {
+                        LOG.info("Not minifying JS: {}", url.toString());
                         sb.append(IOUtils.toString(url.openStream())).append("\n");
                     } catch (IOException e) {
                         throw new WebApplicationException(e);

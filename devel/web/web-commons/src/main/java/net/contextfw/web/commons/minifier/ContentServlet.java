@@ -13,10 +13,13 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import net.contextfw.web.application.ResourceCleaner;
 import net.contextfw.web.application.WebApplicationException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.inject.Inject;
 
 abstract class ContentServlet extends HttpServlet {
 
@@ -32,21 +35,27 @@ abstract class ContentServlet extends HttpServlet {
         }
     };
 
-    private String content;
+    private volatile String content;
     
     private final String host;
     
     private final String minifiedPath;
     
+    private final String version;
+    
     private final long started;
     
     private static final long EXPIRATION = 60 * 60 * 1000 * 8;
     
+    private ResourceCleaner cleaner;
+    
     protected ContentServlet(String host,
                              String minifiedPath,
-                             long started) {
+                             long started,
+                             String version) {
         this.host = host;
         this.started = started;
+        this.version = version;
         this.minifiedPath = minifiedPath;
         this.modifiedSince = new Date(started);
     }
@@ -60,7 +69,7 @@ abstract class ContentServlet extends HttpServlet {
     }
     
     String getMinifiedPath() {
-        return minifiedPath.replaceFirst("<timestamp>", Long.toString(started));
+        return minifiedPath.replaceFirst("<version>", version);
     }
     
     private final Date modifiedSince;
@@ -68,6 +77,10 @@ abstract class ContentServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
             IOException {
+        
+        if (content == null) {
+            cleaner.clean();
+        }
         
         resp.setContentType(getContentType());
         String modifiedHeader = req.getHeader("If-Modified-Since");
@@ -88,8 +101,8 @@ abstract class ContentServlet extends HttpServlet {
         httpResponse.setHeader("Cache-Control", "max-age=2246400, must-revalidate");
         httpResponse.setHeader("Pragma", "cache");
         
-        if (mod != null && modifiedSince.before(mod)) {
-            resp.sendError(HttpServletResponse.SC_NOT_MODIFIED);
+        if (content != null && mod != null && modifiedSince.before(mod)) {
+            resp.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
         } else {
             resp.getWriter().print(content);
         }
@@ -99,5 +112,10 @@ abstract class ContentServlet extends HttpServlet {
 
     public void setContent(String content) {
         this.content = content;
+    }
+
+    @Inject
+    public void setCleaner(ResourceCleaner cleaner) {
+        this.cleaner = cleaner;
     }
 }

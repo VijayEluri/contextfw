@@ -37,6 +37,8 @@ public class MinifierConf {
     
     private String host;
     
+    private String version = "";
+    
     public String getJsPath() {
         return jsPath;
     }
@@ -88,5 +90,13 @@ public class MinifierConf {
     }
     public MinifierFilter getCssFilter() {
         return cssFilter;
+    }
+
+    public String getVersion() {
+        return version;
+    }
+
+    public void setVersion(String version) {
+        this.version = version;
     }
 }
