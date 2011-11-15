@@ -1,7 +1,13 @@
 package net.contextfw.web.commons.minifier;
 
-import java.util.Calendar;
-import java.util.Date;
+import static net.contextfw.web.application.configuration.Configuration.DEVELOPMENT_MODE;
+import static net.contextfw.web.application.configuration.Configuration.HOST;
+import static net.contextfw.web.application.configuration.Configuration.VERSION;
+import static net.contextfw.web.commons.minifier.MinifierConf.CSS_FILTER;
+import static net.contextfw.web.commons.minifier.MinifierConf.CSS_PATH;
+import static net.contextfw.web.commons.minifier.MinifierConf.JS_FILTER;
+import static net.contextfw.web.commons.minifier.MinifierConf.JS_PATH;
+import net.contextfw.web.application.configuration.Configuration;
 
 import com.google.inject.servlet.ServletModule;
 
@@ -18,18 +24,18 @@ public class MinifierModule extends ServletModule {
     
     private final MinifierServiceImpl service;
     
-    public MinifierModule(MinifierConf conf) {
+    public MinifierModule(Configuration conf) {
         
-        this.developmentMode = conf.isDevelopmentMode();
-        this.host = conf.getHost();
-        this.jsPath = conf.getJsPath();
-        this.cssPath = conf.getCssPath();
-        this.jsFilter = conf.getJsFilter();
-        this.cssFilter = conf.getCssFilter();
-        Date now = Calendar.getInstance().getTime();
-        this.started = now.getTime();
-        this.service = new MinifierServiceImpl(developmentMode);
-        this.version = conf.getVersion();
+        this.developmentMode = conf.get(DEVELOPMENT_MODE);
+        this.host = conf.get(HOST);
+        this.jsPath = conf.get(JS_PATH);
+        this.cssPath = conf.get(CSS_PATH);
+        this.jsFilter = conf.get(JS_FILTER);
+        this.cssFilter = conf.get(CSS_FILTER);
+        this.version = conf.get(VERSION);
+
+        service = new MinifierServiceImpl(developmentMode);
+        started = System.currentTimeMillis();
     }
 
     @Override

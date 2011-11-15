@@ -1,8 +1,14 @@
 package net.contextfw.web.commons.minifier;
 
+import net.contextfw.web.application.configuration.Configuration;
+import net.contextfw.web.application.configuration.SettableProperty;
 
 public class MinifierConf {
 
+    private MinifierConf() {
+        
+    }
+    
     public static final MinifierFilter ALL = new MinifierFilter() {
         @Override
         public boolean include(String path) {
@@ -24,79 +30,20 @@ public class MinifierConf {
             return !path.contains("jquery");
         }
     };
-    
-    private String jsPath;
-    
-    private String cssPath;
-    
-    private boolean developmentMode;
-    
-    private MinifierFilter jsFilter = ALL;
-    
-    private MinifierFilter cssFilter = ALL;
-    
-    private String host;
-    
-    private String version = "";
-    
-    public String getJsPath() {
-        return jsPath;
-    }
-    
-    public void setJsPath(String jsPath) {
-        this.jsPath = jsPath;
-    }
-    
-    public String getCssPath() {
-        return cssPath;
-    }
-    
-    public void setCssPath(String cssPath) {
-        this.cssPath = cssPath;
-    }
-    
-    public boolean isDevelopmentMode() {
-        return developmentMode;
-    }
-    
-    public void setDevelopmentMode(boolean developmentMode) {
-        this.developmentMode = developmentMode;
-    }
-    
-    public String getHost() {
-        return host;
-    }
-    
-    public void setHost(String host) {
-        this.host = host;
-    }
-    
-    public void setJsFilter(MinifierFilter jsFilter) {
-        if (jsFilter == null) {
-            throw new IllegalArgumentException("jsFilter cannot be null");
-        }
-        this.jsFilter = jsFilter;
-    }
-    
-    public MinifierFilter getJsFilter() {
-        return jsFilter;
-    }
-    
-    public void setCssFilter(MinifierFilter cssFilter) {
-        if (cssFilter == null) {
-            throw new IllegalArgumentException("CssFilter cannot be null");
-        }
-        this.cssFilter = cssFilter;
-    }
-    public MinifierFilter getCssFilter() {
-        return cssFilter;
-    }
 
-    public String getVersion() {
-        return version;
-    }
-
-    public void setVersion(String version) {
-        this.version = version;
-    }
+    public static final SettableProperty<String> JS_PATH = 
+            Configuration.createProperty(String.class, 
+                    MinifierConf.class.getName() + ".jsPath");
+    
+    public static final SettableProperty<String> CSS_PATH = 
+            Configuration.createProperty(String.class, 
+                    MinifierConf.class.getName() + ".cssPath");
+    
+    public static final SettableProperty<MinifierFilter> JS_FILTER = 
+            Configuration.createProperty(MinifierFilter.class, 
+                    MinifierConf.class.getName() + ".jsFilter");
+    
+    public static final SettableProperty<MinifierFilter> CSS_FILTER = 
+            Configuration.createProperty(MinifierFilter.class, 
+                    MinifierConf.class.getName() + ".cssFilter");
 }
