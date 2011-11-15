@@ -33,6 +33,7 @@ import net.contextfw.web.application.internal.configuration.Property;
 import net.contextfw.web.application.internal.configuration.ReloadableClassPropertyImpl;
 import net.contextfw.web.application.internal.configuration.SelfKeyValueSetPropertyImpl;
 import net.contextfw.web.application.internal.configuration.SelfSettableProperty;
+import net.contextfw.web.application.internal.configuration.SetPropertyImpl;
 import net.contextfw.web.application.internal.configuration.StringSetPropertyImpl;
 import net.contextfw.web.application.internal.configuration.TemporalPropertyImpl;
 import net.contextfw.web.application.lifecycle.DefaultLifecycleListener;
@@ -549,5 +550,9 @@ public class Configuration {
     
     public static TemporalProperty createTemporalProperty(String key) {
         return new TemporalPropertyImpl(key);
+    }
+    
+    public static <T> AddableProperty<Set<T>, T> createAddableProperty(Class<T> type, String key) {
+        return new SetPropertyImpl<T>(key);
     }
 }
