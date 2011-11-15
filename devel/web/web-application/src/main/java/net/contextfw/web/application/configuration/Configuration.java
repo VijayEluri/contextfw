@@ -115,6 +115,10 @@ public class Configuration {
     private static final String KEY_CLASS_RELOADING_ENABLED = "contextfw.classReloadingEnabled";
     
     private static final String KEY_WEB_APPLICATION_STORAGE = "contextfw.webApplicationStorage";
+    
+    private static final String KEY_HOST = "contextfw.host";
+    
+    private static final String KEY_VERSION = "contextfw.version";
 
     /**
      * Creates the default configuration.
@@ -210,6 +214,26 @@ public class Configuration {
     public static final SettableProperty<String> RESOURCES_PREFIX = 
         createProperty(String.class, KEY_RESOURCES_PREFIX);
 
+    /**
+     * A voluntary property for setting host name
+     * 
+     * This property may be used by third-party plugins and is used as common
+     * host identifier.
+     * 
+     */
+    public static final SettableProperty<String> HOST = 
+            createProperty(String.class, KEY_HOST);
+    
+    /**
+     * A voluntary property for setting application version
+     * <p>
+     * This property may be used by third-party plugins and is used as common
+     * version identifier. 
+     * </p>
+     */
+    public static final SettableProperty<String> VERSION = 
+            createProperty(String.class, KEY_VERSION);
+    
     /**
      * Besides property <code>LOG_XML</code> it is possible to see the the page XML-representation
      * on web client. 
