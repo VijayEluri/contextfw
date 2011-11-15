@@ -11,6 +11,9 @@ import java.util.MissingResourceException;
 import java.util.ResourceBundle;
 import java.util.Set;
 
+import net.contextfw.web.application.configuration.Configuration;
+import static net.contextfw.web.commons.i18n.LocaleConf.*;
+
 import org.dom4j.Attribute;
 import org.dom4j.Document;
 import org.dom4j.Element;
@@ -23,26 +26,32 @@ public class LocaleServiceImpl implements LocaleService {
 
     private Map<String, LocaleMessage> messages = new HashMap<String, LocaleMessage>();
 
-    private final LocaleConf conf;
+    private final Locale defaultLocale;
 
     private Map<Locale, ResourceBundle> bundles;
+    
+    private final Set<Locale> supportedLocales;
+    
+    private final String baseName;
+    
+    private final boolean strictValidation;
 
     @Inject
-    public LocaleServiceImpl(LocaleConf conf) {
-        this.conf = conf;
+    public LocaleServiceImpl(Configuration conf) {
+        defaultLocale = conf.get(DEFAULT_LOCALE);
+        supportedLocales = conf.get(SUPPORTED_LOCALE);
+        baseName = conf.get(BASE_NAME);
+        strictValidation = conf.get(STRICT_VALIDATION);
         reset();
     }
 
     private final ThreadLocal<Locale> current = new ThreadLocal<Locale>() {
         @Override
         protected Locale initialValue() {
-            return conf.getDef();
+            return defaultLocale;
         }
     };
 
-    /* (non-Javadoc)
-     * @see net.contextfw.web.commons.i18n.LocaleServiceI#setCurrentLocale(java.util.Locale)
-     */
     @Override
     public void setCurrentLocale(Locale current) {
         this.current.set(current);
@@ -53,9 +62,9 @@ public class LocaleServiceImpl implements LocaleService {
         bundles = new HashMap<Locale, ResourceBundle>();
         messages = new HashMap<String, LocaleMessage>();
         ResourceBundle.clearCache(Thread.currentThread().getContextClassLoader());
-        for (Locale locale : conf.getLocales()) {
+        for (Locale locale : supportedLocales) {
             bundles.put(locale, ResourceBundle.getBundle(
-                        conf.getBaseName(),
+                        baseName,
                         locale,
                         Thread.currentThread().getContextClassLoader()));
         }
@@ -170,7 +179,7 @@ public class LocaleServiceImpl implements LocaleService {
 
     private Map<Locale, String> getTexts(String name) {
         Map<Locale, String> texts = new HashMap<Locale, String>();
-        for (Locale locale : conf.getLocales()) {
+        for (Locale locale : supportedLocales) {
             texts.put(locale, getText(name, locale));
         }
         return texts;
@@ -194,9 +203,9 @@ public class LocaleServiceImpl implements LocaleService {
         try {
             text = bundles.get(locale).getString(name);
         } catch (MissingResourceException e) {
-            if (conf.getDef() != null) {
+            if (defaultLocale != null) {
                 try {
-                    text = bundles.get(conf.getDef()).getString(name);
+                    text = bundles.get(defaultLocale).getString(name);
                 } catch (MissingResourceException e1) {
                     // Just ignore
                 }
@@ -204,9 +213,9 @@ public class LocaleServiceImpl implements LocaleService {
         }
         if (text != null) {
             return text;
-        } else if (conf.isStrict()) {
+        } else if (strictValidation) {
             throw new MissingResourceException("Localization missing: " + name,
-                        conf.getBaseName(), name);
+                        baseName, name);
         } else {
             return "[missing(" + locale.getLanguage() + "):" + name + "]";
         }

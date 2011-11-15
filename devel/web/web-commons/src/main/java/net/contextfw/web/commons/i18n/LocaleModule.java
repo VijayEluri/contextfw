@@ -6,9 +6,9 @@ import com.google.inject.AbstractModule;
 
 public class LocaleModule extends AbstractModule {
 
-    private final LocaleConf conf;
+    private final Configuration conf;
 
-    public LocaleModule(LocaleConf conf) {
+    public LocaleModule(Configuration conf) {
         this.conf = conf;
     }
     
@@ -17,7 +17,7 @@ public class LocaleModule extends AbstractModule {
         bind(LocaleService.class).toInstance(new LocaleServiceImpl(conf));
     }
     
-    public Configuration applyConfiguration(Configuration conf) {
+    public static Configuration applyConfiguration(Configuration conf) {
         return conf.add(Configuration.NAMESPACE.as(
                 LocaleConf.PREFIX, 
                 LocaleConf.NS));
