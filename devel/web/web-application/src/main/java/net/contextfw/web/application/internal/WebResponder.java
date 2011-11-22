@@ -250,7 +250,11 @@ public class WebResponder {
         resp.setHeader("Cache-Control", "no-cache, no-store");
 
         if (!transformers.isInitialized()) {
-            clean();
+            synchronized (transformers) {
+                if (!transformers.isInitialized()) {
+                    transformers.initialize(getXSLDocument());
+                }
+            }
         }
 
         Document rDocument = transformers.transform(document);
@@ -267,6 +271,6 @@ public class WebResponder {
 
     public void clean() {
         logger.debug("Reloading resources");
-        transformers.initialize(getXSLDocument());
+        transformers.invalidate();
     }
 }

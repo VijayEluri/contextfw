@@ -1,13 +1,13 @@
 package net.contextfw.web.application.scope;
 
-import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
-import java.util.Map.Entry;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -30,8 +30,8 @@ public class DefaultWebApplicationStorage implements WebApplicationStorage {
 
     private Logger logger = LoggerFactory.getLogger(DefaultWebApplicationStorage.class);
 
-    private final Map<WebApplicationHandle, Holder> pages =
-            Collections.synchronizedMap(new HashMap<WebApplicationHandle, Holder>());
+    private final Map<WebApplicationHandle, Holder> pages = 
+            new HashMap<WebApplicationHandle, Holder>();
     
     public static final SettableProperty<Boolean> PROXIED = 
             Configuration.createProperty(Boolean.class, 
@@ -78,7 +78,9 @@ public class DefaultWebApplicationStorage implements WebApplicationStorage {
         WebApplicationHandle handle = createHandle();
         application.setHandle(handle);
         Holder holder = new Holder(application, getRemoteAddr(request), validThrough);
-        pages.put(handle, holder);
+        synchronized(this) {
+            pages.put(handle, holder);
+        }
         synchronized (holder) {
             execution.execute(holder.application);
         }
@@ -114,8 +116,10 @@ public class DefaultWebApplicationStorage implements WebApplicationStorage {
     }
     
     private Holder getHolder(WebApplicationHandle handle, HttpServletRequest request) {
-        
-        Holder holder = pages.get(handle);
+        Holder holder;
+        synchronized (this) {
+            holder = pages.get(handle);    
+        }
         String remoteAddr = getRemoteAddr(request);
         long now = System.currentTimeMillis();
         if (holder != null && holder.remoteAddr.equals(remoteAddr) 
@@ -127,7 +131,7 @@ public class DefaultWebApplicationStorage implements WebApplicationStorage {
     }
 
     @Override
-    public void remove(WebApplicationHandle handle,
+    public synchronized void remove(WebApplicationHandle handle,
                        HttpServletRequest request) {
         
         Holder holder = getHolder(handle, request);
@@ -167,30 +171,38 @@ public class DefaultWebApplicationStorage implements WebApplicationStorage {
 
         long now = System.currentTimeMillis();
 
-        Iterator<Entry<WebApplicationHandle, Holder>> iterator =
+        try {
+            Iterator<Entry<WebApplicationHandle, Holder>> iterator =
                 pages.entrySet().iterator();
 
-        while (iterator.hasNext()) {
-            Entry<WebApplicationHandle, Holder> entry = iterator.next();
-            if (entry.getValue().validThrough < now) {
-                pageExpired(entry.getKey(), pages.size(), entry.getValue().remoteAddr);
-                iterator.remove();
+            while (iterator.hasNext()) {
+                Entry<WebApplicationHandle, Holder> entry = iterator.next();
+                if (entry.getValue().validThrough < now) {
+                    pageExpired(entry.getKey(), pages.size(), entry.getValue().remoteAddr);
+                    iterator.remove();
+                }
             }
+        } catch (ConcurrentModificationException cme) {
+            // Swallowing this exception, because 
+            // it is not really a big deal.
         }
     }
     
     protected WebApplicationHandle createHandle() {
         WebApplicationHandle handle;
-        do {
-            handle = new WebApplicationHandle(UUID.randomUUID().toString());
-        } while (pages.containsKey(handle));
+        //do {
+        handle = new WebApplicationHandle(UUID.randomUUID().toString());
+        //} while (pages.containsKey(handle));
         return handle;
     }
 
     @Override
     public void execute(WebApplicationHandle handle,
                         ScopedWebApplicationExecution execution) {
-        Holder holder = pages.get(handle);
+        Holder holder;
+        synchronized (this) {
+            holder = pages.get(handle);
+        }
         if (holder != null) {
             synchronized (holder) {
                 execution.execute(holder.application);    
