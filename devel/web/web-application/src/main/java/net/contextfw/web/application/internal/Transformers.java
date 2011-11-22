@@ -48,9 +48,6 @@ public class Transformers {
             transformers = new TransformersThreadLocal(
                     FACTORY.newTemplates(new StreamSource(
                                     new StringReader(xsltDocument.asXML()))));
-                            
-                            
-                            //new DocumentSource(xsltDocument)));
             initialized = true;
         } catch (TransformerConfigurationException e) {
             throw new WebApplicationException(
