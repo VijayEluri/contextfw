@@ -159,7 +159,7 @@ contextfw = {
 		catch(err) {
 			//alert(err);
 		}
-	},
+	}
 };
 
 /**
