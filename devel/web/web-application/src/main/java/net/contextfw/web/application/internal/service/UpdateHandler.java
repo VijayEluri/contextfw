@@ -195,11 +195,8 @@ public class UpdateHandler {
 
                 if (invocation[0].getRetVal() instanceof Execution) {
                     afterRun = (Execution) invocation[0].getRetVal();
-                    response.getWriter().close();
                 } else if (invocation[0].isResource()) {
                     afterRun = handleResource(request, response, invocation[0]);
-                } else {
-                    response.getWriter().close();
                 }
 
                 if (afterRun != null) {
