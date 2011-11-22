@@ -4,11 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.zip.Deflater;
-import java.util.zip.DeflaterOutputStream;
-import java.util.zip.InflaterInputStream;
 
-import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.development.DevelopmentModeListener;
 import net.contextfw.web.application.development.DevelopmentTools;
 
@@ -18,6 +14,9 @@ import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Singleton;
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.binary.BinaryStreamDriver;
+import com.thoughtworks.xstream.io.binary.BinaryStreamReader;
+import com.thoughtworks.xstream.io.binary.BinaryStreamWriter;
 import com.thoughtworks.xstream.mapper.MapperWrapper;
 
 @Singleton
@@ -39,21 +38,11 @@ public class Serializer implements DevelopmentModeListener {
     
     public byte[] serialize(Object obj) {
         ByteArrayOutputStream out = null;
-        DeflaterOutputStream dout = null;
-        Deflater d = new Deflater();
         out = new ByteArrayOutputStream();
-        dout = new DeflaterOutputStream(out, d);
-        try {
-            dout.write(xstream.get().toXML(obj).getBytes("UTF-8"));
-        } catch (IOException e) {
-            close(dout);
-            close(out);
-            throw new WebApplicationException(e);
-        }
-        close(dout);
+        BinaryStreamWriter bwriter = new BinaryStreamWriter(out);
+        xstream.get().marshal(obj, bwriter);
         close(out);
         return out.toByteArray();
-        
     }
     
     private void close(OutputStream stream) {
@@ -65,16 +54,15 @@ public class Serializer implements DevelopmentModeListener {
     }
     
     public Object unserialize(byte[] serialized) {
-        InputStream xml = new InflaterInputStream(
-            new ByteArrayInputStream(serialized));
-        return xstream.get().fromXML(xml);
+        InputStream xml = new ByteArrayInputStream(serialized);
+        return xstream.get().unmarshal(new BinaryStreamReader(xml));
     }
 
     private ThreadLocal<XStream> getNewXStream() {
         return new ThreadLocal<XStream>() {
             @Override
             protected XStream initialValue() {
-                XStream rv = new XStream() {
+                XStream rv = new XStream(new BinaryStreamDriver()) {
                     @Override
                     protected MapperWrapper wrapMapper(MapperWrapper next) {
                         return new DependencyMapper(next, injector, classLoader);
