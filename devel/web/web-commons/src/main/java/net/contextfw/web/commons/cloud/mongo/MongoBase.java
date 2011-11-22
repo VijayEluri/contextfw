@@ -1,6 +1,7 @@
 package net.contextfw.web.commons.cloud.mongo;
 
 import java.util.Random;
+import java.util.concurrent.RejectedExecutionHandler;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -17,7 +18,7 @@ public abstract class MongoBase {
 
     private static final Logger LOG = LoggerFactory.getLogger(MongoBase.class);
 
-    private final ThreadPoolExecutor cleaner = new ScheduledThreadPoolExecutor(1);
+    private final ThreadPoolExecutor executor;
     
     private static final int TRY_OUTS = 100;
 
@@ -37,6 +38,20 @@ public abstract class MongoBase {
     protected MongoBase(DB db, long removalSchedulePeriod) {
         this.db = db;
         this.removalSchedulePeriod = removalSchedulePeriod;
+        
+        RejectedExecutionHandler handler = new RejectedExecutionHandler() {
+            public void rejectedExecution(Runnable r,
+                    ThreadPoolExecutor executor) {
+                        r.run();
+                }
+        };
+        
+        executor = new ScheduledThreadPoolExecutor(10, handler);
+    }
+    
+    protected void setIndexes(DBCollection collection) {
+        collection.ensureIndex(KEY_HANDLE);
+        collection.ensureIndex(KEY_REMOTE_ADDR);
     }
 
     protected <T> T executeSynchronized(DBCollection collection, 
@@ -116,20 +131,23 @@ public abstract class MongoBase {
     }
     
     protected void removeExpiredObjects(final DBCollection collection) {
-        cleaner.execute(new Runnable() {
-            @Override
-            public void run() {
-                long now = System.currentTimeMillis();
-                if (now > nextCleanup) {
+        final long now = System.currentTimeMillis();
+        if (now > nextCleanup) {
+            nextCleanup = now + new Random().nextInt((int) removalSchedulePeriod*2);
+            executeAsync(new ExceptionSafeExecution() {
+                public void execute() throws Exception {
                     DBObject query = o(KEY_VALID_THROUGH, o("$lt", now));
                     if (LOG.isInfoEnabled()) {
                         LOG.info("Cleaning {} objects from {}", collection.count(query), 
                             collection.getName());
                     }
                     collection.remove(query);
-                    nextCleanup = now + new Random().nextInt((int) removalSchedulePeriod*2);
-                }                
-            }
-        });
+                }
+            });
+        }
+    }
+    
+    protected void executeAsync(ExceptionSafeExecution execution) {
+        executor.execute(execution);
     }
 }

@@ -63,9 +63,9 @@ public class BasicStorageTest extends AbstractStorageTest {
         app.getScoped2().setMsg("Scoped2");
         storage.initialize(app, 
                            mockRequest(RequestExpect.WITH_REMOTE_ADDR), 
-                           System.currentTimeMillis() + 1000,
+                           System.currentTimeMillis() + 1100,
                            mockExecution(app));
-        
+        sleep(100);
         return app.getHandle();
     }
     
@@ -89,6 +89,8 @@ public class BasicStorageTest extends AbstractStorageTest {
                 executionCalled.setValue(true);
             }
         };
+        
+        sleep(100);
         
         storage.update(handle, 
                         mockRequest(RequestExpect.WITH_REMOTE_ADDR), 
@@ -136,6 +138,8 @@ public class BasicStorageTest extends AbstractStorageTest {
             }
         };
         
+        sleep(100);
+        
         storage.execute(handle, changeExecution);
         
         final MutableBoolean executionCalled = new MutableBoolean(false);
@@ -147,6 +151,8 @@ public class BasicStorageTest extends AbstractStorageTest {
                 executionCalled.setValue(true);
             }
         };
+        
+        sleep(100);
         
         storage.execute(handle, verifyExecution);
         

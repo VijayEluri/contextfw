@@ -8,10 +8,10 @@ import net.contextfw.web.application.WebApplication;
 import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.configuration.SettableProperty;
-import net.contextfw.web.application.internal.configuration.Property;
 import net.contextfw.web.application.scope.ScopedWebApplicationExecution;
 import net.contextfw.web.application.scope.WebApplicationStorage;
 import net.contextfw.web.commons.cloud.binding.CloudDatabase;
+import net.contextfw.web.commons.cloud.mongo.ExceptionSafeExecution;
 import net.contextfw.web.commons.cloud.mongo.MongoBase;
 import net.contextfw.web.commons.cloud.mongo.MongoExecution;
 import net.contextfw.web.commons.cloud.serializer.Serializer;
@@ -74,7 +74,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
      *   Math.pow(getPageCount(), THROTTLE_CURVE);
      * </pre>
      */
-    public static final Property<Double> THROTTLE_CURVE = 
+    public static final SettableProperty<Double> THROTTLE_CURVE = 
             Configuration.createProperty(Double.class, 
                     MongoWebApplicationStorage.class + "throttleCurve");
     
@@ -106,19 +106,22 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
         throttleCurve = configuration.getOrElse(THROTTLE_CURVE, INITIAL_CURVE);
         collection = configuration.getOrElse(COLLECTION_NAME, "pages");
         this.serializer = serializer;
+        setIndexes(getPages());
     }
 
     private void throttle(String remoteAddr) {
         if (throttle) {
             long count = getPages().count(o(KEY_REMOTE_ADDR, remoteAddr));
             if (count > throttleTreshold) {
-                try {
-                    long sleep = (long) Math.pow(getPageCount(), throttleCurve);
-                    if (logThrottle) {
-                        LOG.info("Throttling {} for {} ms", remoteAddr, sleep);
-                    }
-                    Thread.sleep(sleep);
-                } catch (InterruptedException e) {
+                synchronized (this) {
+                    try {
+                        long sleep = (long) Math.pow(getPageCount(), throttleCurve);
+                        if (logThrottle) {
+                            LOG.info("Throttling {} for {} ms", remoteAddr, sleep);
+                        }
+                        Thread.sleep(sleep);
+                    } catch (InterruptedException e) {
+                    }    
                 }
             }
         }
@@ -144,18 +147,22 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
         getPages().insert(doc);
     }
 
-    private void update(WebApplicationHandle handle, 
-                        WebApplication application,
-                        Long validThrough) { 
+    private void update(final WebApplicationHandle handle, 
+                        final WebApplication application,
+                        final Long validThrough) { 
 
-        DBObject query = o(KEY_HANDLE, handle.toString());
-        BasicDBObjectBuilder updateBuilder = b();
-        
-        if (validThrough != null) {
-            updateBuilder.add(KEY_VALID_THROUGH, validThrough);
-        }
-        updateBuilder.add(KEY_APPLICATION, serializer.serialize(application));
-        getPages().update(query, o("$set", updateBuilder.get()));
+        executeAsync(new ExceptionSafeExecution() {
+            public void execute() throws Exception {
+                DBObject query = o(KEY_HANDLE, handle.toString());
+                BasicDBObjectBuilder updateBuilder = b();
+                
+                if (validThrough != null) {
+                    updateBuilder.add(KEY_VALID_THROUGH, validThrough);
+                }
+                updateBuilder.add(KEY_APPLICATION, serializer.serialize(application));
+                getPages().update(query, o("$set", updateBuilder.get()));
+            }
+        });
     }
         
     private WebApplication load(DBObject obj) {

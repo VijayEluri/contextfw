@@ -60,6 +60,7 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
         this.maxInactivity = configuration.getOrElse(CloudSession.MAX_INACTIVITY, HALF_HOUR);
         this.serializer = serializer;
         this.holderProvider = holderProvider;
+        setIndexes(getSessionCollection());
     }
     
     @Override
