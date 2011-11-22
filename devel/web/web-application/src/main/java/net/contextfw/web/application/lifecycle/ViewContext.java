@@ -17,8 +17,6 @@
 
 package net.contextfw.web.application.lifecycle;
 
-import java.util.Locale;
-
 import net.contextfw.web.application.component.Component;
 
 /**
@@ -41,9 +39,4 @@ public interface ViewContext {
      *   The child component.
      */
     Component initChild();
-    
-    /**
-     * Sets the locale to be used in the page
-     */
-    void setLocale(Locale locale);
 }

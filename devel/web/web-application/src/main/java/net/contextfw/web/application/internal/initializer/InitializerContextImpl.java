@@ -18,7 +18,6 @@
 package net.contextfw.web.application.internal.initializer;
 
 import java.util.List;
-import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -38,8 +37,6 @@ public class InitializerContextImpl implements ViewContext {
     private final transient Injector injector;
     
     private int currentIndex = 0;
-    
-    private Locale locale = null;
     
     private transient Component leaf;
     
@@ -93,15 +90,6 @@ public class InitializerContextImpl implements ViewContext {
         }
         
         return component;
-    }
-
-    @Override
-    public void setLocale(Locale locale) {
-        this.locale = locale;
-    }
-    
-    public Locale getLocale() {
-        return locale;
     }
 
     public Component getLeaf() {

@@ -17,6 +17,8 @@
 
 package net.contextfw.web.application;
 
+import java.util.Locale;
+
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -41,6 +43,8 @@ public class HttpContext {
     private String errorMsg;
     private Integer errorCode;
     private boolean reload = false;
+    
+    private Locale locale;
 
     /**
      * Reloads current page
@@ -172,5 +176,13 @@ public class HttpContext {
      */
     public String getQueryString() {
         return queryString;
+    }
+
+    public Locale getLocale() {
+        return locale;
+    }
+
+    public void setLocale(Locale locale) {
+        this.locale = locale;
     }
 }

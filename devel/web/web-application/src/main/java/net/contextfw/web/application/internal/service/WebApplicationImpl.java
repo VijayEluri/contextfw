@@ -213,9 +213,9 @@ public class WebApplicationImpl implements WebApplication {
         d.attr("handle", webApplicationHandle.toString());
         d.attr("contextPath", httpContext.getRequest().getContextPath());
 
-        if (context.getLocale() != null) {
-            d.attr("xml:lang", context.getLocale().toString());
-            d.attr("lang", context.getLocale().toString());
+        if (httpContext.getLocale() != null) {
+            d.attr("xml:lang", httpContext.getLocale().toString());
+            d.attr("lang", httpContext.getLocale().toString());
         }
         if (mode == Mode.INIT) {
             getRootComponent().buildChild(d);
