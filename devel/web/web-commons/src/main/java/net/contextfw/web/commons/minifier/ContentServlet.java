@@ -79,7 +79,11 @@ abstract class ContentServlet extends HttpServlet {
             IOException {
         
         if (content == null) {
-            cleaner.clean();
+            synchronized (this) {
+                if (content == null) {
+                    cleaner.clean();        
+                }
+            }
         }
         
         resp.setContentType(getContentType());
