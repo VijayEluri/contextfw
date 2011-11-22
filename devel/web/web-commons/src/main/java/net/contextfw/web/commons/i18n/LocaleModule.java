@@ -16,10 +16,4 @@ public class LocaleModule extends AbstractModule {
     protected void configure() {
         bind(LocaleService.class).toInstance(new LocaleServiceImpl(conf));
     }
-    
-    public static Configuration applyConfiguration(Configuration conf) {
-        return conf.add(Configuration.NAMESPACE.as(
-                LocaleConf.PREFIX, 
-                LocaleConf.NS));
-    }
 }

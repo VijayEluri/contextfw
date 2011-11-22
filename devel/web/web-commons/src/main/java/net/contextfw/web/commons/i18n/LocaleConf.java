@@ -31,4 +31,10 @@ public class LocaleConf {
     public static final SettableProperty<Boolean> STRICT_VALIDATION = 
             Configuration.createProperty(Boolean.class, 
                     LocaleConf.class.getName() + ".strictValidation");
+    
+    public static Configuration applyConfiguration(Configuration conf) {
+        return conf.add(Configuration.NAMESPACE.as(
+                LocaleConf.PREFIX, 
+                LocaleConf.NS));
+    }
 }
