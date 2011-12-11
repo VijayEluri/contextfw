@@ -22,6 +22,7 @@ import java.util.Set;
 
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.internal.component.ComponentBuilder;
+import net.contextfw.web.application.scope.Execution;
 
 /**
  * The base class of a component
@@ -40,7 +41,7 @@ public abstract class Component {
     private boolean enabled = true;
 
     private enum RefreshMode {
-        NONE, PASS, UPDATE
+        NONE, PASS, UPDATE, PARTIAL_UPDATE
     };
 
     @Attribute
@@ -147,7 +148,7 @@ public abstract class Component {
             parent.bubbleUnregisterUp(el);
         }
     }
-
+    
     /**
      * Removes child component from the framework
      */
@@ -174,8 +175,12 @@ public abstract class Component {
      * </p>
      */
     public void refresh() {
+        refresh(RefreshMode.UPDATE);
+    }
+    
+    private void refresh(RefreshMode mode) {
         if (id != null) {
-            refreshMode = RefreshMode.UPDATE;
+            refreshMode = mode;
             Component p = parent;
 
             while (p != null) {
@@ -193,17 +198,13 @@ public abstract class Component {
      * For internal use only
      */
     public final void buildComponentUpdate(DOMBuilder domBuilder, ComponentBuilder builder) {
-        boolean isNormalUpdate = (partialUpdateName == null);
 
         if (refreshMode == RefreshMode.UPDATE) {
-            if (isNormalUpdate) {
-                builder.buildUpdate(domBuilder, this, isNormalUpdate ? "update" : partialUpdateName);
-            } else {
-                builder.buildPartialUpdate(domBuilder, this, isNormalUpdate ? "update"
-                        : partialUpdateName, partialUpdates);
-            }
+            builder.buildUpdate(domBuilder, this, "update");
+        } else if (refreshMode == RefreshMode.PARTIAL_UPDATE) {
+            builder.buildPartialUpdate(domBuilder, this, partialUpdateName, partialUpdates);
         }
-        if ((refreshMode == RefreshMode.PASS || !isNormalUpdate) && children != null) {
+        if ((refreshMode == RefreshMode.PASS || refreshMode == RefreshMode.PARTIAL_UPDATE) && children != null) {
             for (Component child : children) {
                 child.buildComponentUpdate(domBuilder, builder);
             }
@@ -224,14 +225,14 @@ public abstract class Component {
      * @param updates
      */
     public void partialRefresh(String buildName, String... updates) {
-        if (partialUpdates != null) {
+        if (partialUpdates != null && refreshMode != RefreshMode.UPDATE) {
             this.partialUpdateName = buildName;
             for (String partialUpdate : updates) {
                 partialUpdates.add(partialUpdate);
             }
             partialUpdates.add("id");
+            refresh(RefreshMode.PARTIAL_UPDATE);
         }
-        refresh();
     }
 
     /**
