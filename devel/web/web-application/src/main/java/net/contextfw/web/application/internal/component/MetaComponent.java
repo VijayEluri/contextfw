@@ -76,6 +76,7 @@ public final class MetaComponent {
     private final List<Field> requestParamFields = new ArrayList<Field>();
     private final List<Method> requestParamMethods = new ArrayList<Method>();
     private final List<Field> autoregisterFields = new ArrayList<Field>();
+    private final List<Field> fields = new ArrayList<Field>();
     
     public final String buildName;
     public final Buildable annotation;
@@ -199,18 +200,23 @@ public final class MetaComponent {
         Class<?> currentClass = cl;
         while (currentClass != null) {
             for (Field field : currentClass.getDeclaredFields()) {
-                field.setAccessible(true);
-                if (canProcess(field) && processFieldBuilders(field)) {
-                    setProcessed(field);
-                }
-                if (canProcess(field) && processPathParam(field)) {
-                    setProcessed(field);
-                }
-                if (canProcess(field) && processRequestParam(field)) {
+                if (processField(field)) {
                     setProcessed(field);
                 }
             }
             currentClass = currentClass.getSuperclass();
+        }
+    }
+    
+    private boolean processField(Field field) {
+        field.setAccessible(true);
+        if (canProcess(field)) {
+            fields.add(field);
+            return processFieldBuilders(field) ||
+                   processPathParam(field) ||
+                   processRequestParam(field);
+        } else {
+            return false;
         }
     }
 
