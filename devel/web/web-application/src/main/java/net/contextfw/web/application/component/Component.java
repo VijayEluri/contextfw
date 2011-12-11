@@ -22,7 +22,6 @@ import java.util.Set;
 
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.internal.component.ComponentBuilder;
-import net.contextfw.web.application.scope.Execution;
 
 /**
  * The base class of a component
