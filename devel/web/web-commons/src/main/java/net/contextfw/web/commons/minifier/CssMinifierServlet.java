@@ -68,12 +68,13 @@ class CssMinifierServlet extends ContentServlet implements DocumentProcessor {
                         throw new WebApplicationException(e);
                     }
                 }
-            }
+            
 
-            if (firstMinified == null) {
-                firstMinified = link;
-            } else {
-                link.detach();
+                if (firstMinified == null) {
+                    firstMinified = link;
+                } else {
+                    link.detach();
+                }
             }
         }
 

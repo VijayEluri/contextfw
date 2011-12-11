@@ -66,12 +66,12 @@ public class JsMinifierServlet extends ContentServlet implements DocumentProcess
                         throw new WebApplicationException(e);
                     }
                 }
-            }
 
-            if (firstMinified == null) {
-                firstMinified = script;
-            } else {
-                script.detach();
+                if (firstMinified == null) {
+                    firstMinified = script;
+                } else {
+                    script.detach();
+                }
             }
         }
 
