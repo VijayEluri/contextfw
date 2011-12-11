@@ -228,7 +228,9 @@ public final class DOMBuilder {
      * @return
      */
     public DOMBuilder text(Object value) {
-        root.addText(serializer.serialize(value));
+        if (value != null) {
+            root.addText(serializer.serialize(value));
+        }
         return this;
     }
 
