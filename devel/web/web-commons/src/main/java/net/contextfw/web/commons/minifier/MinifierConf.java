@@ -23,11 +23,11 @@ public class MinifierConf {
     public static final MinifierFilter NO_JQUERY = new MinifierFilter() {
         @Override
         public boolean include(String path) {
-            return true;
+            return !path.contains("jquery");
         }
         @Override
         public boolean minify(String path) {
-            return !path.contains("jquery");
+            return true;
         }
     };
 
