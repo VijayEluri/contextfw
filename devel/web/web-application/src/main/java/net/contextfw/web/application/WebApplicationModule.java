@@ -22,11 +22,13 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import net.contextfw.web.application.component.Component;
+import net.contextfw.web.application.component.ComponentRegister;
 import net.contextfw.web.application.configuration.BindableProperty;
 import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.development.DevelopmentTools;
 import net.contextfw.web.application.internal.WebApplicationServletModule;
 import net.contextfw.web.application.internal.component.AutoRegisterListener;
+import net.contextfw.web.application.internal.component.InternalComponentRegister;
 import net.contextfw.web.application.internal.configuration.KeyValue;
 import net.contextfw.web.application.internal.development.DevelopmentToolsImpl;
 import net.contextfw.web.application.internal.development.InternalDevelopmentTools;
@@ -93,6 +95,7 @@ public final class WebApplicationModule extends AbstractModule {
         bind(WebApplicationHandle.class).toProvider(pageScope.scope(Key.get(WebApplicationHandle.class), null));
         bind(ObjectAttributeSerializer.class).to(AttributeHandler.class);
         bind(Configuration.class).toInstance(configuration);
+        bind(ComponentRegister.class).to(InternalComponentRegister.class);
         bind(PropertyProvider.class).toInstance(configuration.get(Configuration.PROPERTY_PROVIDER));
         bind(RequestInvocationFilter.class).toInstance(configuration.get(Configuration.REQUEST_INVOCATION_FILTER));
 

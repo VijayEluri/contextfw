@@ -19,7 +19,7 @@ package net.contextfw.web.application.component;
 
 import static org.junit.Assert.*;
 import junit.framework.Assert;
-import net.contextfw.web.application.internal.component.ComponentRegister;
+import net.contextfw.web.application.internal.component.InternalComponentRegister;
 import net.contextfw.web.application.internal.component.MetaComponent;
 
 import org.junit.Test;
@@ -61,7 +61,7 @@ public class MetaComponentTest {
     public void Autoregister_Children() {
         A a = new A();
         aMeta.registerChildren(a);
-        ComponentRegister register = new ComponentRegister();
+        InternalComponentRegister register = new InternalComponentRegister();
         register.register(a);
         assertEquals(1, a.callCount);
     }

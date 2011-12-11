@@ -24,7 +24,7 @@ import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.internal.ToStringSerializer;
 import net.contextfw.web.application.internal.component.ComponentBuilder;
 import net.contextfw.web.application.internal.component.ComponentBuilderImpl;
-import net.contextfw.web.application.internal.component.ComponentRegister;
+import net.contextfw.web.application.internal.component.InternalComponentRegister;
 import net.contextfw.web.application.internal.component.WebApplicationComponent;
 import net.contextfw.web.application.internal.configuration.KeyValue;
 import net.contextfw.web.application.serialize.AttributeSerializer;
@@ -42,7 +42,7 @@ public abstract class BaseComponentTest {
     
     protected Logger log = LoggerFactory.getLogger(BaseComponentTest.class); 
     
-    protected ComponentRegister componentRegister;
+    protected InternalComponentRegister componentRegister;
     
     protected ComponentBuilder componentBuilder;
     
@@ -61,7 +61,7 @@ public abstract class BaseComponentTest {
     
     @Before
     public void before() {
-        componentRegister = new ComponentRegister();
+        componentRegister = new InternalComponentRegister();
         Gson gson = new Gson();
         componentBuilder = new ComponentBuilderImpl(null, gson);
         scriptContext = (ScriptContext) componentBuilder;

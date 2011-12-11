@@ -36,7 +36,7 @@ import net.contextfw.web.application.internal.ComponentUpdateHandlerFactory;
 import net.contextfw.web.application.internal.WebResponder;
 import net.contextfw.web.application.internal.WebResponder.Mode;
 import net.contextfw.web.application.internal.component.ComponentBuilder;
-import net.contextfw.web.application.internal.component.ComponentRegister;
+import net.contextfw.web.application.internal.component.InternalComponentRegister;
 import net.contextfw.web.application.internal.component.WebApplicationComponent;
 import net.contextfw.web.application.internal.initializer.InitializerContextImpl;
 import net.contextfw.web.application.internal.servlet.UriMapping;
@@ -75,13 +75,11 @@ public class WebApplicationImpl implements WebApplication {
     @Inject
     private HttpContext httpContext;
 
-//    @Inject
-//    private PageFlowFilter pageFlowFilter;
+    @Inject
+    private InternalComponentRegister componentRegister;
 
-    private final ComponentRegister componentRegister = new ComponentRegister();
-
-    private final WebApplicationComponent rootComponent =
-            new WebApplicationComponent(componentRegister);
+    @Inject
+    private WebApplicationComponent rootComponent;
 
     private List<Class<? extends Component>> chain;
 

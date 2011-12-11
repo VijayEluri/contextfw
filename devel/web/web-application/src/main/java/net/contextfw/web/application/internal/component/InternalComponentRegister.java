@@ -21,10 +21,11 @@ import java.util.HashMap;
 import java.util.Map;
 
 import net.contextfw.web.application.component.Component;
+import net.contextfw.web.application.component.ComponentRegister;
 import net.contextfw.web.application.lifecycle.PageScoped;
 
 @PageScoped
-public class ComponentRegister {
+public class InternalComponentRegister implements ComponentRegister {
 
     private int idCounter = 0;
 
@@ -49,5 +50,11 @@ public class ComponentRegister {
 
     public Component findComponent(String id) {
         return components.get(id);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <C extends Component> C findComponent(Class<C> cl, String id) {
+        return (C) findComponent(id);
     }
 }

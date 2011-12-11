@@ -20,13 +20,16 @@ package net.contextfw.web.application.internal.component;
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.component.DOMBuilder;
 
+import com.google.inject.Inject;
+
 public class WebApplicationComponent extends Component {
 
-    private final ComponentRegister elementRegister;
+    private final InternalComponentRegister elementRegister;
 
     private Component child = null;
     
-    public WebApplicationComponent(ComponentRegister elementRegister) {
+    @Inject
+    public WebApplicationComponent(InternalComponentRegister elementRegister) {
         this.elementRegister = elementRegister;
         elementRegister.register(this);
     }
