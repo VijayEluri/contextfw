@@ -12,5 +12,6 @@ import com.google.inject.BindingAnnotation;
 @Retention(RUNTIME)
 @BindingAnnotation 
 public @interface CloudSessionOpenMode {
-    public OpenMode value();
+    
+    OpenMode value();
 }

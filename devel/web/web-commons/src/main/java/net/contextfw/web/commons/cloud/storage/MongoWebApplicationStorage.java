@@ -84,7 +84,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
     private static final String KEY_LOCKED = "locked";
     private static final String KEY_APPLICATION = "application";
 
-    private static final DBObject applicationFields = new BasicDBObject(KEY_APPLICATION, 1);
+    private static final DBObject APPLICATION_FIELDS = new BasicDBObject(KEY_APPLICATION, 1);
     
     private final boolean throttle;
     private final int throttleTreshold;
@@ -108,7 +108,9 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
         this.serializer = serializer;
         setIndexes(getPages());
     }
-
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
+            value="SWL_SLEEP_WITH_LOCK_HELD", 
+            justification="Throttle is meant to be slow")
     private void throttle(String remoteAddr) {
         if (throttle) {
             long count = getPages().count(o(KEY_REMOTE_ADDR, remoteAddr));
@@ -119,6 +121,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
                         if (logThrottle) {
                             LOG.info("Throttling {} for {} ms", remoteAddr, sleep);
                         }
+                        
                         Thread.sleep(sleep);
                     } catch (InterruptedException e) {
                     }    
@@ -230,7 +233,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
         
         executeSynchronized(getPages(), 
                             handle.toString(), 
-                            applicationFields, 
+                            APPLICATION_FIELDS, 
                             null,
                             true,
                             false,
@@ -253,7 +256,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
         
         executeSynchronized(getPages(), 
                             handle.toString(), 
-                            applicationFields,
+                            APPLICATION_FIELDS,
                             null,
                             true,
                             false,

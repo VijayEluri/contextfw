@@ -79,11 +79,7 @@ public abstract class MongoBase {
         
         if (exists || execOnNull) {
             DBObject opened = exists ? openExclusive(collection, query, fields, isLocked) : null;
-            try {
-                return execution.execute(opened);
-            } finally {
-                //closeExclusive(collection, query);
-            }
+            return execution.execute(opened);
         } else {
             return null;
         }
