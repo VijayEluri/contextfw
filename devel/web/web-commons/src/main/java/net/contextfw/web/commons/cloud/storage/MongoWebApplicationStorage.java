@@ -142,7 +142,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
         doc.put(KEY_HANDLE, handle.toString());
         doc.put(KEY_REMOTE_ADDR, remoteAddr);
         doc.put(KEY_VALID_THROUGH, validThrough);
-        doc.put(KEY_LOCKED, false);
+        doc.put(KEY_LOCKED, true);
         
         getPages().insert(doc);
     }
@@ -160,7 +160,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
                     updateBuilder.add(KEY_VALID_THROUGH, validThrough);
                 }
                 updateBuilder.add(KEY_APPLICATION, serializer.serialize(application));
-                getPages().update(query, o("$set", updateBuilder.get()));
+                closeExclusive(getPages(), query, updateBuilder.get());
             }
         });
     }
@@ -206,6 +206,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
                             noFields,
                             null,
                             true,
+                            true,
                             new MongoExecution<Void>() {
             public Void execute(DBObject object) {
                 try {
@@ -223,7 +224,6 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
                        HttpServletRequest request, 
                        long validThrough,
                        final ScopedWebApplicationExecution execution) {
-        
         String remoteAddr = request.getRemoteAddr();
         removeExpiredPages();
         throttle(remoteAddr);
@@ -233,6 +233,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
                             applicationFields, 
                             null,
                             true,
+                            false,
                             new MongoExecution<Void>() {
             public Void execute(DBObject object) {
                 WebApplication application = load(object);
@@ -255,6 +256,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
                             applicationFields,
                             null,
                             true,
+                            false,
                             new MongoExecution<Void>() {
             public Void execute(DBObject object) {
                 WebApplication application = load(object);

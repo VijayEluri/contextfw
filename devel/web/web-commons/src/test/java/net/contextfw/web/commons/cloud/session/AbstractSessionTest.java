@@ -30,7 +30,7 @@ public abstract class AbstractSessionTest extends AbstractGuiceTest {
     protected static final String COOKIE_NAME = "cloudSession";
     
     protected enum ResponseExpect {
-        ADD_COOKIE, ADD_COOKIE_TWICE
+        ADD_COOKIE, ADD_COOKIE_TWICE, ADD_COOKIE_THRICE
     }
     
     @Inject
@@ -56,10 +56,17 @@ public abstract class AbstractSessionTest extends AbstractGuiceTest {
     protected HttpServletResponse mockResponse(ResponseExpect expect, Cookie cookie) {
         HttpServletResponse response = createStrictMock(HttpServletResponse.class);
         
-        if (expect == ResponseExpect.ADD_COOKIE || expect == ResponseExpect.ADD_COOKIE_TWICE) {
+        if (expect == ResponseExpect.ADD_COOKIE 
+                || expect == ResponseExpect.ADD_COOKIE_TWICE
+                || expect == ResponseExpect.ADD_COOKIE_THRICE) {
+            
             response.addCookie(cookie != null ? cookie : anyObject(Cookie.class));
         } 
-        if (expect == ResponseExpect.ADD_COOKIE_TWICE) {
+        if (expect == ResponseExpect.ADD_COOKIE_TWICE
+                || expect == ResponseExpect.ADD_COOKIE_THRICE) {
+            response.addCookie(cookie != null ? cookie : anyObject(Cookie.class));
+        }
+        if (expect == ResponseExpect.ADD_COOKIE_THRICE) {
             response.addCookie(cookie != null ? cookie : anyObject(Cookie.class));
         }
         

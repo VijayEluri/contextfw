@@ -24,7 +24,8 @@ public class CloudSessionLifecycleListener extends DefaultLifecycleListener {
 
     @Override
     public boolean beforeUpdate(Component component, Method method, Object[] args) {
-        session.openSession(OpenMode.LAZY);
+        CloudSessionOpenMode annotation = method.getAnnotation(CloudSessionOpenMode.class);
+        session.openSession(annotation == null ? OpenMode.LAZY : annotation.value());
         return super.beforeUpdate(component, method, args);
     }
 

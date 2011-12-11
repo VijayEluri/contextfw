@@ -22,9 +22,32 @@ public interface CloudSession {
     
     <T> T get(Class<T> type);
     
-    void unset(String key);
+    /**
+     * Returns a synchronized version of sessioned data.
+     * 
+     * <p>
+     *  With this method a specific get/set-cycle can be avoided. It is simply enough
+     *  to get the object (and if not exists, use the default). With methods setChanged() 
+     *  the state is pushed back to cloud during session close;
+     * </p>
+     * 
+     * @param key
+     * @param type
+     * @param def
+     * @param syncOnClose
+     * @return
+     */
+    <T> T getSynched(String key, Class<T> type, ValueProvider<T> valueProvider);
     
-    void unset(Class<?> type);
+    <T> T getSynched(Class<T> type, ValueProvider<T> valueProvider);
+    
+    void setChanged(Class<?> type);
+    
+    void setChanged(String key);
+    
+    void remove(String key);
+    
+    void remove(Class<?> type);
     
     void openSession(OpenMode mode);
     

@@ -8,8 +8,17 @@ import org.junit.Test;
 
 public class BasicSessionTest extends AbstractTest {
     
+    @SuppressWarnings("unused")
+    private void mockMethod() {
+    }
+    
+    @SuppressWarnings("unused")
+    @CloudSessionOpenMode(OpenMode.EXISTING)
+    private void mockMethod2() {
+    }
+    
     @Test
-    public void LifecycleListener_Invokes_Session() {
+    public void LifecycleListener_Invokes_Session() throws SecurityException, NoSuchMethodException {
         
         CloudSession session = createStrictMock(CloudSession.class);
         
@@ -27,7 +36,32 @@ public class BasicSessionTest extends AbstractTest {
         listener.beforeInitialize();
         listener.beforePageScopeDeactivation();
         
-        listener.beforeUpdate(null,  null, null);
+        listener.beforeUpdate(null, this.getClass().getDeclaredMethod("mockMethod"), null);
+        listener.beforePageScopeDeactivation();
+        
+        verify(session);
+    }
+    
+    @Test
+    public void LifecycleListener_Does_Not_Invoke_Session() throws SecurityException, NoSuchMethodException {
+        
+        CloudSession session = createStrictMock(CloudSession.class);
+        
+        session.openSession(OpenMode.LAZY);
+        session.closeSession();
+        
+        session.openSession(OpenMode.EXISTING);
+        session.closeSession();
+        
+        replay(session);
+        
+        CloudSessionLifecycleListener listener = 
+                new CloudSessionLifecycleListener(session);
+        
+        listener.beforeInitialize();
+        listener.beforePageScopeDeactivation();
+        
+        listener.beforeUpdate(null,  this.getClass().getDeclaredMethod("mockMethod2"), null);
         listener.beforePageScopeDeactivation();
         
         verify(session);

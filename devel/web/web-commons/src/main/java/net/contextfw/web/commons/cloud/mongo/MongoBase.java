@@ -59,6 +59,7 @@ public abstract class MongoBase {
                                    DBObject fields,
                                    String remoteAddr,
                                    boolean execOnNull,
+                                   boolean isLocked,
                                    MongoExecution<T> execution) {
         
         BasicDBObjectBuilder queryBuilder = b().add(KEY_HANDLE, handle);
@@ -77,25 +78,33 @@ public abstract class MongoBase {
         boolean exists = collection.count(query) == 1;
         
         if (exists || execOnNull) {
-            DBObject opened = exists ? openExclusive(collection, query, fields) : null;
+            DBObject opened = exists ? openExclusive(collection, query, fields, isLocked) : null;
             try {
                 return execution.execute(opened);
             } finally {
-                closeExclusive(collection, query);
+                //closeExclusive(collection, query);
             }
         } else {
             return null;
         }
     }
     
-    private void closeExclusive(DBCollection collection, DBObject query) {
+    protected void closeExclusive(DBCollection collection, 
+                                 DBObject query,
+                                 DBObject update) {
+        
         query.removeField(KEY_LOCKED);
-        collection.update(query, o("$set", o(KEY_LOCKED, false)));
+        update.put(KEY_LOCKED, false);
+        collection.update(query, o("$set", update));
     }
     
-    private DBObject openExclusive(DBCollection collection, DBObject query, DBObject fields) {
-        query.put(KEY_LOCKED, false);
+    private DBObject openExclusive(DBCollection collection, 
+                                   DBObject query, 
+                                   DBObject fields, 
+                                   boolean isLocked) {
+        query.put(KEY_LOCKED, isLocked);
         DBObject update = o("$set", o(KEY_LOCKED, true));
+        fields.put(KEY_LOCKED, 1);
         for (int i = 0; i < TRY_OUTS; i++) {
             DBObject rv = collection.findAndModify(
                     query, 
@@ -105,7 +114,6 @@ public abstract class MongoBase {
                     update,
                     true,
                     false);
-            
             if (rv == null) {
                 try {
                     Thread.sleep(SLEEP_PERIOD);
