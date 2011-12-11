@@ -19,6 +19,8 @@ package net.contextfw.web.application.internal.service;
 
 import java.io.IOException;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.ThreadPoolExecutor;
 
@@ -191,15 +193,29 @@ public class UpdateHandler {
                     }
                 });
 
-                Execution afterRun = null;
-
-                if (invocation[0].getRetVal() instanceof Execution) {
-                    afterRun = (Execution) invocation[0].getRetVal();
-                } else if (invocation[0].isResource()) {
-                    afterRun = handleResource(request, response, invocation[0]);
+                Set<Execution> afterRun =  new HashSet<Execution>();
+                
+                Object retVal = null;
+                
+                if (invocation[0].isResource()) {
+                    retVal = handleResource(request, response, invocation[0]);
+                } else {
+                    retVal = invocation[0].getRetVal();
+                }
+                
+                if (retVal instanceof Execution) {
+                    afterRun.add((Execution) retVal);
+                } else if (retVal instanceof Iterable) {
+                    for (Object i : ((Iterable<?>) retVal)) {
+                        afterRun.add((Execution) i);
+                    }
+                } else if (retVal instanceof Execution[]) {
+                    for (Execution i : ((Execution[]) retVal)) {
+                        afterRun.add(i);
+                    }
                 }
 
-                if (afterRun != null) {
+                if (!afterRun.isEmpty()) {
                     runAfterRun(handle, afterRun);
                 }
             }
@@ -210,7 +226,7 @@ public class UpdateHandler {
     }
 
     private void runAfterRun(final WebApplicationHandle handle,
-                             final Execution afterRun) throws IOException {
+                             final Set<Execution> afterRun) throws IOException {
 
         final PageScopedExecutor pageScopedExecutor = new PageScopedExecutor() {
             @Override
@@ -232,15 +248,17 @@ public class UpdateHandler {
                     });
             }
         };
-        executor.execute(new Runnable() {
-            public void run() {
-                try {
-                    afterRun.execute(pageScopedExecutor);
-                } catch (RuntimeException e) {
-                    logger.error("Error during running Execution", e);
+        for (final Execution exec : afterRun) {
+            executor.execute(new Runnable() {
+                public void run() {
+                    try {
+                        exec.execute(pageScopedExecutor);
+                    } catch (RuntimeException e) {
+                        logger.error("Error during running Execution", e);
+                    }
                 }
-            }
-        });
+            });
+        }
     }
 
     private Execution handleResource(final HttpServletRequest request,
