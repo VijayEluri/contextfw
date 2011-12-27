@@ -3,7 +3,6 @@ package net.contextfw.web.commons.cloud.session;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 
@@ -15,7 +14,6 @@ import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.configuration.SettableProperty;
 import net.contextfw.web.commons.cloud.binding.CloudDatabase;
 import net.contextfw.web.commons.cloud.mongo.MongoBase;
-import net.contextfw.web.commons.cloud.mongo.MongoExecution;
 import net.contextfw.web.commons.cloud.serializer.Serializer;
 
 import org.apache.commons.lang.StringUtils;
@@ -24,6 +22,7 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import com.mongodb.BasicDBObject;
+import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
@@ -39,6 +38,7 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
     private static class LocalData {
         Map<String, Object> cache = new HashMap<String, Object>();
         Set<String> changed = new HashSet<String>();
+        Set<String> removed = new HashSet<String>();
         OpenMode openMode;
     }
     
@@ -77,11 +77,11 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
         this.maxInactivity = configuration.getOrElse(CloudSession.MAX_INACTIVITY, HALF_HOUR);
         this.serializer = serializer;
         this.holderProvider = holderProvider;
-        setIndexes(getSessionCollection());
+        setIndexes(getCollection());
     }
     
     @Override
-    public void set(final String key, final Object value) {
+    public void set(final String key, final Object value, boolean nonCached) {
         
         assertSessionIsUsable();
         
@@ -94,23 +94,20 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
         if (handle != null) {
             
             if (value == null) {
-                unset(handle, key);
+                unset(handle, key, nonCached);
             }
-            DBObject fields = o(key, 1);
-            executeSynchronized(getSessionCollection(), 
-                                handle, 
-                                fields, 
-                                null,
-                                false,
-                                false,
-                    new MongoExecution<Void>() {
-                        public Void execute(DBObject object) {
-                            DBObject query = o(KEY_HANDLE, handle);
-                            DBObject update = o(key, serializer.serialize(value));
-                            closeExclusive(getSessionCollection(), query, update);
-                            return null;
-                        }
-                    });
+            
+            LocalData data = localData.get();
+            
+            data.removed.remove(key);
+            data.changed.add(key);
+            data.cache.put(key, value);
+            
+            if (nonCached) {
+                DBObject query = o(KEY_HANDLE, handle);
+                DBObject update = o("$set", o(key, serializer.serialize(value)));
+                getCollection().update(query, update);
+            }
         }
     }
 
@@ -120,7 +117,7 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
                 .push(KEY_VALID_THROUGH)
                 .add("$gte", System.currentTimeMillis()).get();
         
-        return getSessionCollection().count(query) > 0;
+        return getCollection().count(query) > 0;
     }
 
     private String createSession() {
@@ -129,7 +126,7 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
         session.put(KEY_HANDLE, handle);
         session.put(KEY_LOCKED, false);
         session.put(KEY_VALID_THROUGH, System.currentTimeMillis() + maxInactivity);
-        getSessionCollection().insert(session);
+        getCollection().insert(session);
         return handle;
     }
     
@@ -174,12 +171,12 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
         if (value == null) {
             throw new IllegalArgumentException("Value cannot be null.");
         }
-        set(typeToKey(value.getClass()), value);
+        set(typeToKey(value.getClass()), value, false);
     }
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> T get(final String key, Class<T> type) {
+    public <T> T get(final String key, Class<T> type, boolean nonCached) {
         
         assertSessionIsUsable();
         
@@ -190,28 +187,31 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
             throw new IllegalArgumentException("Type cannot be empty or null.");
         }
         
+        LocalData localData = getLocalData();
+        
+        if (localData.removed.contains(key)) {
+            return null;
+        } else if (!nonCached && localData.cache.containsKey(key)) {
+            return (T) localData.cache.get(key);
+        }
+        
         final String handle = getSessionHandle(false, false);
         
         if (handle != null) {
-            DBObject fields = o(key, 1);
-            byte[] data = executeSynchronized(getSessionCollection(), 
-                                              handle, 
-                                              fields,
-                                              null,
-                                              false,
-                                              false,
-                    new MongoExecution<byte[]>() {
-                        public byte[] execute(DBObject object) {
-                            DBObject query = o(KEY_HANDLE, handle);
-                            DBObject update = o("$set", o(KEY_LOCKED, false));
-                            getSessionCollection().update(query, update);
-                            return (byte[]) object.get(key);
-                        }
-                    });
-            return data == null ? null : (T) serializer.unserialize(data);
+            DBObject query = o(KEY_HANDLE, handle);
+            DBObject field = o(key, 1);
+            DBObject obj = getCollection().findOne(query, field);
+            byte[] data = (byte[]) (obj == null ? null : obj.get(key));
+            T rv = data == null ? null : (T) serializer.unserialize(data);
+            localData.cache.put(key, rv);
+            return rv;
         } else {
             return null;
         }
+    }
+
+    private LocalData getLocalData() {
+        return localData.get();
     }
 
     @Override
@@ -219,7 +219,7 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
         if (type == null) {
             throw new IllegalArgumentException("Type cannot be empty or null.");
         }
-        return get(typeToKey(type), type);
+        return get(typeToKey(type), type, false);
     }
     
     private void assertSessionIsUsable() {
@@ -230,38 +230,29 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
     }
 
     @Override
-    public void remove(String key) {
+    public void remove(String key, boolean nonCached) {
         if (StringUtils.isBlank(key)) {
             throw new IllegalArgumentException("Key cannot be empty or null.");
         }
         
         String handle = getSessionHandle(false, false);
         if (handle != null) {
-            unset(handle, key);
+            unset(handle, key, nonCached);
         }
     }
     
-    private void unset(final String handle, final String key) {
+    private void unset(final String handle, final String key, boolean nonCached) {
         assertSessionIsUsable();
         LocalData localData = this.localData.get();
         localData.cache.remove(key);
         localData.changed.remove(key);
-        DBObject fields = o(key, 1);
-        executeSynchronized(getSessionCollection(), 
-                            handle, 
-                            fields, 
-                            null,
-                            false,
-                            false,
-                new MongoExecution<Void>() {
-                    public Void execute(DBObject object) {
-                            DBObject query = o(KEY_HANDLE, handle);
-                            DBObject update = o("$unset", o(key, 1));
-                            update.put("$set", o(KEY_LOCKED, false));
-                            getSessionCollection().update(query, update);
-                            return null;
-                        }
-                    });
+        localData.removed.add(key);
+        
+        if (nonCached) {
+            DBObject query = o(KEY_HANDLE, handle);
+            DBObject update = o("$unset", o(key, 1));
+            getCollection().update(query, update);
+        }
     }
 
     @Override
@@ -275,6 +266,7 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
     @Override
     public void expireSession() {
         String handle = getSessionHandle(false, false);
+        localData.remove();
         if (handle != null) {
             setSessionCookie(handle, true);
             removeSession(handle);
@@ -282,7 +274,7 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
     }
 
     private void removeSession(String handle) {
-        getSessionCollection().remove(o(KEY_HANDLE, handle));
+        getCollection().remove(o(KEY_HANDLE, handle));
     }
     
     private String findHandleFromCookie() {
@@ -341,77 +333,90 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
     }
 
     private void refreshSession(String handle) {
-        getSessionCollection().update(o(KEY_HANDLE, handle),
+        getCollection().update(o(KEY_HANDLE, handle),
                 o("$set", 
                         o(KEY_VALID_THROUGH, 
                         System.currentTimeMillis() + maxInactivity)));
     }
     
-    private DBCollection getSessionCollection() {
+    @Override
+    protected DBCollection getCollection() {
         return getDb().getCollection(sessionCollection);
     }
     
     private void removeExpiredSessions() {
-        removeExpiredObjects(getSessionCollection());
+        removeExpiredObjects();
     }
 
     @Override
     public void closeSession() {
-        LocalData ld = localData.get();
-        for (Entry<String, Object> cached : ld.cache.entrySet()) {
-            if (ld.changed.contains(cached.getKey())) {
-                set(cached.getKey(), cached.getValue());
+        
+        final String handle = getSessionHandle(localData.get().openMode != OpenMode.EXISTING, false);
+        final LocalData ld = localData.get();
+        
+        if (!ld.changed.isEmpty() || !ld.removed.isEmpty()) {
+        
+            DBObject query = o(KEY_HANDLE, handle);
+            
+            BasicDBObjectBuilder update = b();
+            if (!ld.removed.isEmpty()) {
+                update.push("$unset");
+                for (String _ : ld.removed) {
+                    update.add(_, 1);
+                }
+                update.pop();
             }
+            if (!ld.changed.isEmpty()) {
+                update.push("$set");
+                for (String _ : ld.changed) {
+                    update.add(_, serializer.serialize(ld.cache.get(_)));
+                }
+                update.pop();
+            }
+            
+            getCollection().update(query, update.get());
         }
+        
         localData.remove();
         holderProvider.get().setOpen(false);
     }
 
     @Override
-    public <T> T getSynched(String key, Class<T> type, ValueProvider<T> provider) {
-        
-        Map<String, Object> cache = localData.get().cache;
-        
-        if (StringUtils.isBlank(key)) {
-            throw new IllegalArgumentException("Key cannot be empty or null.");
-        }
-        if (type == null) {
-            throw new IllegalArgumentException("Type cannot be null.");
-        }
-        if (provider == null) {
-            throw new IllegalArgumentException("ValueProvider cannot be null.");
-        }
-        
-        @SuppressWarnings("unchecked")
-        T value = (T) cache.get(key);
-        
-        if (value == null) {
-            value = get(key, type);
-            if (value == null) {
-                value = provider.initialValue();
-            }
-            if (value != null) {
-                cache.put(key, value);
-            }
-        }
-        return value;
+    public void set(String key, Object value) {
+        set(key, value, false);
     }
 
     @Override
-    public <T> T getSynched(Class<T> type, ValueProvider<T> provider) {
+    public void set(Object value, boolean nonCached) {
+        if (value == null) {
+            throw new IllegalArgumentException("Value cannot be null.");
+        }
+        set(typeToKey(value.getClass()), value, nonCached);
+    }
+
+    @Override
+    public <T> T get(String key, Class<T> type) {
+        return get(key, type, false);
+    }
+
+    @Override
+    public <T> T get(Class<T> type, boolean nonCached) {
         if (type == null) {
             throw new IllegalArgumentException("Type cannot be empty or null.");
         }
-        return getSynched(typeToKey(type), type, provider);
+        return get(typeToKey(type), type, nonCached);
     }
 
     @Override
-    public void setChanged(Class<?> type) {
-        setChanged(typeToKey(type));
+    public void remove(String key) {
+        remove(key, false);
     }
 
     @Override
-    public void setChanged(String key) {
-        localData.get().changed.add(key);
+    public void remove(Class<?> type, boolean nonCached) {
+        if (type == null) {
+            throw new IllegalArgumentException("Type cannot be empty or null.");
+        }
+        remove(typeToKey(type), nonCached);
     }
 }

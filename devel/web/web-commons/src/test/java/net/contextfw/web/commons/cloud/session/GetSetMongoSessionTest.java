@@ -155,6 +155,7 @@ public class GetSetMongoSessionTest extends AbstractSessionTest {
     
     @Test
     public void Get_Null_When_Unset_2() {
+        
         CloudSession session = openValidSession();
         
         A a = new A();
@@ -163,84 +164,29 @@ public class GetSetMongoSessionTest extends AbstractSessionTest {
         
         session.set("foo", a);
         session.remove("foo");
-        
         assertNull(session.get("foo", A.class));
+        session.closeSession();
+        
+        session.openSession(OpenMode.LAZY);
+        assertNull(session.get("foo", A.class));        
     }
 
     @Test
-    public void Get_Synched_With_Set_Changed() {
-        
-        ValueProvider<A> provider = new ValueProvider<A>() {
-            public A initialValue() {
-                return getA1();
-            }
-        };
-        
+    public void Get_After_ReOpen() {
         CloudSession session = openValidSession(ResponseExpect.ADD_COOKIE_THRICE);
-        
-        A a1 = session.getSynched(A.class, provider);
-        assertEquals("a1", a1.getA1());
-        a1.setA1("a2");
-        session.setChanged(A.class);
+        session.set(getA1());
         session.closeSession();
-        
         session.openSession(OpenMode.LAZY);
-        
-        a1 = session.getSynched(A.class, provider);
-        assertEquals("a2", a1.getA1());
-        a1.setA1("a3");
-        session.setChanged(A.class);
+        A a = session.get(A.class);
+        assertNotNull(a);
+        assertEquals("a1", a.getA1());
+        a.setA1("a11");
+        session.set(a);
         session.closeSession();
-        
         session.openSession(OpenMode.LAZY);
-        
-        a1 = session.getSynched(A.class, provider);
-        assertEquals("a3", a1.getA1());
+        assertEquals("a11", session.get(A.class).getA1());
     }
-    
-    @Test
-    public void Get_Synched_Without_Set_Changed() {
-        
-        ValueProvider<A> provider = new ValueProvider<A>() {
-            public A initialValue() {
-                return getA1();
-            }
-        };
-        
-        CloudSession session = openValidSession(ResponseExpect.ADD_COOKIE_THRICE);
-        
-        A a1 = session.getSynched(A.class, provider);
-        assertEquals("a1", a1.getA1());
-        a1.setA1("a2");
-        session.closeSession();
-        
-        session.openSession(OpenMode.LAZY);
-        
-        a1 = session.getSynched(A.class, provider);
-        assertEquals("a1", a1.getA1());
-    }
-    
-    @Test
-    public void Get_Synched_After_Clear() {
-        CloudSession session = openValidSession(ResponseExpect.ADD_COOKIE_TWICE);
-        
-        ValueProvider<A> provider = new ValueProvider<A>() {
-            public A initialValue() {
-                return getA1();
-            }
-        };
-        
-        A a1 = session.getSynched(A.class, provider);
-        a1.setA1("a2");
-        session.remove(A.class);
-        session.closeSession();
-        
-        session.openSession(OpenMode.LAZY);
-        
-        a1 = session.getSynched(A.class, provider);
-        assertEquals("a1", a1.getA1());
-    }
-    
+
     private A getA1() {
         A a1 = new A();
         a1.setA1("a1");

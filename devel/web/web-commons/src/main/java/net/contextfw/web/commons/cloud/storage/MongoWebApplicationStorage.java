@@ -13,7 +13,6 @@ import net.contextfw.web.application.scope.WebApplicationStorage;
 import net.contextfw.web.commons.cloud.binding.CloudDatabase;
 import net.contextfw.web.commons.cloud.mongo.ExceptionSafeExecution;
 import net.contextfw.web.commons.cloud.mongo.MongoBase;
-import net.contextfw.web.commons.cloud.mongo.MongoExecution;
 import net.contextfw.web.commons.cloud.serializer.Serializer;
 
 import org.slf4j.Logger;
@@ -31,8 +30,12 @@ import com.mongodb.DBObject;
 public class MongoWebApplicationStorage extends MongoBase implements WebApplicationStorage {
 
     private static final double INITIAL_CURVE = 1.3;
+    
+    private static final int TRY_OUTS = 100;
 
     private static final int INITIAL_TRESHOLD = 100;
+    
+    private static final int SLEEP_PERIOD = 100;
     
     private static final Logger LOG = LoggerFactory
             .getLogger(MongoWebApplicationStorage.class);
@@ -106,14 +109,15 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
         throttleCurve = configuration.getOrElse(THROTTLE_CURVE, INITIAL_CURVE);
         collection = configuration.getOrElse(COLLECTION_NAME, "pages");
         this.serializer = serializer;
-        setIndexes(getPages());
+        setIndexes(getCollection());
     }
+    
     @edu.umd.cs.findbugs.annotations.SuppressWarnings(
             value="SWL_SLEEP_WITH_LOCK_HELD", 
             justification="Throttle is meant to be slow")
     private void throttle(String remoteAddr) {
         if (throttle) {
-            long count = getPages().count(o(KEY_REMOTE_ADDR, remoteAddr));
+            long count = getCollection().count(o(KEY_REMOTE_ADDR, remoteAddr));
             if (count > throttleTreshold) {
                 synchronized (this) {
                     try {
@@ -131,13 +135,14 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
     }
     
     private long getPageCount() {
-        return getPages().count();
+        return getCollection().count();
     }
     
     private void create(WebApplicationHandle handle, 
-                            String remoteAddr, 
-                            WebApplication application, 
-                            long validThrough) {
+                        String remoteAddr, 
+                        WebApplication application, 
+                        long validThrough) {
+        
         application.setHandle(handle);
         
         BasicDBObject doc = new BasicDBObject();
@@ -147,41 +152,24 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
         doc.put(KEY_VALID_THROUGH, validThrough);
         doc.put(KEY_LOCKED, true);
         
-        getPages().insert(doc);
+        getCollection().insert(doc);
     }
 
-    private void update(final WebApplicationHandle handle, 
-                        final WebApplication application,
-                        final Long validThrough) { 
-
-        executeAsync(new ExceptionSafeExecution() {
-            public void execute() throws Exception {
-                DBObject query = o(KEY_HANDLE, handle.toString());
-                BasicDBObjectBuilder updateBuilder = b();
-                
-                if (validThrough != null) {
-                    updateBuilder.add(KEY_VALID_THROUGH, validThrough);
-                }
-                updateBuilder.add(KEY_APPLICATION, serializer.serialize(application));
-                closeExclusive(getPages(), query, updateBuilder.get());
-            }
-        });
-    }
-        
     private WebApplication load(DBObject obj) {
         if (obj != null) {
-            return (WebApplication) serializer.unserialize((byte[]) obj.get("application"));
+            return (WebApplication) serializer.unserialize((byte[]) obj.get(KEY_APPLICATION));
         } else {
             return null;
         }
     }
     
-    private DBCollection getPages() {
+    @Override
+    protected DBCollection getCollection() {
         return getDb().getCollection(collection);
     }
     
     private void removeExpiredPages() {
-        removeExpiredObjects(getPages());
+        removeExpiredObjects();
     }
 
     private WebApplicationHandle createHandle() {
@@ -202,24 +190,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
         
         create(handle, remoteAddr, application, validThrough);
         
-        DBObject noFields = new BasicDBObject();
-        
-        executeSynchronized(getPages(), 
-                            handle.toString(),
-                            noFields,
-                            null,
-                            true,
-                            true,
-                            new MongoExecution<Void>() {
-            public Void execute(DBObject object) {
-                try {
-                    execution.execute(application);
-                } finally {
-                    update(handle, application, null);
-                }
-                return null;
-            }
-        });
+        executeExclusive(handle.toString(), remoteAddr, validThrough,  application, execution);
     }
 
     @Override
@@ -231,61 +202,135 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
         removeExpiredPages();
         throttle(remoteAddr);
         
-        executeSynchronized(getPages(), 
-                            handle.toString(), 
-                            APPLICATION_FIELDS, 
-                            null,
-                            true,
-                            false,
-                            new MongoExecution<Void>() {
-            public Void execute(DBObject object) {
-                WebApplication application = load(object);
-                try {
-                    execution.execute(application);
-                } finally {
-                    update(handle, application, null);
-                }
-                return null;
-            }
-        });
+        executeExclusive(handle.toString(), remoteAddr, validThrough, null, execution);
     }
 
     @Override
     public void execute(final WebApplicationHandle handle,
                         final ScopedWebApplicationExecution execution) {
         
-        executeSynchronized(getPages(), 
-                            handle.toString(), 
-                            APPLICATION_FIELDS,
-                            null,
-                            true,
-                            false,
-                            new MongoExecution<Void>() {
-            public Void execute(DBObject object) {
-                WebApplication application = load(object);
-                try {
-                    execution.execute(application);
-                } finally {
-                    update(handle, application, null);
-                }
-                return null;
-            }
-        });
+        executeExclusive(handle.toString(), null, null, null, execution);
     }
 
     @Override
     public void refresh(WebApplicationHandle handle, HttpServletRequest request, long validThrough) {
-        BasicDBObject query = new BasicDBObject();
-        query.put(KEY_HANDLE, handle.toString());
-        query.put(KEY_REMOTE_ADDR, request.getRemoteAddr());
-        query.put(KEY_VALID_THROUGH, o("$gte", System.currentTimeMillis()));
-        getPages().update(query, o("$set", o(KEY_VALID_THROUGH, validThrough)));        
+        
+        DBObject query = b()
+                .add(KEY_HANDLE, handle.toString())
+                .add(KEY_REMOTE_ADDR, request.getRemoteAddr())
+                .add(KEY_VALID_THROUGH, o("$gte", System.currentTimeMillis())).get();
+        
+        getCollection().update(query, o("$set", o(KEY_VALID_THROUGH, validThrough)));        
     }
 
     @Override
     public void remove(WebApplicationHandle handle, HttpServletRequest request) {
-        BasicDBObject query = new BasicDBObject(KEY_HANDLE, handle.toString());
-        query.put(KEY_REMOTE_ADDR, request.getRemoteAddr());
-        getPages().remove(query);
+        
+        DBObject query = b()
+                .add(KEY_HANDLE, handle.toString())
+                .add(KEY_REMOTE_ADDR, request.getRemoteAddr()).get();
+        
+        getCollection().remove(query);
+    }
+    
+    private DBObject openExclusive(String handle) {
+
+        BasicDBObjectBuilder queryBuilder = b()
+                .add(KEY_HANDLE, handle)
+                .add(KEY_LOCKED, false);
+
+        DBObject update = o("$set", o(KEY_LOCKED, true));
+        DBObject query = queryBuilder.get();
+        
+        for (int i = 0; i < TRY_OUTS; i++) {
+            DBObject rv = getCollection().findAndModify(
+                    query, 
+                    APPLICATION_FIELDS, 
+                    null,
+                    false,
+                    update,
+                    true,
+                    false);
+            if (rv == null) {
+                try {
+                    Thread.sleep(SLEEP_PERIOD);
+                } catch (InterruptedException e) {
+                }
+            } else {
+                return rv;
+            }
+        }
+        return getCollection().findOne(
+                o(KEY_HANDLE, handle), 
+                APPLICATION_FIELDS);
+    }
+    
+    private void closeExclusive(final String handle,
+                                final Long newValidThrough,
+                                final WebApplication application) {
+        
+        executeAsync(new ExceptionSafeExecution() {
+            public void execute() throws Exception {
+                
+                DBObject query = o(KEY_HANDLE, handle);
+                
+                BasicDBObjectBuilder updateBuilder = b();
+                updateBuilder.push("$set");
+                updateBuilder.add(KEY_LOCKED, false);
+                
+                if (newValidThrough != null) {
+                    updateBuilder.add(KEY_VALID_THROUGH, newValidThrough);
+                }
+                
+                if (application != null) {
+                    updateBuilder.add(KEY_APPLICATION, serializer.serialize(application));
+                }
+                updateBuilder.pop();
+                getCollection().update(query, updateBuilder.get());
+            }
+        });
+    }    
+    
+    private void executeExclusive(String handle,
+                                  String remoteAddr,
+                                  Long newValidthrough,
+                                  WebApplication givenApplication,
+                                  final ScopedWebApplicationExecution execution) {
+
+        WebApplication application = givenApplication != null ?
+                givenApplication : loadExclusive(handle, remoteAddr);
+
+        try {
+            execution.execute(application);
+        } finally {
+            closeExclusive(handle, newValidthrough, application);
+        }
+    }
+    
+    private WebApplication loadExclusive(String handle, String remoteAddr) {
+        
+        DBCollection collection = getCollection();
+
+        BasicDBObjectBuilder queryBuilder = b().add(KEY_HANDLE, handle);
+
+        if (remoteAddr != null) {
+            queryBuilder.add(KEY_REMOTE_ADDR, remoteAddr);
+        }
+
+        queryBuilder
+            .push(KEY_VALID_THROUGH)
+            .add("$gte", System.currentTimeMillis())
+            .pop();
+        
+        DBObject query = queryBuilder.get();
+
+        boolean exists = collection.count(query) == 1;
+        
+        if (exists) {
+            return load(openExclusive(handle));
+        } else {
+            return null;
+        }
+       
     }
 }

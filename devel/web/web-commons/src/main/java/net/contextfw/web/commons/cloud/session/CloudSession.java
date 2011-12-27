@@ -4,6 +4,11 @@ import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.configuration.SettableProperty;
 import net.contextfw.web.application.configuration.TemporalProperty;
 
+/**
+ * Provides a common interface for cloud based sessions.
+ * 
+ * @author marko.lavikainen@netkoti.fi
+ */
 public interface CloudSession {
     
     SettableProperty<String> COOKIE_NAME = 
@@ -14,40 +19,64 @@ public interface CloudSession {
             Configuration.createTemporalProperty(
                     CloudSession.class.getName() + ".maxInactivity");
     
-    void set(String key, Object value);
-    
-    void set(Object value);
-    
-    <T> T get(String key, Class<T> type);
-    
-    <T> T get(Class<T> type);
-    
     /**
-     * Returns a synchronized version of sessioned data.
+     * Sets a value with given key to the cloud session.
      * 
      * <p>
-     *  With this method a specific get/set-cycle can be avoided. It is simply enough
-     *  to get the object (and if not exists, use the default). With methods setChanged() 
-     *  the state is pushed back to cloud during session close;
+     *  The setting of the value is immediately seen by the session through get(), but
+     *  setting the actual value to storage is delayed until session is closed.  
+     * </p>
+     * <p>
+     *  If value has been removed or set earlier to different value, those changes will be
+     *  overriden.
      * </p>
      * 
      * @param key
+     *   The key to distinguish value
+     * @param value
+     *   The value to be set. If <code>null</code> is passed, the value is removed.
+     */
+    void set(String key, Object value);
+    
+    void set(String key, Object value, boolean nonCached);
+    
+    /**
+     * Sets a value to the cloud session
+     * 
+     * <p>
+     *  This method creates a key from values class name and dispatches it to 
+     *  <code>set(String key, Object value)</code>. This method is nice shortcut for 
+     *  objects that are stored as "singletons" to session.
+     * </p>
+     * 
+     * @param value
+     *   The value to be set
+     */
+    void set(Object value);
+    
+    void set(Object value, boolean nonCached);
+ 
+    /**
+     * 
+     * @param key
      * @param type
-     * @param def
-     * @param syncOnClose
      * @return
      */
-    <T> T getSynched(String key, Class<T> type, ValueProvider<T> valueProvider);
+    <T> T get(String key, Class<T> type);
     
-    <T> T getSynched(Class<T> type, ValueProvider<T> valueProvider);
+    <T> T get(String key, Class<T> type, boolean nonCached);
     
-    void setChanged(Class<?> type);
+    <T> T get(Class<T> type);
     
-    void setChanged(String key);
+    <T> T get(Class<T> type, boolean nonCached);
     
     void remove(String key);
     
     void remove(Class<?> type);
+
+    void remove(String key, boolean nonCached);
+    
+    void remove(Class<?> type, boolean nonCached);
     
     void openSession(OpenMode mode);
     
