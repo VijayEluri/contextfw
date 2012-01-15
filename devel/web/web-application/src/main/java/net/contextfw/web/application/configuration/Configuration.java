@@ -26,6 +26,8 @@ import java.util.Set;
 import net.contextfw.web.application.DocumentProcessor;
 import net.contextfw.web.application.PropertyProvider;
 import net.contextfw.web.application.SystemPropertyProvider;
+import net.contextfw.web.application.development.DefaultXMLResponseLogger;
+import net.contextfw.web.application.development.XMLResponseLogger;
 import net.contextfw.web.application.internal.configuration.BasicSettableProperty;
 import net.contextfw.web.application.internal.configuration.BindablePropertyImpl;
 import net.contextfw.web.application.internal.configuration.KeyValue;
@@ -44,8 +46,6 @@ import net.contextfw.web.application.scope.DefaultWebApplicationStorage;
 import net.contextfw.web.application.scope.WebApplicationStorage;
 import net.contextfw.web.application.serialize.AttributeJsonSerializer;
 import net.contextfw.web.application.serialize.AttributeSerializer;
-import net.contextfw.web.application.util.DefaultXMLResponseLogger;
-import net.contextfw.web.application.util.XMLResponseLogger;
 
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonSerializer;
@@ -65,10 +65,6 @@ public class Configuration {
     
     private static final String KEY_NAMESPACE = "contextfw.namespace";
     
-//    private static final String KEY_CREATE_HTTP_HEADER = "contextfw.createHttpHeader";
-    
-//    private static final String KEY_UPDATE_HTTP_HEADER = "contextfw.updateHttpHeader";
-
     private static final String KEY_ATTRIBUTE_SERIALIZER = "contextfw.attributeSerializer";
 
     private static final String KEY_JSON_SERIALIZER = "contextfw.jsonSerializer";
@@ -79,13 +75,9 @@ public class Configuration {
 
     private static final String KEY_REMOVAL_SCHEDULE_PERIOD = "contextfw.removalSchedulePeriod";
 
-   // private static final String KEY_POLL_TIME = "contextfw.pollTime";
-
     private static final String KEY_MAX_INACTIVITY = "contextfw.maxInactivity";
 
     private static final String KEY_INITIAL_MAX_INACTIVITY = "contextfw.initialMaxInactivity";
-
-  //  private static final String KEY_ERROR_TIME = "contextfw.errorTime";
 
     private static final String KEY_VIEW_COMPONENT_ROOT_PACKAGE = "contextfw.viewComponentRootPackage";
 
@@ -100,8 +92,6 @@ public class Configuration {
     private static final String KEY_XSL_POST_PROCESSOR = "contextfw.xslPostProcessor";
 
     private static final String KEY_XML_PARAM_NAME = "contextfw.xmlParamName";
-
-    //private static final String KEY_CONTEXT_PATH = "contextfw.contextPath";
 
     private static final String KEY_RESOURCES_PREFIX = "contextfw.resourcesPrefix";
 
@@ -134,7 +124,6 @@ public class Configuration {
           .set(CLASS_RELOADING_ENABLED, true)
           .set(LOG_XML, true)
           .set(RESOURCES_PREFIX, "/resources")
-          //.set(CONTEXT_PATH, "")
           .set(XML_PARAM_NAME, null)
           .set(XML_RESPONSE_LOGGER.asInstance(new DefaultXMLResponseLogger()))
           .set(PROPERTY_PROVIDER, new SystemPropertyProvider())
@@ -143,9 +132,7 @@ public class Configuration {
           .set(WEB_APPLICATION_STORAGE.as(DefaultWebApplicationStorage.class))
           .set(RESOURCE_PATH, new HashSet<String>())
           .set(VIEW_COMPONENT_ROOT_PACKAGE, new HashSet<String>())
-          // .set(ERROR_TIME.inMinsAndSecs(1, 30))
           .set(INITIAL_MAX_INACTIVITY.inSeconds(30))
-          //.set(POLL_TIME.inSeconds(70))
           .set(REMOVAL_SCHEDULE_PERIOD.inMinutes(1))
           .set(MAX_INACTIVITY.inMinutes(2))
           .set(NAMESPACE, new HashSet<KeyValue<String, String>>())
