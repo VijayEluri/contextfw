@@ -33,11 +33,11 @@ import net.contextfw.org.dom4j.io.XMLWriter;
 import net.contextfw.web.application.DocumentProcessor;
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.configuration.Configuration;
+import net.contextfw.web.application.development.XMLResponseLogger;
 import net.contextfw.web.application.internal.configuration.KeyValue;
 import net.contextfw.web.application.internal.util.ResourceEntry;
 import net.contextfw.web.application.internal.util.ResourceScanner;
 import net.contextfw.web.application.internal.util.Utils;
-import net.contextfw.web.application.util.XMLResponseLogger;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;

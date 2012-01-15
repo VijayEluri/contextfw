@@ -14,19 +14,24 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+package net.contextfw.web.application.development;
 
-package net.contextfw.web.application.util;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-public class DefaultXMLResponseLogger implements XMLResponseLogger {
-
-    private Logger logger = LoggerFactory.getLogger(DefaultXMLResponseLogger.class);
-    
-    @Override
-    public void logXML(String xml) {
-        logger.info("Logged xml-response:\n{}", xml);
-    }
-
+/**
+ * <p>Logs the XML-response created during each request.</p>
+ * 
+ * <p>
+ *  Logger is enabled only when 
+ *    <code>Configuration.DEVELOPMENT_MODE</code>
+ *  is <code>true</code>. 
+ *  Logging can also be configured via 
+ *    <code>Configuration.XML_RESPONSE_LOGGER</code> 
+ *  and 
+ *    <code>Configurtion.LOG_XML</code>
+ * </p>
+ * 
+ * @author marko.lavikainen@netkoti.fi>
+ *
+ */
+public interface XMLResponseLogger {
+    void logXML(String xml);
 }

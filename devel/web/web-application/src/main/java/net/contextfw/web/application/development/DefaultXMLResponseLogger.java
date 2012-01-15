@@ -15,8 +15,21 @@
  * limitations under the License.
  */
 
-package net.contextfw.web.application.util;
+package net.contextfw.web.application.development;
 
-public interface XMLResponseLogger {
-    void logXML(String xml);
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+/**
+ * The default XML-logger
+ */
+public class DefaultXMLResponseLogger implements XMLResponseLogger {
+
+    private Logger logger = LoggerFactory.getLogger(DefaultXMLResponseLogger.class);
+    
+    @Override
+    public void logXML(String xml) {
+        logger.info("Logged xml-response:\n{}", xml);
+    }
+
 }
