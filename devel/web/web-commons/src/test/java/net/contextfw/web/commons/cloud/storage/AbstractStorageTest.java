@@ -5,7 +5,7 @@ import java.net.UnknownHostException;
 import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.commons.AbstractGuiceTest;
 import net.contextfw.web.commons.GuiceJUnitRunner.GuiceModules;
-import net.contextfw.web.commons.cloud.serializer.Serializer;
+import net.contextfw.web.commons.cloud.internal.serializer.Serializer;
 import net.contextfw.web.commons.cloud.session.SessionTestModule;
 
 import org.junit.Before;

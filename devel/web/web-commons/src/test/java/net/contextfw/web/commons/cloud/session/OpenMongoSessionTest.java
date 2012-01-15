@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 import javax.servlet.http.Cookie;
 
 import net.contextfw.web.application.HttpContext;
+import net.contextfw.web.commons.cloud.internal.session.CloudSessionHolder;
 
 import org.junit.Test;
 

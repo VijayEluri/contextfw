@@ -1,4 +1,4 @@
-package net.contextfw.web.commons.cloud.session;
+package net.contextfw.web.commons.cloud.internal.session;
 
 import net.contextfw.web.application.lifecycle.PageScoped;
 

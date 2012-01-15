@@ -12,7 +12,8 @@ import net.contextfw.web.application.HttpContext;
 import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.commons.AbstractGuiceTest;
 import net.contextfw.web.commons.GuiceJUnitRunner.GuiceModules;
-import net.contextfw.web.commons.cloud.serializer.Serializer;
+import net.contextfw.web.commons.cloud.internal.serializer.Serializer;
+import net.contextfw.web.commons.cloud.internal.session.CloudSessionHolder;
 
 import org.junit.Before;
 

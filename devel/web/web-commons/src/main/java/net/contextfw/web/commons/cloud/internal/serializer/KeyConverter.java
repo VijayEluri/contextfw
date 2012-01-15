@@ -1,4 +1,4 @@
-package net.contextfw.web.commons.cloud.serializer;
+package net.contextfw.web.commons.cloud.internal.serializer;
 
 import net.contextfw.web.application.WebApplicationException;
 

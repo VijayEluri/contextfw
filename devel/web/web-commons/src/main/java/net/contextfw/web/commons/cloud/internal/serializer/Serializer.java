@@ -1,4 +1,4 @@
-package net.contextfw.web.commons.cloud.serializer;
+package net.contextfw.web.commons.cloud.internal.serializer;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;

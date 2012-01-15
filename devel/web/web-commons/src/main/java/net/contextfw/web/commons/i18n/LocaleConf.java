@@ -7,7 +7,7 @@ import net.contextfw.web.application.configuration.AddableProperty;
 import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.configuration.SettableProperty;
 
-public class LocaleConf {
+public final class LocaleConf {
 
     private LocaleConf() {
     }

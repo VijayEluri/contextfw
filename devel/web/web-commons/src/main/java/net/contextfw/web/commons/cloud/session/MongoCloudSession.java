@@ -13,8 +13,9 @@ import net.contextfw.web.application.HttpContext;
 import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.configuration.SettableProperty;
 import net.contextfw.web.commons.cloud.binding.CloudDatabase;
-import net.contextfw.web.commons.cloud.mongo.MongoBase;
-import net.contextfw.web.commons.cloud.serializer.Serializer;
+import net.contextfw.web.commons.cloud.internal.mongo.MongoBase;
+import net.contextfw.web.commons.cloud.internal.serializer.Serializer;
+import net.contextfw.web.commons.cloud.internal.session.CloudSessionHolder;
 
 import org.apache.commons.lang.StringUtils;
 
@@ -27,6 +28,15 @@ import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 
+/**
+ * Provides MongoDB-based cloud session handling.
+ * 
+ * <p>
+ *  This session handler requires that there exists a <code>DB</code>-instance that is bound to 
+ *  DI-container with annotation @CloudDatabase
+ * </p>
+ * 
+ */
 @Singleton
 public class MongoCloudSession extends MongoBase implements CloudSession {
 

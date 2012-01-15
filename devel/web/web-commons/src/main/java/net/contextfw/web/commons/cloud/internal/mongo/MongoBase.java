@@ -1,4 +1,4 @@
-package net.contextfw.web.commons.cloud.mongo;
+package net.contextfw.web.commons.cloud.internal.mongo;
 
 import java.util.Random;
 import java.util.concurrent.RejectedExecutionHandler;
@@ -14,6 +14,9 @@ import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
 
+/**
+ * For internal use only
+ */
 public abstract class MongoBase {
 
     private static final Logger LOG = LoggerFactory.getLogger(MongoBase.class);

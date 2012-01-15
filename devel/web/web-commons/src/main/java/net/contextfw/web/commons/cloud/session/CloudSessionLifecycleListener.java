@@ -7,6 +7,17 @@ import net.contextfw.web.application.lifecycle.DefaultLifecycleListener;
 
 import com.google.inject.Inject;
 
+/**
+ * Default implementation for lifecycle listener for cloud sessions.
+ * 
+ * <p>
+ *  It is recommended to use this class as base class, or just create own using this 
+ *  the source of this class as a template.
+ * </p>
+ * 
+ * @author marko.lavikainen@netkoti.fi
+ *
+ */
 public class CloudSessionLifecycleListener extends DefaultLifecycleListener {
 
     private final CloudSession session;
@@ -29,11 +40,6 @@ public class CloudSessionLifecycleListener extends DefaultLifecycleListener {
         return super.beforeUpdate(component, method, args);
     }
 
-    @Override
-    public void onException(Exception e) {
-        super.onException(e);
-    }
-    
     @Override
     public void beforePageScopeDeactivation() {
         session.closeSession();

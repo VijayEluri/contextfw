@@ -10,7 +10,7 @@ import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.scope.ScopedWebApplicationExecution;
 import net.contextfw.web.application.scope.WebApplicationStorage;
-import net.contextfw.web.commons.cloud.serializer.Serializer;
+import net.contextfw.web.commons.cloud.internal.serializer.Serializer;
 
 import org.apache.commons.lang.mutable.MutableBoolean;
 import org.junit.Before;

@@ -11,9 +11,9 @@ import net.contextfw.web.application.configuration.SettableProperty;
 import net.contextfw.web.application.scope.ScopedWebApplicationExecution;
 import net.contextfw.web.application.scope.WebApplicationStorage;
 import net.contextfw.web.commons.cloud.binding.CloudDatabase;
-import net.contextfw.web.commons.cloud.mongo.ExceptionSafeExecution;
-import net.contextfw.web.commons.cloud.mongo.MongoBase;
-import net.contextfw.web.commons.cloud.serializer.Serializer;
+import net.contextfw.web.commons.cloud.internal.mongo.ExceptionSafeExecution;
+import net.contextfw.web.commons.cloud.internal.mongo.MongoBase;
+import net.contextfw.web.commons.cloud.internal.serializer.Serializer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
