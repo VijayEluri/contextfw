@@ -26,7 +26,7 @@ import java.util.Map;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
-import net.contextfw.web.application.HttpContext;
+import net.contextfw.web.application.PageContext;
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.component.Component;
@@ -73,7 +73,7 @@ public class WebApplicationImpl implements WebApplication {
     private Injector injector;
 
     @Inject
-    private HttpContext httpContext;
+    private PageContext pageContext;
 
     @Inject
     private InternalComponentRegister componentRegister;
@@ -112,10 +112,10 @@ public class WebApplicationImpl implements WebApplication {
         context = new InitializerContextImpl(
                 builder,
                 mapping,
-                httpContext.getRequestURI()
-                    .substring(httpContext.getRequest().getContextPath().length()),
+                pageContext.getRequestURI()
+                    .substring(pageContext.getRequest().getContextPath().length()),
                 injector,
-                httpContext.getRequest(),
+                pageContext.getRequest(),
                 chain);
         getRootComponent().registerChild(context.initChild());
     }
@@ -125,18 +125,18 @@ public class WebApplicationImpl implements WebApplication {
 
         try {
             if (mode == Mode.INIT) {
-                if (httpContext.getRedirectUrl() != null) {
-                    httpContext.getResponse().sendRedirect(httpContext.getRedirectUrl());
+                if (pageContext.getRedirectUrl() != null) {
+                    pageContext.getResponse().sendRedirect(pageContext.getRedirectUrl());
                     return true;
-                } else if (httpContext.getErrorCode() != null) {
-                    httpContext.getResponse().sendError(httpContext.getErrorCode(), httpContext.getErrorMsg());
+                } else if (pageContext.getErrorCode() != null) {
+                    pageContext.getResponse().sendError(pageContext.getErrorCode(), pageContext.getErrorMsg());
                     return true;
-                } else if (httpContext.isReload()) {
-                    StringBuilder sb = new StringBuilder(httpContext.getRequestURI());
-                    if (httpContext.getQueryString() != null) {
-                        sb.append("?").append(httpContext.getQueryString());
+                } else if (pageContext.isReload()) {
+                    StringBuilder sb = new StringBuilder(pageContext.getRequestURI());
+                    if (pageContext.getQueryString() != null) {
+                        sb.append("?").append(pageContext.getQueryString());
                     }
-                    httpContext.getResponse().sendRedirect(sb.toString());
+                    pageContext.getResponse().sendRedirect(sb.toString());
                 }
             }
 
@@ -183,10 +183,10 @@ public class WebApplicationImpl implements WebApplication {
         }
         if (retVal instanceof ResourceResponse) {
             ((ResourceResponse) retVal).serve(
-                    httpContext.getRequest(), 
-                    httpContext.getResponse());
+                    pageContext.getRequest(), 
+                    pageContext.getResponse());
         } else {
-            HttpServletResponse response = httpContext.getResponse();
+            HttpServletResponse response = pageContext.getResponse();
             setHeaders(response);
             response.setContentType("application/json; charset=UTF-8");
             gson.toJson(retVal, response.getWriter());
@@ -195,7 +195,7 @@ public class WebApplicationImpl implements WebApplication {
     }
 
     private void sendNormalResponse() throws ServletException, IOException {
-        httpContext.getResponse().setContentType("text/html; charset=UTF-8");
+        pageContext.getResponse().setContentType("text/html; charset=UTF-8");
 
         DOMBuilder d;
 
@@ -209,19 +209,19 @@ public class WebApplicationImpl implements WebApplication {
         }
 
         d.attr("handle", webApplicationHandle.toString());
-        d.attr("contextPath", httpContext.getRequest().getContextPath());
+        d.attr("contextPath", pageContext.getRequest().getContextPath());
 
-        if (httpContext.getLocale() != null) {
-            d.attr("xml:lang", httpContext.getLocale().toString());
-            d.attr("lang", httpContext.getLocale().toString());
+        if (pageContext.getLocale() != null) {
+            d.attr("xml:lang", pageContext.getLocale().toString());
+            d.attr("lang", pageContext.getLocale().toString());
         }
         if (mode == Mode.INIT) {
             getRootComponent().buildChild(d);
-        } else if (httpContext.getRedirectUrl() != null) {
-            d.descend("Redirect").attr("href", httpContext.getRedirectUrl());
-        } else if (httpContext.getErrorCode() != null) {
-            d.descend("Error").attr("code", httpContext.getErrorCode()).text(httpContext.getErrorMsg());
-        } else if (httpContext.isReload()) {
+        } else if (pageContext.getRedirectUrl() != null) {
+            d.descend("Redirect").attr("href", pageContext.getRedirectUrl());
+        } else if (pageContext.getErrorCode() != null) {
+            d.descend("Error").attr("code", pageContext.getErrorCode()).text(pageContext.getErrorMsg());
+        } else if (pageContext.isReload()) {
             d.descend("Reload");
         } else {
             getRootComponent().buildChildUpdate(d, builder);
@@ -230,10 +230,10 @@ public class WebApplicationImpl implements WebApplication {
         getRootComponent().clearCascadedUpdate();
 
         if (conf.getXmlParamName() == null
-                || httpContext.getRequest().getParameter(conf.getXmlParamName()) == null) {
-            responder.sendResponse(d.toDocument(), httpContext.getResponse(), mode);
+                || pageContext.getRequest().getParameter(conf.getXmlParamName()) == null) {
+            responder.sendResponse(d.toDocument(), pageContext.getResponse(), mode);
         } else {
-            responder.sendResponse(d.toDocument(), httpContext.getResponse(), Mode.XML);
+            responder.sendResponse(d.toDocument(), pageContext.getResponse(), Mode.XML);
         }
     }
 
@@ -258,10 +258,10 @@ public class WebApplicationImpl implements WebApplication {
                 if (handler != null) {
                     if (handler.getDelayed() == null
                                 || !injector.getInstance(handler.getDelayed().value())
-                                  .isUpdateDelayed(element, httpContext.getRequest())) {
+                                  .isUpdateDelayed(element, pageContext.getRequest())) {
                         return new UpdateInvocation(
                                 handler.isResource(),
-                                handler.invoke(rootComponent, element, httpContext.getRequest())
+                                handler.invoke(rootComponent, element, pageContext.getRequest())
                                 );
                     } else {
                         return UpdateInvocation.DELAYED;

@@ -21,7 +21,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.contextfw.web.application.HttpContext;
+import net.contextfw.web.application.PageContext;
 import net.contextfw.web.application.lifecycle.LifecycleListener;
 
 import com.google.inject.Inject;
@@ -73,7 +73,7 @@ public class PageScope implements Scope {
         WebApplicationPage page = currentPage.get();
         if (page != null) {
             listener.beforePageScopeDeactivation();
-            HttpContext context = page.getBean(Key.get(HttpContext.class));
+            PageContext context = page.getBean(Key.get(PageContext.class));
             context.setServlet(null);
             context.setRequest(null);
             context.setResponse(null);
@@ -86,7 +86,7 @@ public class PageScope implements Scope {
                              HttpServletRequest request,
                              HttpServletResponse response) {
         
-        HttpContext context = page.getBean(Key.get(HttpContext.class));
+        PageContext context = page.getBean(Key.get(PageContext.class));
         context.setServlet(servlet);
         context.setRequest(request);
         context.setResponse(response);
@@ -100,8 +100,8 @@ public class PageScope implements Scope {
         
         WebApplicationPage page = new WebApplicationPageImpl();
         
-        page.setBean(Key.get(HttpContext.class), 
-                new HttpContext(servlet, request, response));
+        page.setBean(Key.get(PageContext.class), 
+                new PageContext(servlet, request, response));
         
         currentPage.set(page);
         return page;

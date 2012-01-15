@@ -31,7 +31,7 @@ import net.contextfw.web.application.lifecycle.PageScoped;
  * 
  */
 @PageScoped
-public class HttpContext {
+public class PageContext {
 
     private transient HttpServlet servlet;
     private transient HttpServletRequest request;
@@ -131,7 +131,7 @@ public class HttpContext {
         return response;
     }
 
-    public HttpContext(HttpServlet servlet, HttpServletRequest request, HttpServletResponse response) {
+    public PageContext(HttpServlet servlet, HttpServletRequest request, HttpServletResponse response) {
         super();
         this.servlet = servlet;
         this.request = request;

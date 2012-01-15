@@ -32,7 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import net.contextfw.application.AbstractTest;
-import net.contextfw.web.application.HttpContext;
+import net.contextfw.web.application.PageContext;
 import net.contextfw.web.application.WebApplication;
 import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.configuration.Configuration;
@@ -127,7 +127,7 @@ public class PageScopeTest extends AbstractTest {
     public void Http_Context_Is_Set_And_Cleared() {
         
         WebApplicationPage page = pageScope.createPage(servlet, request, response);
-        HttpContext context = page.getBean(Key.get(HttpContext.class));
+        PageContext context = page.getBean(Key.get(PageContext.class));
         
         assertNotNull(context.getServlet());
         assertNotNull(context.getRequest());
