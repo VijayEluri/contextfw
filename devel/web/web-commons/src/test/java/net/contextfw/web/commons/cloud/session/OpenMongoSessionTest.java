@@ -4,7 +4,7 @@ import static org.junit.Assert.assertTrue;
 
 import javax.servlet.http.Cookie;
 
-import net.contextfw.web.application.HttpContext;
+import net.contextfw.web.application.PageContext;
 import net.contextfw.web.commons.cloud.internal.session.CloudSessionHolder;
 
 import org.junit.Test;
@@ -20,7 +20,7 @@ public class OpenMongoSessionTest extends AbstractSessionTest {
     public void Open_Existing_Session_When_No_Session() {
         
         CloudSession session = getBasicSession(
-                mockHttpContext(
+                mockPageContext(
                         mockRequest(RequestExpect.WITH_COOKIE, null),
                         mockResponse(null)),
                 mockSessionHolder(null));
@@ -34,7 +34,7 @@ public class OpenMongoSessionTest extends AbstractSessionTest {
     @Test(expected=NoSessionException.class)
     public void Open_Existing_Session_When_No_Session_2() {
         
-        Provider<HttpContext> context = mockHttpContext(
+        Provider<PageContext> context = mockPageContext(
                 mockRequest(null, null), 
                 mockResponse(null, null));
         
@@ -56,7 +56,7 @@ public class OpenMongoSessionTest extends AbstractSessionTest {
     @Test(expected=NoSessionException.class)
     public void Open_Existing_Session_When_No_Session_3() {
         
-        Provider<HttpContext> context = mockHttpContext(
+        Provider<PageContext> context = mockPageContext(
                 mockRequest(null, null), 
                 mockResponse(null, null));
         
@@ -75,7 +75,7 @@ public class OpenMongoSessionTest extends AbstractSessionTest {
     @Test
     public void Open_Lazy_Session_When_No_Session() {
         CloudSession session = getBasicSession(
-                mockHttpContext(
+                mockPageContext(
                         mockRequest(RequestExpect.WITH_COOKIE),
                         mockResponse(null)),
                 mockSessionHolder(null));
@@ -85,7 +85,7 @@ public class OpenMongoSessionTest extends AbstractSessionTest {
     @Test
     public void Open_Eager_Session_When_No_Session() {
         CloudSession session = getBasicSession(
-                mockHttpContext(
+                mockPageContext(
                         mockRequest(RequestExpect.NO_COOKIES), 
                         mockResponse(ResponseExpect.ADD_COOKIE)),
                 mockSessionHolder(null));
@@ -100,7 +100,7 @@ public class OpenMongoSessionTest extends AbstractSessionTest {
         Cookie cookie = new Cookie(COOKIE_NAME, FOOBAR);
         
         CloudSession session = getBasicSession(
-                mockHttpContext(
+                mockPageContext(
                         mockRequest(RequestExpect.WITH_COOKIE, cookie),
                         mockResponse(ResponseExpect.ADD_COOKIE, null)),
                 mockSessionHolder(null));
@@ -118,7 +118,7 @@ public class OpenMongoSessionTest extends AbstractSessionTest {
         Cookie cookie = new Cookie(COOKIE_NAME, FOOBAR);
         
         CloudSession session = getBasicSession(
-                mockHttpContext(
+                mockPageContext(
                         mockRequest(RequestExpect.WITH_COOKIE, cookie),
                         mockResponse(null)),
                 mockSessionHolder(null));
@@ -132,7 +132,7 @@ public class OpenMongoSessionTest extends AbstractSessionTest {
         Cookie cookie = new Cookie(COOKIE_NAME, FOOBAR);
         
         CloudSession session = getBasicSession(
-                mockHttpContext(
+                mockPageContext(
                         mockRequest(RequestExpect.WITH_COOKIE, cookie), 
                         mockResponse(ResponseExpect.ADD_COOKIE, null)),
                 mockSessionHolder(null));
@@ -146,7 +146,7 @@ public class OpenMongoSessionTest extends AbstractSessionTest {
         mockSession();
         
         CloudSession session = getBasicSession(
-                mockHttpContext(
+                mockPageContext(
                         mockRequest(null),
                         mockResponse(ResponseExpect.ADD_COOKIE, null)),
                 mockSessionHolder(FOOBAR));
@@ -159,7 +159,7 @@ public class OpenMongoSessionTest extends AbstractSessionTest {
     
         mockSession();
         
-        Provider<HttpContext> context = mockHttpContext(
+        Provider<PageContext> context = mockPageContext(
                 mockRequest(null, null), 
                 mockResponse(null, null));
         
@@ -182,7 +182,7 @@ public class OpenMongoSessionTest extends AbstractSessionTest {
     
         mockSession();
         
-        Provider<HttpContext> context = mockHttpContext(
+        Provider<PageContext> context = mockPageContext(
                 mockRequest(null, null), 
                 mockResponse(null, null));
         
@@ -202,7 +202,7 @@ public class OpenMongoSessionTest extends AbstractSessionTest {
 
         sleep(1100);
         
-        Provider<HttpContext> context = mockHttpContext(
+        Provider<PageContext> context = mockPageContext(
                 mockRequest(null, null), 
                 mockResponse(null, null));
         

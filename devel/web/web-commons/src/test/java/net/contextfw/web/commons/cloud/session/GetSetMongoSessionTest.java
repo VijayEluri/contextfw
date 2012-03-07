@@ -35,7 +35,7 @@ public class GetSetMongoSessionTest extends AbstractSessionTest {
     public void Exception_On_Get_When_No_Open_Session() {
         
         CloudSession session = getBasicSession(
-                mockHttpContext(
+                mockPageContext(
                         mockRequest(null, null),
                         mockResponse(null)),
                 mockSessionHolder(null));
@@ -72,7 +72,7 @@ public class GetSetMongoSessionTest extends AbstractSessionTest {
     public void Exception_On_Set_When_No_Open_Session() {
         
         CloudSession session = getBasicSession(
-                mockHttpContext(
+                mockPageContext(
                         mockRequest(null, null),
                         mockResponse(null)),
                 mockSessionHolder(null));
@@ -228,7 +228,7 @@ public class GetSetMongoSessionTest extends AbstractSessionTest {
         mockSession();
         
         CloudSession session = getBasicSession(
-                mockHttpContext(
+                mockPageContext(
                         mockRequest(null, null),
                         mockResponse(responseExpect, null)),
                 mockSessionHolder(FOOBAR));
@@ -241,7 +241,7 @@ public class GetSetMongoSessionTest extends AbstractSessionTest {
     private CloudSession openLazySession(ResponseExpect responseExpect) {
 
         CloudSession session = getBasicSession(
-                mockHttpContext(
+                mockPageContext(
                         mockRequest(RequestExpect.NO_COOKIES),
                         mockResponse(responseExpect, null)),
                 mockSessionHolder(FOOBAR));

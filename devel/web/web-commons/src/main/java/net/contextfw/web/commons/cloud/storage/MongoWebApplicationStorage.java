@@ -5,6 +5,7 @@ import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 
 import net.contextfw.web.application.WebApplication;
+import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.configuration.SettableProperty;
@@ -15,6 +16,7 @@ import net.contextfw.web.commons.cloud.internal.mongo.ExceptionSafeExecution;
 import net.contextfw.web.commons.cloud.internal.mongo.MongoBase;
 import net.contextfw.web.commons.cloud.internal.serializer.Serializer;
 
+import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -25,6 +27,7 @@ import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
+import com.mongodb.WriteResult;
 
 @Singleton
 public class MongoWebApplicationStorage extends MongoBase implements WebApplicationStorage {
@@ -332,5 +335,57 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
             return null;
         }
        
+    }
+
+    @Override
+    public void storeLarge(WebApplicationHandle handle, String key, Object obj) {
+        
+        if (handle == null) {
+            throw new IllegalArgumentException("Handle cannot be null");
+        } else if (StringUtils.isBlank(key)) {
+            throw new IllegalArgumentException("Key cannot be null or blank!");
+        }
+        
+        DBObject query = b()
+                .add(KEY_HANDLE, handle.toString())
+                .add(KEY_VALID_THROUGH, o("$gte", System.currentTimeMillis())).get();
+        
+        DBObject update;
+        
+        if (obj == null) {
+            update = o("$unset", o("large_" + key, 1));
+        } else {
+            update = o("$set", o("large_" + key, serializer.serialize(obj)));
+        }
+        
+        if (getCollection().update(query, update).getN() != 1) {
+            throw new WebApplicationException("Page scope does not exist");
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T loadLarge(WebApplicationHandle handle, String key, Class<T> type) {
+        if (handle == null) {
+            throw new IllegalArgumentException("Handle cannot be null");
+        } else if (StringUtils.isBlank(key)) {
+            throw new IllegalArgumentException("Key cannot be null or blank!");
+        }
+        
+        DBObject query = b()
+                .add(KEY_HANDLE, handle.toString())
+                .add(KEY_VALID_THROUGH, o("$gte", System.currentTimeMillis())).get();
+        
+        
+        DBObject field = o("large_" + key, 1);
+        DBObject obj = getCollection().findOne(query, field);
+        
+        if (obj == null) {
+            throw new WebApplicationException("Page scope does not exist");
+        }
+        
+        byte[] data = (byte[]) obj.get("large_" + key);
+        
+        return data == null ? null : (T) serializer.unserialize(data);
     }
 }

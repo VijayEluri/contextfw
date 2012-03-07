@@ -8,7 +8,7 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.contextfw.web.application.HttpContext;
+import net.contextfw.web.application.PageContext;
 import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.commons.AbstractGuiceTest;
 import net.contextfw.web.commons.GuiceJUnitRunner.GuiceModules;
@@ -74,15 +74,15 @@ public abstract class AbstractSessionTest extends AbstractGuiceTest {
         return regMock(response);
     }
     
-    protected Provider<HttpContext> mockHttpContext(
+    protected Provider<PageContext> mockPageContext(
             HttpServletRequest request, 
             HttpServletResponse response) {
         
-        final HttpContext context = new HttpContext(null, request, response);
+        final PageContext context = new PageContext(null, request, response);
         
-        Provider<HttpContext> provider = new Provider<HttpContext>() {
+        Provider<PageContext> provider = new Provider<PageContext>() {
             @Override
-            public HttpContext get() {
+            public PageContext get() {
                 return context;
             }
         };
@@ -107,7 +107,7 @@ public abstract class AbstractSessionTest extends AbstractGuiceTest {
     }
     
     protected CloudSession getBasicSession(
-            Provider<HttpContext> httpContext,
+            Provider<PageContext> httpContext,
             Provider<CloudSessionHolder> sessionHolder) {
         MongoCloudSession session =  
                 new MongoCloudSession(db,

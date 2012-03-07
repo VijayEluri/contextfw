@@ -9,7 +9,7 @@ import java.util.UUID;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 
-import net.contextfw.web.application.HttpContext;
+import net.contextfw.web.application.PageContext;
 import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.configuration.SettableProperty;
 import net.contextfw.web.commons.cloud.binding.CloudDatabase;
@@ -66,7 +66,7 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
             Configuration.createProperty(String.class, 
                     MongoCloudSession.class.getCanonicalName() + ".collectionName");
     
-    private final Provider<HttpContext> httpContext;
+    private final Provider<PageContext> httpContext;
     private static final long HALF_HOUR = 30*60*1000;
     
     private final String cookieName;
@@ -76,7 +76,7 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
     @Inject
     public MongoCloudSession(@CloudDatabase DB db, 
                              Configuration configuration, 
-                             Provider<HttpContext> httpContext,
+                             Provider<PageContext> httpContext,
                              Provider<CloudSessionHolder> holderProvider,
                              Serializer serializer) {
         super(db, configuration.get(Configuration.REMOVAL_SCHEDULE_PERIOD));
@@ -312,7 +312,7 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
         if (httpContext.get().getRequest() == null && mode != OpenMode.EXISTING) {
             throw new NoSessionException(
                     "Cannot open session in " + mode + "-mode! " +
-                    "No request bound to HttpContext. Use EXISTING-mode instead");
+                    "No request bound to PageContext. Use EXISTING-mode instead");
         }
         
         String handle = getSessionHandle(mode == OpenMode.EAGER, false);

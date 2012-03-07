@@ -365,7 +365,7 @@ public class Configuration {
      * </p>
      * 
      * <p>
-     *  The values of this property can range from minutes to hours depdening on need. If inactivity is 
+     *  The values of this property can range from minutes to hours depending on need. If inactivity is 
      *  defined low (&lt; 10 minutes) system is quite safe from misuse but is more intolerable to temporary
      *  network failures and requires constant refreshing. If higher values are used (&gt; 1 hour) it is
      *  recommended to use bandwidth throttling stategies to prevent misuse.

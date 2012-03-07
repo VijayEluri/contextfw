@@ -37,7 +37,7 @@ public class ReloadingClassLoader extends ClassLoader {
         super(Thread.currentThread().getContextClassLoader());
         this.conf = conf;
         for (Class<?> cl : conf.getExcludedClasses()) {
-            cache.put(cl.getCanonicalName(), cl);
+            cache.put(cl.getName(), cl);
         }
     }
 

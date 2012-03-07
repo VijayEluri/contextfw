@@ -3,12 +3,15 @@ package net.contextfw.web.application.scope;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 
 import javax.servlet.http.HttpServletRequest;
 
 import net.contextfw.application.AbstractTest;
 import net.contextfw.web.application.WebApplication;
+import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.configuration.Configuration;
 
@@ -205,5 +208,44 @@ public class DefaultWebApplicationStorageTest extends AbstractTest {
         expect(request.getRemoteAddr()).andReturn(remoteAddr);
         replay(request);
         return request;
+    }
+    
+    @Test
+    public void Store_And_Load_Large() {
+        Long obj = new Long(1);
+        storage.storeLarge(application.handle, "test", obj);
+        assertEquals(obj, storage.loadLarge(application.handle, "test", Long.class));
+        storage.storeLarge(application.handle, "test", null);
+        assertNull(storage.loadLarge(application.handle, "test", Long.class));
+    }
+    
+    @Test(expected=IllegalArgumentException.class)
+    public void Store_Large_Null_Handle() {
+        storage.storeLarge(null, "test", "test");
+    }
+    
+    @Test(expected=IllegalArgumentException.class)
+    public void Store_Large_Null_Key() {
+        storage.storeLarge(application.handle, null, "test");
+    }
+    
+    @Test(expected=WebApplicationException.class)
+    public void Store_Large_Non_Existent_Scope() {
+        storage.storeLarge(new WebApplicationHandle("foo"), "test", "test");
+    }
+    
+    @Test(expected=IllegalArgumentException.class)
+    public void Load_Large_Null_Handle() {
+        storage.loadLarge(null, "test", Long.class);
+    }
+    
+    @Test(expected=IllegalArgumentException.class)
+    public void Load_Large_Null_Key() {
+        storage.loadLarge(application.handle, null, Long.class);
+    }
+    
+    @Test(expected=WebApplicationException.class)
+    public void Load_Large_Non_Existent_Scope() {
+        storage.loadLarge(new WebApplicationHandle("foo"), "test", Long.class);
     }
 }

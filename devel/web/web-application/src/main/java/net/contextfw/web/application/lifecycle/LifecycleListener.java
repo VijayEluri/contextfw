@@ -34,11 +34,6 @@ import net.contextfw.web.application.component.Component;
  *  Can be set by <code>LIFECYCLE_LISTENER</code> by Configuration
  * </p>
  * 
- * <p>
- *  There is also another filter called RequestInvocationFilter, where request and response
- *  can be mangled.
- * </p>
- * 
  * @see net.contextfw.web.application.configuration.Configuration.LIFECYCLE_LISTENER
  * @see PageFlowFilter
  */

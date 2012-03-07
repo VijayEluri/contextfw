@@ -12,6 +12,7 @@ import java.util.UUID;
 import javax.servlet.http.HttpServletRequest;
 
 import net.contextfw.web.application.WebApplication;
+import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.WebApplicationHandle;
 import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.configuration.SettableProperty;
@@ -33,6 +34,8 @@ public class DefaultWebApplicationStorage implements WebApplicationStorage {
     private final Map<WebApplicationHandle, Holder> pages = 
             new HashMap<WebApplicationHandle, Holder>();
     
+    
+    
     public static final SettableProperty<Boolean> PROXIED = 
             Configuration.createProperty(Boolean.class, 
                     DefaultWebApplicationStorage.class.getName() + ".proxied");
@@ -43,6 +46,7 @@ public class DefaultWebApplicationStorage implements WebApplicationStorage {
         private long validThrough;
         private final String remoteAddr;
         private final WebApplication application;
+        private final Map<String, Object> largeObjects = new HashMap<String, Object>();
         
         private Holder(WebApplication application, 
                              String remoteAddr, 
@@ -209,6 +213,43 @@ public class DefaultWebApplicationStorage implements WebApplicationStorage {
             }
         } else {
             execution.execute(null);
+        }
+    }
+
+    @Override
+    public void storeLarge(WebApplicationHandle handle, String key, Object obj) {
+        if (handle == null) {
+            throw new IllegalArgumentException("Handle cannot be null");
+        } else if (StringUtils.isBlank(key)) {
+            throw new IllegalArgumentException("Key cannot be null!");
+        }
+        synchronized (this) {
+            Holder holder = pages.get(handle);
+            if (holder == null) {
+                throw new WebApplicationException("Page scope does not exist!");
+            }
+            if (obj == null) {
+                holder.largeObjects.remove(key);
+            } else {
+                holder.largeObjects.put(key, obj);
+            }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    @Override
+    public <T> T loadLarge(WebApplicationHandle handle, String key, Class<T> type) {
+        if (handle == null) {
+            throw new IllegalArgumentException("Handle cannot be null");
+        } else if (StringUtils.isBlank(key)) {
+            throw new IllegalArgumentException("Key cannot be null!");
+        }
+        synchronized (this) {
+            Holder holder = pages.get(handle);
+            if (holder == null) {
+                throw new WebApplicationException("Page scope does not exist!");
+            }
+            return (T) holder.largeObjects.get(key);
         }
     }
 }
