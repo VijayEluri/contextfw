@@ -34,7 +34,7 @@ import javax.servlet.http.HttpServletResponse;
 import net.contextfw.application.AbstractTest;
 import net.contextfw.web.application.PageContext;
 import net.contextfw.web.application.WebApplication;
-import net.contextfw.web.application.WebApplicationHandle;
+import net.contextfw.web.application.PageHandle;
 import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.lifecycle.LifecycleListener;
 import net.contextfw.web.application.scope.DefaultWebApplicationStorage;
@@ -120,7 +120,7 @@ public class PageScopeTest extends AbstractTest {
     @Test
     public void Get_Initially_PageScoped_Beans() {
         assertEquals(page.getHandle(), 
-                pageScope.scope(Key.get(WebApplicationHandle.class), null).get());
+                pageScope.scope(Key.get(PageHandle.class), null).get());
     }
     
     @Test

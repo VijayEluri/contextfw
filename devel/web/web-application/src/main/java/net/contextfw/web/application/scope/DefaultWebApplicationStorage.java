@@ -13,7 +13,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import net.contextfw.web.application.WebApplication;
 import net.contextfw.web.application.WebApplicationException;
-import net.contextfw.web.application.WebApplicationHandle;
+import net.contextfw.web.application.PageHandle;
 import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.configuration.SettableProperty;
 
@@ -31,8 +31,8 @@ public class DefaultWebApplicationStorage implements WebApplicationStorage {
 
     private Logger logger = LoggerFactory.getLogger(DefaultWebApplicationStorage.class);
 
-    private final Map<WebApplicationHandle, Holder> pages = 
-            new HashMap<WebApplicationHandle, Holder>();
+    private final Map<PageHandle, Holder> pages = 
+            new HashMap<PageHandle, Holder>();
     
     
     
@@ -79,7 +79,7 @@ public class DefaultWebApplicationStorage implements WebApplicationStorage {
                            long validThrough, 
                            ScopedWebApplicationExecution execution) {
         
-        WebApplicationHandle handle = createHandle();
+        PageHandle handle = createHandle();
         application.setHandle(handle);
         Holder holder = new Holder(application, getRemoteAddr(request), validThrough);
         synchronized(this) {
@@ -91,7 +91,7 @@ public class DefaultWebApplicationStorage implements WebApplicationStorage {
     }
 
     @Override
-    public void update(WebApplicationHandle handle, 
+    public void update(PageHandle handle, 
                        HttpServletRequest request,
                        long validThrough,
                        ScopedWebApplicationExecution execution) {
@@ -109,7 +109,7 @@ public class DefaultWebApplicationStorage implements WebApplicationStorage {
     }
 
     @Override
-    public void refresh(WebApplicationHandle handle, 
+    public void refresh(PageHandle handle, 
                         HttpServletRequest request, 
                         long validThrough) {
         
@@ -119,7 +119,7 @@ public class DefaultWebApplicationStorage implements WebApplicationStorage {
         }
     }
     
-    private Holder getHolder(WebApplicationHandle handle, HttpServletRequest request) {
+    private Holder getHolder(PageHandle handle, HttpServletRequest request) {
         Holder holder;
         synchronized (this) {
             holder = pages.get(handle);    
@@ -135,7 +135,7 @@ public class DefaultWebApplicationStorage implements WebApplicationStorage {
     }
 
     @Override
-    public synchronized void remove(WebApplicationHandle handle,
+    public synchronized void remove(PageHandle handle,
                        HttpServletRequest request) {
         
         Holder holder = getHolder(handle, request);
@@ -159,11 +159,11 @@ public class DefaultWebApplicationStorage implements WebApplicationStorage {
         }
     }
     
-    protected void pageRemoved(WebApplicationHandle handle, int pageCount, String remoteAddr) {
+    protected void pageRemoved(PageHandle handle, int pageCount, String remoteAddr) {
         
     }
     
-    protected void pageExpired(WebApplicationHandle handle, int pageCount, String remoteAddr) {
+    protected void pageExpired(PageHandle handle, int pageCount, String remoteAddr) {
         
     }
     
@@ -176,11 +176,11 @@ public class DefaultWebApplicationStorage implements WebApplicationStorage {
         long now = System.currentTimeMillis();
 
         try {
-            Iterator<Entry<WebApplicationHandle, Holder>> iterator =
+            Iterator<Entry<PageHandle, Holder>> iterator =
                 pages.entrySet().iterator();
 
             while (iterator.hasNext()) {
-                Entry<WebApplicationHandle, Holder> entry = iterator.next();
+                Entry<PageHandle, Holder> entry = iterator.next();
                 if (entry.getValue().validThrough < now) {
                     pageExpired(entry.getKey(), pages.size(), entry.getValue().remoteAddr);
                     iterator.remove();
@@ -192,16 +192,16 @@ public class DefaultWebApplicationStorage implements WebApplicationStorage {
         }
     }
     
-    protected WebApplicationHandle createHandle() {
-        WebApplicationHandle handle;
+    protected PageHandle createHandle() {
+        PageHandle handle;
         //do {
-        handle = new WebApplicationHandle(UUID.randomUUID().toString());
+        handle = new PageHandle(UUID.randomUUID().toString());
         //} while (pages.containsKey(handle));
         return handle;
     }
 
     @Override
-    public void execute(WebApplicationHandle handle,
+    public void execute(PageHandle handle,
                         ScopedWebApplicationExecution execution) {
         Holder holder;
         synchronized (this) {
@@ -217,7 +217,7 @@ public class DefaultWebApplicationStorage implements WebApplicationStorage {
     }
 
     @Override
-    public void storeLarge(WebApplicationHandle handle, String key, Object obj) {
+    public void storeLarge(PageHandle handle, String key, Object obj) {
         if (handle == null) {
             throw new IllegalArgumentException("Handle cannot be null");
         } else if (StringUtils.isBlank(key)) {
@@ -238,7 +238,7 @@ public class DefaultWebApplicationStorage implements WebApplicationStorage {
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> T loadLarge(WebApplicationHandle handle, String key, Class<T> type) {
+    public <T> T loadLarge(PageHandle handle, String key, Class<T> type) {
         if (handle == null) {
             throw new IllegalArgumentException("Handle cannot be null");
         } else if (StringUtils.isBlank(key)) {

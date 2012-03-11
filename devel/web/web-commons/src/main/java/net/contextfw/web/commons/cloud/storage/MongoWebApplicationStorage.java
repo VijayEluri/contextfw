@@ -6,7 +6,7 @@ import javax.servlet.http.HttpServletRequest;
 
 import net.contextfw.web.application.WebApplication;
 import net.contextfw.web.application.WebApplicationException;
-import net.contextfw.web.application.WebApplicationHandle;
+import net.contextfw.web.application.PageHandle;
 import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.configuration.SettableProperty;
 import net.contextfw.web.application.scope.ScopedWebApplicationExecution;
@@ -141,7 +141,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
         return getCollection().count();
     }
     
-    private void create(WebApplicationHandle handle, 
+    private void create(PageHandle handle, 
                         String remoteAddr, 
                         WebApplication application, 
                         long validThrough) {
@@ -175,8 +175,8 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
         removeExpiredObjects();
     }
 
-    private WebApplicationHandle createHandle() {
-        return new WebApplicationHandle(UUID.randomUUID().toString());
+    private PageHandle createHandle() {
+        return new PageHandle(UUID.randomUUID().toString());
     }
 
     @Override
@@ -189,7 +189,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
         removeExpiredPages();
         throttle(remoteAddr);
         
-        final WebApplicationHandle handle = createHandle();
+        final PageHandle handle = createHandle();
         
         create(handle, remoteAddr, application, validThrough);
         
@@ -197,7 +197,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
     }
 
     @Override
-    public void update(final WebApplicationHandle handle, 
+    public void update(final PageHandle handle, 
                        HttpServletRequest request, 
                        long validThrough,
                        final ScopedWebApplicationExecution execution) {
@@ -209,14 +209,14 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
     }
 
     @Override
-    public void execute(final WebApplicationHandle handle,
+    public void execute(final PageHandle handle,
                         final ScopedWebApplicationExecution execution) {
         
         executeExclusive(handle.toString(), null, null, null, execution);
     }
 
     @Override
-    public void refresh(WebApplicationHandle handle, HttpServletRequest request, long validThrough) {
+    public void refresh(PageHandle handle, HttpServletRequest request, long validThrough) {
         
         DBObject query = b()
                 .add(KEY_HANDLE, handle.toString())
@@ -227,7 +227,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
     }
 
     @Override
-    public void remove(WebApplicationHandle handle, HttpServletRequest request) {
+    public void remove(PageHandle handle, HttpServletRequest request) {
         
         DBObject query = b()
                 .add(KEY_HANDLE, handle.toString())
@@ -338,7 +338,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
     }
 
     @Override
-    public void storeLarge(WebApplicationHandle handle, String key, Object obj) {
+    public void storeLarge(PageHandle handle, String key, Object obj) {
         
         if (handle == null) {
             throw new IllegalArgumentException("Handle cannot be null");
@@ -365,7 +365,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
 
     @SuppressWarnings("unchecked")
     @Override
-    public <T> T loadLarge(WebApplicationHandle handle, String key, Class<T> type) {
+    public <T> T loadLarge(PageHandle handle, String key, Class<T> type) {
         if (handle == null) {
             throw new IllegalArgumentException("Handle cannot be null");
         } else if (StringUtils.isBlank(key)) {

@@ -1,7 +1,7 @@
 package net.contextfw.web.commons.cloud.storage;
 
 import net.contextfw.web.application.WebApplication;
-import net.contextfw.web.application.WebApplicationHandle;
+import net.contextfw.web.application.PageHandle;
 import net.contextfw.web.application.scope.Provided;
 
 import com.google.inject.Inject;
@@ -49,14 +49,14 @@ public class WebApplicationMock implements WebApplication {
     @Inject
     private SingletonScoped singletonScoped;
 
-    private WebApplicationHandle handle;
+    private PageHandle handle;
 
     @Override
-    public void setHandle(WebApplicationHandle handle) {
+    public void setHandle(PageHandle handle) {
         this.handle = handle;
     }
     
-    public WebApplicationHandle getHandle() {
+    public PageHandle getHandle() {
         return handle;
     }
 

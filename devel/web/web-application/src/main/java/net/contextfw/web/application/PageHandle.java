@@ -22,13 +22,13 @@ import java.io.Serializable;
 import net.contextfw.web.application.lifecycle.PageScoped;
 
 @PageScoped
-public class WebApplicationHandle implements Serializable {
+public class PageHandle implements Serializable {
 
     private static final long serialVersionUID = -2578266439991410555L;
 
     private final String key;
 
-    public WebApplicationHandle(String key) {
+    public PageHandle(String key) {
         this.key = key;
     }
 
@@ -41,8 +41,8 @@ public class WebApplicationHandle implements Serializable {
     public boolean equals(Object other) {
         if (this == other) {
             return true;
-        } else if (other instanceof WebApplicationHandle) {
-            WebApplicationHandle otherHandle = (WebApplicationHandle) other;
+        } else if (other instanceof PageHandle) {
+            PageHandle otherHandle = (PageHandle) other;
             return this.key.equals(otherHandle.key);
         }
         else {

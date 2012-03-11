@@ -17,7 +17,7 @@
 
 package net.contextfw.web.application.internal.page;
 
-import net.contextfw.web.application.WebApplicationHandle;
+import net.contextfw.web.application.PageHandle;
 import net.contextfw.web.application.internal.service.WebApplication;
 
 import com.google.inject.Key;
@@ -28,7 +28,7 @@ public interface WebApplicationPage extends net.contextfw.web.application.WebApp
     
     <T> T getBean(Key<T> key);
     
-    WebApplicationHandle getHandle();
+    PageHandle getHandle();
     
     WebApplication getWebApplication();
     

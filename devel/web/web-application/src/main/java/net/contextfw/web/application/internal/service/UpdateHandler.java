@@ -32,7 +32,7 @@ import javax.servlet.http.HttpServletResponse;
 import net.contextfw.web.application.ResourceCleaner;
 import net.contextfw.web.application.WebApplication;
 import net.contextfw.web.application.WebApplicationException;
-import net.contextfw.web.application.WebApplicationHandle;
+import net.contextfw.web.application.PageHandle;
 import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.internal.page.PageScope;
 import net.contextfw.web.application.internal.page.WebApplicationPage;
@@ -139,7 +139,7 @@ public class UpdateHandler {
         if (commandStart != -1) {
 
             String command = uriSplits[commandStart];
-            WebApplicationHandle handle = new WebApplicationHandle(uriSplits[commandStart + 1]);
+            PageHandle handle = new PageHandle(uriSplits[commandStart + 1]);
 
             if (CONTEXTFW_REMOVE.equals(command)) {
                 storage.remove(handle, request);
@@ -225,7 +225,7 @@ public class UpdateHandler {
         }
     }
 
-    private void runAfterRun(final WebApplicationHandle handle,
+    private void runAfterRun(final PageHandle handle,
                              final Set<Execution> afterRun) throws IOException {
 
         final PageScopedExecutor pageScopedExecutor = new PageScopedExecutor() {

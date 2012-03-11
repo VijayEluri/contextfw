@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import net.contextfw.web.application.WebApplication;
 import net.contextfw.web.application.WebApplicationException;
-import net.contextfw.web.application.WebApplicationHandle;
+import net.contextfw.web.application.PageHandle;
 import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.scope.ScopedWebApplicationExecution;
 import net.contextfw.web.application.scope.WebApplicationStorage;
@@ -49,7 +49,7 @@ public class LargeObjectTest extends AbstractStorageTest {
         return mock;
     }
     
-    private WebApplicationHandle initWebApplication() {
+    private PageHandle initWebApplication() {
         WebApplicationMock app = webApplicationProvider.get();
         app.getScoped1().setMsg(SCOPED1);
         app.getScoped2().setMsg("Scoped2");
@@ -62,7 +62,7 @@ public class LargeObjectTest extends AbstractStorageTest {
     
     @Test
     public void Store_And_Load_Large() {
-        final WebApplicationHandle handle = initWebApplication();
+        final PageHandle handle = initWebApplication();
         Long obj = new Long(1);
         storage.storeLarge(handle, "test", obj);
         assertEquals(obj, storage.loadLarge(handle, "test", Long.class));
@@ -77,13 +77,13 @@ public class LargeObjectTest extends AbstractStorageTest {
     
     @Test(expected=IllegalArgumentException.class)
     public void Store_Large_Null_Key() {
-        final WebApplicationHandle handle = initWebApplication();
+        final PageHandle handle = initWebApplication();
         storage.storeLarge(handle, null, "test");
     }
     
     @Test(expected=WebApplicationException.class)
     public void Store_Large_Non_Existent_Scope() {
-        storage.storeLarge(new WebApplicationHandle("foo"), "test", "test");
+        storage.storeLarge(new PageHandle("foo"), "test", "test");
     }
     
     @Test(expected=IllegalArgumentException.class)
@@ -93,12 +93,12 @@ public class LargeObjectTest extends AbstractStorageTest {
     
     @Test(expected=IllegalArgumentException.class)
     public void Load_Large_Null_Key() {
-        final WebApplicationHandle handle = initWebApplication();
+        final PageHandle handle = initWebApplication();
         storage.loadLarge(handle, null, Long.class);
     }
     
     @Test(expected=WebApplicationException.class)
     public void Load_Large_Non_Existent_Scope() {
-        storage.loadLarge(new WebApplicationHandle("foo"), "test", Long.class);
+        storage.loadLarge(new PageHandle("foo"), "test", Long.class);
     }
 }

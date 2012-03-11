@@ -20,14 +20,14 @@ package net.contextfw.web.application.internal.page;
 import java.util.HashMap;
 import java.util.Map;
 
-import net.contextfw.web.application.WebApplicationHandle;
+import net.contextfw.web.application.PageHandle;
 import net.contextfw.web.application.internal.service.WebApplication;
 
 import com.google.inject.Key;
 
 public class WebApplicationPageImpl implements WebApplicationPage {
 
-    private static final Key<WebApplicationHandle> HANDLE_KEY = Key.get(WebApplicationHandle.class);
+    private static final Key<PageHandle> HANDLE_KEY = Key.get(PageHandle.class);
 
     private Map<Key<?>, Object> beans = new HashMap<Key<?>, Object>();
 
@@ -49,8 +49,8 @@ public class WebApplicationPageImpl implements WebApplicationPage {
     }
 
     @Override
-    public WebApplicationHandle getHandle() {
-        return (WebApplicationHandle) beans.get(HANDLE_KEY);
+    public PageHandle getHandle() {
+        return (PageHandle) beans.get(HANDLE_KEY);
     }
 
     @Override
@@ -64,7 +64,7 @@ public class WebApplicationPageImpl implements WebApplicationPage {
     }
 
     @Override
-    public void setHandle(WebApplicationHandle handle) {
+    public void setHandle(PageHandle handle) {
         beans.put(HANDLE_KEY, handle);
     }
 }

@@ -92,7 +92,7 @@ public final class WebApplicationModule extends AbstractModule {
         bindScope(PageScoped.class, pageScope);
         bind(PageScope.class).toInstance(pageScope);
         bind(PageContext.class).toProvider(pageScope.scope(Key.get(PageContext.class), null));
-        bind(WebApplicationHandle.class).toProvider(pageScope.scope(Key.get(WebApplicationHandle.class), null));
+        bind(PageHandle.class).toProvider(pageScope.scope(Key.get(PageHandle.class), null));
         bind(ObjectAttributeSerializer.class).to(AttributeHandler.class);
         bind(Configuration.class).toInstance(configuration);
         bind(ComponentRegister.class).to(InternalComponentRegister.class);

@@ -6,7 +6,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
 import net.contextfw.web.application.WebApplication;
-import net.contextfw.web.application.WebApplicationHandle;
+import net.contextfw.web.application.PageHandle;
 import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.scope.ScopedWebApplicationExecution;
 import net.contextfw.web.application.scope.WebApplicationStorage;
@@ -57,7 +57,7 @@ public class BasicStorageTest extends AbstractStorageTest {
         return mock;
     }
     
-    private WebApplicationHandle initWebApplication() {
+    private PageHandle initWebApplication() {
         WebApplicationMock app = webApplicationProvider.get();
         app.getScoped1().setMsg(SCOPED1);
         app.getScoped2().setMsg("Scoped2");
@@ -71,7 +71,7 @@ public class BasicStorageTest extends AbstractStorageTest {
     @Test
     public void WebApplication_Is_Initialized() {
         
-        final WebApplicationHandle handle = initWebApplication();
+        final PageHandle handle = initWebApplication();
         assertNotNull(handle);
 
         final MutableBoolean executionCalled = new MutableBoolean(false);
@@ -100,7 +100,7 @@ public class BasicStorageTest extends AbstractStorageTest {
     @Test
     public void WebApplication_Is_Removed() {
         
-        final WebApplicationHandle handle = initWebApplication();
+        final PageHandle handle = initWebApplication();
         assertNotNull(handle);
 
         final MutableBoolean executionCalled = new MutableBoolean(false);
@@ -125,7 +125,7 @@ public class BasicStorageTest extends AbstractStorageTest {
     @Test
     public void Execute_And_Update_With_Existing_WebApplication() {
         
-        final WebApplicationHandle handle = initWebApplication();
+        final PageHandle handle = initWebApplication();
         
         ScopedWebApplicationExecution changeExecution = new ScopedWebApplicationExecution() {
             public void execute(WebApplication application) {
@@ -164,7 +164,7 @@ public class BasicStorageTest extends AbstractStorageTest {
             }
         };
         
-        storage.execute(new WebApplicationHandle("foo"), execution);
+        storage.execute(new PageHandle("foo"), execution);
         
         assertTrue(executionCalled.booleanValue());
     }
@@ -172,7 +172,7 @@ public class BasicStorageTest extends AbstractStorageTest {
     @Test
     public void WebApplication_Is_Refreshed() {
         
-        final WebApplicationHandle handle = initWebApplication();
+        final PageHandle handle = initWebApplication();
         
         sleep(500);
         
@@ -200,7 +200,7 @@ public class BasicStorageTest extends AbstractStorageTest {
     @Test
     public void WebApplication_Is_Expired() {
         
-        final WebApplicationHandle handle = initWebApplication();
+        final PageHandle handle = initWebApplication();
         
         final MutableBoolean executionCalled = new MutableBoolean(false);
         

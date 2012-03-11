@@ -28,7 +28,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import net.contextfw.web.application.PageContext;
 import net.contextfw.web.application.WebApplicationException;
-import net.contextfw.web.application.WebApplicationHandle;
+import net.contextfw.web.application.PageHandle;
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.component.DOMBuilder;
 import net.contextfw.web.application.internal.ComponentUpdateHandler;
@@ -96,7 +96,7 @@ public class WebApplicationImpl implements WebApplication {
     private AttributeHandler attributes;
 
     @Inject
-    private WebApplicationHandle webApplicationHandle;
+    private PageHandle pageHandle;
 
     //private final String contextPath;
     
@@ -208,7 +208,7 @@ public class WebApplicationImpl implements WebApplication {
                                conf.getNamespaces());
         }
 
-        d.attr("handle", webApplicationHandle.toString());
+        d.attr("handle", pageHandle.toString());
         d.attr("contextPath", pageContext.getRequest().getContextPath());
 
         if (pageContext.getLocale() != null) {

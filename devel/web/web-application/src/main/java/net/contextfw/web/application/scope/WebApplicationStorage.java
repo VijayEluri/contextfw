@@ -3,7 +3,7 @@ package net.contextfw.web.application.scope;
 import javax.servlet.http.HttpServletRequest;
 
 import net.contextfw.web.application.WebApplication;
-import net.contextfw.web.application.WebApplicationHandle;
+import net.contextfw.web.application.PageHandle;
 
 public interface WebApplicationStorage {
     
@@ -12,19 +12,19 @@ public interface WebApplicationStorage {
                     long validThrough,
                     ScopedWebApplicationExecution execution);
 
-    void update(WebApplicationHandle handle,
+    void update(PageHandle handle,
                 HttpServletRequest request,
                 long validThrough,
                 ScopedWebApplicationExecution execution);
     
-    void execute(WebApplicationHandle handle,
+    void execute(PageHandle handle,
                  ScopedWebApplicationExecution execution);
 
-    void refresh(WebApplicationHandle handle, 
+    void refresh(PageHandle handle, 
              HttpServletRequest request,
              long validThrough);
 
-    void remove(WebApplicationHandle handle,
+    void remove(PageHandle handle,
             HttpServletRequest request);
     
     /**
@@ -53,7 +53,7 @@ public interface WebApplicationStorage {
      * @param obj
      *  The object, null value removes the object
      */
-    void storeLarge(WebApplicationHandle handle, String key, Object obj);
+    void storeLarge(PageHandle handle, String key, Object obj);
     
     /**
      * Loads large object from page scope.
@@ -68,6 +68,6 @@ public interface WebApplicationStorage {
      * @param type
      * @return
      */
-    <T> T loadLarge(WebApplicationHandle handle, String key, Class<T> type);
+    <T> T loadLarge(PageHandle handle, String key, Class<T> type);
     
 }

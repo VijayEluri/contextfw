@@ -12,7 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import net.contextfw.application.AbstractTest;
 import net.contextfw.web.application.WebApplication;
 import net.contextfw.web.application.WebApplicationException;
-import net.contextfw.web.application.WebApplicationHandle;
+import net.contextfw.web.application.PageHandle;
 import net.contextfw.web.application.configuration.Configuration;
 
 import org.junit.After;
@@ -25,10 +25,10 @@ public class DefaultWebApplicationStorageTest extends AbstractTest {
     
     private static class SimpleWebApplication implements WebApplication {
 
-        private WebApplicationHandle handle;
+        private PageHandle handle;
         
         @Override
-        public void setHandle(WebApplicationHandle handle) {
+        public void setHandle(PageHandle handle) {
             this.handle = handle;
         }
     }
@@ -231,7 +231,7 @@ public class DefaultWebApplicationStorageTest extends AbstractTest {
     
     @Test(expected=WebApplicationException.class)
     public void Store_Large_Non_Existent_Scope() {
-        storage.storeLarge(new WebApplicationHandle("foo"), "test", "test");
+        storage.storeLarge(new PageHandle("foo"), "test", "test");
     }
     
     @Test(expected=IllegalArgumentException.class)
@@ -246,6 +246,6 @@ public class DefaultWebApplicationStorageTest extends AbstractTest {
     
     @Test(expected=WebApplicationException.class)
     public void Load_Large_Non_Existent_Scope() {
-        storage.loadLarge(new WebApplicationHandle("foo"), "test", Long.class);
+        storage.loadLarge(new PageHandle("foo"), "test", Long.class);
     }
 }
