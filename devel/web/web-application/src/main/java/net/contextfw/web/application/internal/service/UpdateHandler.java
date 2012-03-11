@@ -102,23 +102,15 @@ public class UpdateHandler {
     }
 
     private int getCommandStart(String[] splits) {
-        if (splits.length > 2) {
-            String command = splits[splits.length - 2];
-            if (CONTEXTFW_REMOVE.equals(command) ||
-                    CONTEXTFW_REFRESH.equals(command)) {
-                return splits.length - 2;
-            }
-        }
-        if (splits.length > 4) {
-            String command = splits[splits.length - 4];
-            if (CONTEXTFW_UPDATE.equals(command)) {
-                return splits.length - 4;
-            }
-        }
-        if (splits.length > 5) {
-            String command = splits[splits.length - 5];
-            if (CONTEXTFW_UPDATE.equals(command)) {
-                return splits.length - 5;
+        int remaining = splits.length;
+        for (int i = 0; i < splits.length; i++) {
+            remaining--;
+            String s = splits[i];
+            
+            if ((CONTEXTFW_REMOVE.equals(s) || CONTEXTFW_REFRESH.equals(s)) && remaining >= 1) {
+                return i;
+            } else if (CONTEXTFW_UPDATE.equals(s) && remaining >= 3) {
+                return i;
             }
         }
         return -1;
