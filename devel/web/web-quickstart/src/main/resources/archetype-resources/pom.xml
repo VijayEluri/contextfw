@@ -16,6 +16,7 @@ $symbol_escape = '\' )
 
 	<properties>
 		<jetty.version>7.0.2.v20100331</jetty.version>
+		<contextfw.version>0.8.6</contextfw.version>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -54,8 +55,13 @@ $symbol_escape = '\' )
 		<dependency>
 			<groupId>net.contextfw</groupId>
 			<artifactId>web-application</artifactId>
-			<version>0.8.5</version>
+			<version>${contextfw.version}</version>
 		</dependency>
+		<dependency>
+            <groupId>net.contextfw</groupId>
+            <artifactId>web-commons</artifactId>
+            <version>${contextfw.version}</version>
+        </dependency>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
