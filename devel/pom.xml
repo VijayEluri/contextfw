@@ -22,7 +22,7 @@ limitations under the License.
 	<artifactId>context</artifactId>
 	<packaging>pom</packaging>
 	<name>Context</name>
-	<version>0.8.4-snapshot</version>
+	<version>0.8.5</version>
 
 	<parent>
 		<groupId>org.sonatype.oss</groupId>
