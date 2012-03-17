@@ -28,8 +28,8 @@ public class MyApplicationModule extends AbstractModule {
         
         Configuration conf = Configuration.getDefaults()
           .add(RESOURCE_PATH, "${package}")
-          .add(VIEW_COMPONENT_ROOT_PACKAGE, "${package}.views")
-          .add(RELOADABLE_CLASSES.includedPackage("${package}.components"))
+          .add(VIEW_COMPONENT_ROOT_PACKAGE, "${package}.web.views")
+          .add(RELOADABLE_CLASSES.includedPackage("${package}.web.components"))
           .set(CLASS_RELOADING_ENABLED, true)
           .set(DEVELOPMENT_MODE, developmentMode)
           .set(XML_PARAM_NAME, "xml")

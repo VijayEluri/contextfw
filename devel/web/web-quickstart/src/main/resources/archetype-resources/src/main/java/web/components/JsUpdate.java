@@ -1,7 +1,7 @@
 #set( $symbol_pound = '#' )
 #set( $symbol_dollar = '$' )
 #set( $symbol_escape = '\' )
-package ${package}.components;
+package ${package}.web.components;
 
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.component.FunctionCall;

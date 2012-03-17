@@ -165,12 +165,12 @@ contextfw = {
 /**
  * Serializes a form to json. If the name of form value ends with
  * "[]" then that is considered an array, thus allowing multiple values.
- * The string "[]" is stripped
+ * The string "[]" is stripped.
  */
 jQuery.fn.formToObject = function() {
 
   var h = function(o, rawName, value) {
-    var dot = rawName.indexOf(".", rawName);
+    var dot = rawName.indexOf(".");
     if (dot != -1) {
       var subName = rawName.substring(0, dot);
       if (!o[subName]) {
@@ -194,7 +194,15 @@ jQuery.fn.formToObject = function() {
   
   var a = this.serializeArray();
   jQuery.each(a, function() {
-    h(o, this.name, this.value);
+    if (this.value != "") {
+      var sep = this.name.indexOf(":");
+      if (sep != -1) {
+        h(o, this.name.substring(0, sep), this.value);  
+      } else {
+        h(o, this.name, this.value);
+      }
+      
+    }
   });
   return o;
 };
