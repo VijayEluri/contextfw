@@ -148,6 +148,15 @@ public abstract class Component {
         }
     }
     
+    /** 
+     * Removes component (this) from its parent, if parent exists.
+     */
+    public void detach() {
+        if (parent != null) {
+            parent.unregisterChild(this);
+        }
+    }
+    
     /**
      * Removes child component from the framework
      */
@@ -155,6 +164,7 @@ public abstract class Component {
         if (children != null) {
             children.remove(el);
             bubbleUnregisterUp(el);
+            el.parent = null;
         }
     }
 
