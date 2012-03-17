@@ -51,7 +51,7 @@ public class InitHandler {
 
     private Logger logger = LoggerFactory.getLogger(InitHandler.class);
 
-    private static final long HOUR = 1000 * 60 * 3600;
+    private static final long HOUR = 1000 * 3600;
 
     @Inject
     private Provider<WebApplication> webApplicationProvider;
