@@ -6,9 +6,9 @@ import org.dom4j.Document;
 
 class MinifierServiceImpl implements MinifierService {
 
-    private DocumentProcessor jsMinifier;
+    private DocumentProcessor jsMinifier = null;
     
-    private DocumentProcessor cssMinifier;
+    private DocumentProcessor cssMinifier = null;
     
     private final boolean developmentMode;
     

@@ -72,6 +72,7 @@ import org.xml.sax.helpers.XMLFilterImpl;
  * @author Joseph Bowbeer
  * @version $Revision: 1.83.2.2 $
  */
+@SuppressWarnings("PMD")
 public class XMLWriter extends XMLFilterImpl implements LexicalHandler {
     private static final String PAD_TEXT = " ";
 

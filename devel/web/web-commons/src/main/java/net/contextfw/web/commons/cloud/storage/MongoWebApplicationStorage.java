@@ -4,9 +4,9 @@ import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 
+import net.contextfw.web.application.PageHandle;
 import net.contextfw.web.application.WebApplication;
 import net.contextfw.web.application.WebApplicationException;
-import net.contextfw.web.application.PageHandle;
 import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.configuration.SettableProperty;
 import net.contextfw.web.application.scope.ScopedWebApplicationExecution;
@@ -27,7 +27,6 @@ import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
-import com.mongodb.WriteResult;
 
 @Singleton
 public class MongoWebApplicationStorage extends MongoBase implements WebApplicationStorage {

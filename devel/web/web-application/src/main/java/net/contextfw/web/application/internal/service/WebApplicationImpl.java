@@ -83,7 +83,7 @@ public class WebApplicationImpl implements WebApplication {
 
     private List<Class<? extends Component>> chain;
 
-    private InitializerContextImpl context;
+    private InitializerContextImpl context = null;
 
     @Inject
     @Provided
