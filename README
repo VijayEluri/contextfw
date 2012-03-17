@@ -12,10 +12,7 @@ Context :: Web :: Application
  
   Module containing direct functionality to create web applications
 
-Context :: Remoting
+Context :: Web :: Commons
 
-  Parent module for remote interfaces
+  Module containing common functionality
 
-Context :: Remoting :: Fluent
-
-  Provides implementation of fluent remoting interface based on Hessian
