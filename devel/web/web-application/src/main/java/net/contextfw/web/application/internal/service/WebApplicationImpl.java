@@ -1,3 +1,20 @@
+/**
+ * Copyright 2010 Marko Lavikainen
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package net.contextfw.web.application.internal.service;
 
 import java.io.IOException;
@@ -9,18 +26,17 @@ import java.util.Map;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
-import net.contextfw.web.application.HttpContext;
+import net.contextfw.web.application.PageContext;
 import net.contextfw.web.application.WebApplicationException;
-import net.contextfw.web.application.WebApplicationHandle;
+import net.contextfw.web.application.PageHandle;
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.component.DOMBuilder;
-import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.internal.ComponentUpdateHandler;
 import net.contextfw.web.application.internal.ComponentUpdateHandlerFactory;
 import net.contextfw.web.application.internal.WebResponder;
 import net.contextfw.web.application.internal.WebResponder.Mode;
 import net.contextfw.web.application.internal.component.ComponentBuilder;
-import net.contextfw.web.application.internal.component.ComponentRegister;
+import net.contextfw.web.application.internal.component.InternalComponentRegister;
 import net.contextfw.web.application.internal.component.WebApplicationComponent;
 import net.contextfw.web.application.internal.initializer.InitializerContextImpl;
 import net.contextfw.web.application.internal.servlet.UriMapping;
@@ -29,6 +45,7 @@ import net.contextfw.web.application.lifecycle.PageScoped;
 import net.contextfw.web.application.lifecycle.ResourceView;
 import net.contextfw.web.application.remote.ResourceBody;
 import net.contextfw.web.application.remote.ResourceResponse;
+import net.contextfw.web.application.scope.Provided;
 
 import com.google.gson.Gson;
 import com.google.inject.Inject;
@@ -38,55 +55,56 @@ import com.google.inject.Injector;
 public class WebApplicationImpl implements WebApplication {
 
     @Inject
+    @Provided
     private Gson gson;
     
     @Inject
+    @Provided
     private ComponentUpdateHandlerFactory euhf;
 
     @Inject
+    @Provided
     private ComponentBuilder builder;
 
     private static volatile Map<String, ComponentUpdateHandler> updateHandlers = new HashMap<String, ComponentUpdateHandler>();
 
     @Inject
+    @Provided
     private Injector injector;
 
     @Inject
-    private HttpContext httpContext;
+    private PageContext pageContext;
 
-//    @Inject
-//    private PageFlowFilter pageFlowFilter;
+    @Inject
+    private InternalComponentRegister componentRegister;
 
-    private final ComponentRegister componentRegister = new ComponentRegister();
-
-    private final WebApplicationComponent rootComponent =
-            new WebApplicationComponent(componentRegister);
+    @Inject
+    private WebApplicationComponent rootComponent;
 
     private List<Class<? extends Component>> chain;
 
-    private InitializerContextImpl context;
+    private InitializerContextImpl context = null;
 
     @Inject
+    @Provided
     private WebResponder responder;
 
     private Mode mode = Mode.INIT;
 
     @Inject
+    @Provided
     private AttributeHandler attributes;
 
     @Inject
-    private WebApplicationHandle webApplicationHandle;
+    private PageHandle pageHandle;
 
     //private final String contextPath;
     
-    private final String xmlParamName;
-    
-    private final boolean debugMode;
+    private final WebApplicationConf conf;
     
     @Inject
-    public WebApplicationImpl(Configuration props) {
-        xmlParamName = props.get(Configuration.XML_PARAM_NAME);
-        debugMode = props.get(Configuration.DEVELOPMENT_MODE);
+    public WebApplicationImpl(WebApplicationConf conf) {
+        this.conf = conf;
     }
 
     @Override
@@ -94,10 +112,10 @@ public class WebApplicationImpl implements WebApplication {
         context = new InitializerContextImpl(
                 builder,
                 mapping,
-                httpContext.getRequestURI()
-                    .substring(httpContext.getRequest().getContextPath().length()),
+                pageContext.getRequestURI()
+                    .substring(pageContext.getRequest().getContextPath().length()),
                 injector,
-                httpContext.getRequest(),
+                pageContext.getRequest(),
                 chain);
         getRootComponent().registerChild(context.initChild());
     }
@@ -107,18 +125,18 @@ public class WebApplicationImpl implements WebApplication {
 
         try {
             if (mode == Mode.INIT) {
-                if (httpContext.getRedirectUrl() != null) {
-                    httpContext.getResponse().sendRedirect(httpContext.getRedirectUrl());
+                if (pageContext.getRedirectUrl() != null) {
+                    pageContext.getResponse().sendRedirect(pageContext.getRedirectUrl());
                     return true;
-                } else if (httpContext.getErrorCode() != null) {
-                    httpContext.getResponse().sendError(httpContext.getErrorCode(), httpContext.getErrorMsg());
+                } else if (pageContext.getErrorCode() != null) {
+                    pageContext.getResponse().sendError(pageContext.getErrorCode(), pageContext.getErrorMsg());
                     return true;
-                } else if (httpContext.isReload()) {
-                    StringBuilder sb = new StringBuilder(httpContext.getRequestURI());
-                    if (httpContext.getQueryString() != null) {
-                        sb.append("?").append(httpContext.getQueryString());
+                } else if (pageContext.isReload()) {
+                    StringBuilder sb = new StringBuilder(pageContext.getRequestURI());
+                    if (pageContext.getQueryString() != null) {
+                        sb.append("?").append(pageContext.getQueryString());
                     }
-                    httpContext.getResponse().sendRedirect(sb.toString());
+                    pageContext.getResponse().sendRedirect(sb.toString());
                 }
             }
 
@@ -165,10 +183,10 @@ public class WebApplicationImpl implements WebApplication {
         }
         if (retVal instanceof ResourceResponse) {
             ((ResourceResponse) retVal).serve(
-                    httpContext.getRequest(), 
-                    httpContext.getResponse());
+                    pageContext.getRequest(), 
+                    pageContext.getResponse());
         } else {
-            HttpServletResponse response = httpContext.getResponse();
+            HttpServletResponse response = pageContext.getResponse();
             setHeaders(response);
             response.setContentType("application/json; charset=UTF-8");
             gson.toJson(retVal, response.getWriter());
@@ -177,30 +195,33 @@ public class WebApplicationImpl implements WebApplication {
     }
 
     private void sendNormalResponse() throws ServletException, IOException {
-        httpContext.getResponse().setContentType("text/html; charset=UTF-8");
+        pageContext.getResponse().setContentType("text/html; charset=UTF-8");
 
         DOMBuilder d;
 
         if (mode == Mode.INIT) {
-            d = new DOMBuilder("WebApplication", attributes, builder);
+            d = new DOMBuilder("WebApplication", attributes, builder, conf.getNamespaces());
         } else {
-            d = new DOMBuilder("WebApplication.update", attributes, builder);
+            d = new DOMBuilder("WebApplication.update", 
+                               attributes, 
+                               builder,
+                               conf.getNamespaces());
         }
 
-        d.attr("handle", webApplicationHandle.getKey());
-        d.attr("contextPath", httpContext.getRequest().getContextPath());
+        d.attr("handle", pageHandle.toString());
+        d.attr("contextPath", pageContext.getRequest().getContextPath());
 
-        if (context.getLocale() != null) {
-            d.attr("xml:lang", context.getLocale().toString());
-            d.attr("lang", context.getLocale().toString());
+        if (pageContext.getLocale() != null) {
+            d.attr("xml:lang", pageContext.getLocale().toString());
+            d.attr("lang", pageContext.getLocale().toString());
         }
         if (mode == Mode.INIT) {
             getRootComponent().buildChild(d);
-        } else if (httpContext.getRedirectUrl() != null) {
-            d.descend("Redirect").attr("href", httpContext.getRedirectUrl());
-        } else if (httpContext.getErrorCode() != null) {
-            d.descend("Error").attr("code", httpContext.getErrorCode()).text(httpContext.getErrorMsg());
-        } else if (httpContext.isReload()) {
+        } else if (pageContext.getRedirectUrl() != null) {
+            d.descend("Redirect").attr("href", pageContext.getRedirectUrl());
+        } else if (pageContext.getErrorCode() != null) {
+            d.descend("Error").attr("code", pageContext.getErrorCode()).text(pageContext.getErrorMsg());
+        } else if (pageContext.isReload()) {
             d.descend("Reload");
         } else {
             getRootComponent().buildChildUpdate(d, builder);
@@ -208,22 +229,18 @@ public class WebApplicationImpl implements WebApplication {
 
         getRootComponent().clearCascadedUpdate();
 
-        if (xmlParamName == null
-                || httpContext.getRequest().getParameter(xmlParamName) == null) {
-            responder.sendResponse(d.toDocument(), httpContext.getResponse(), mode);
+        if (conf.getXmlParamName() == null
+                || pageContext.getRequest().getParameter(conf.getXmlParamName()) == null) {
+            responder.sendResponse(d.toDocument(), pageContext.getResponse(), mode);
         } else {
-            responder.sendResponse(d.toDocument(), httpContext.getResponse(), Mode.XML);
+            responder.sendResponse(d.toDocument(), pageContext.getResponse(), Mode.XML);
         }
     }
 
     @Override
-    public UpdateInvocation updateState(boolean updateComponents, String componentId, String method) {
+    public UpdateInvocation updateState(String componentId, String method) {
         mode = Mode.UPDATE;
-        if (updateComponents) {
-            return updateElements(componentId, method);
-        } else {
-            return UpdateInvocation.NOT_DELAYED;
-        }
+        return updateElements(componentId, method);
     }
 
     @SuppressWarnings("unchecked")
@@ -232,7 +249,7 @@ public class WebApplicationImpl implements WebApplication {
             Component element = componentRegister.findComponent(id);
             String key = ComponentUpdateHandler.getKey(element.getClass(), method);
 
-                if (!updateHandlers.containsKey(key) || debugMode) {
+                if (!updateHandlers.containsKey(key) || conf.isDevelopmentMode()) {
                     updateHandlers.put(key, euhf.createHandler(element.getClass(), method));
                 }
 
@@ -241,16 +258,16 @@ public class WebApplicationImpl implements WebApplication {
                 if (handler != null) {
                     if (handler.getDelayed() == null
                                 || !injector.getInstance(handler.getDelayed().value())
-                                  .isUpdateDelayed(element, httpContext.getRequest())) {
+                                  .isUpdateDelayed(element, pageContext.getRequest())) {
                         return new UpdateInvocation(
                                 handler.isResource(),
-                                handler.invoke(rootComponent, element, httpContext.getRequest())
+                                handler.invoke(rootComponent, element, pageContext.getRequest())
                                 );
                     } else {
                         return UpdateInvocation.DELAYED;
                     }
                 } else {
-                    return UpdateInvocation.NOT_DELAYED;
+                    return UpdateInvocation.NONE;
                 }
         } catch (Exception e) {
             if (e instanceof WebApplicationException) {

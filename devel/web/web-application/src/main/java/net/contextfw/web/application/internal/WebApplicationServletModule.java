@@ -1,3 +1,20 @@
+/**
+ * Copyright 2010 Marko Lavikainen
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package net.contextfw.web.application.internal;
 
 import java.util.HashMap;
@@ -8,11 +25,15 @@ import java.util.SortedSet;
 import java.util.regex.Pattern;
 
 import net.contextfw.web.application.PropertyProvider;
+import net.contextfw.web.application.ResourceCleaner;
 import net.contextfw.web.application.configuration.Configuration;
+import net.contextfw.web.application.internal.development.InternalDevelopmentTools;
+import net.contextfw.web.application.internal.development.ReloadingClassLoaderConf;
 import net.contextfw.web.application.internal.initializer.InitializerProvider;
+import net.contextfw.web.application.internal.page.PageScope;
 import net.contextfw.web.application.internal.service.DirectoryWatcher;
 import net.contextfw.web.application.internal.service.InitHandler;
-import net.contextfw.web.application.internal.service.ReloadingClassLoaderConf;
+import net.contextfw.web.application.internal.service.UpdateHandler;
 import net.contextfw.web.application.internal.servlet.CSSServlet;
 import net.contextfw.web.application.internal.servlet.DevelopmentFilter;
 import net.contextfw.web.application.internal.servlet.InitServlet;
@@ -22,11 +43,16 @@ import net.contextfw.web.application.internal.servlet.UpdateServlet;
 import net.contextfw.web.application.internal.servlet.UriMapping;
 import net.contextfw.web.application.internal.servlet.UriMappingFactory;
 import net.contextfw.web.application.internal.util.ClassScanner;
+import net.contextfw.web.application.lifecycle.LifecycleListener;
 import net.contextfw.web.application.lifecycle.RequestInvocationFilter;
+import net.contextfw.web.application.scope.WebApplicationStorage;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.gson.Gson;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
 import com.google.inject.servlet.ServletModule;
 
 public class WebApplicationServletModule extends ServletModule {
@@ -53,14 +79,21 @@ public class WebApplicationServletModule extends ServletModule {
     
     private InitHandler initHandler;
     
+    private PageScope pageScope;
+
+    private InternalDevelopmentTools internalDevelopmentTools;
+    
     public WebApplicationServletModule(
             Configuration configuration,
-            PropertyProvider propertyProvider) {
+            PropertyProvider propertyProvider,
+            PageScope pageScope, 
+            InternalDevelopmentTools internalDevelopmentTools) {
         
         resourcePrefix = configuration.get(Configuration.RESOURCES_PREFIX);
         this.configuration = configuration;
         this.properties = propertyProvider;
-
+        this.pageScope = pageScope;
+        this.internalDevelopmentTools = internalDevelopmentTools;
         rootPackages = configuration.get(Configuration.VIEW_COMPONENT_ROOT_PACKAGE);
         boolean reloadEnabled = configuration.get(Configuration.CLASS_RELOADING_ENABLED);
         
@@ -68,12 +101,17 @@ public class WebApplicationServletModule extends ServletModule {
             reloadConf = new ReloadingClassLoaderConf(configuration);
         }
         this.filter = configuration.get(Configuration.REQUEST_INVOCATION_FILTER);
+        
     }
 
     @Override
     protected void configureServlets() {
-
-        initHandler = new InitHandler(configuration);
+        //bind(RequestInvocationFilter.class).toInstance(this.filter);
+        requestInjection(this.filter);
+        initHandler = new InitHandler(configuration, 
+                                      pageScope, 
+                                      internalDevelopmentTools);
+        
         requestInjection(initHandler);
         initializerProvider = new InitializerProvider();
         
@@ -81,6 +119,7 @@ public class WebApplicationServletModule extends ServletModule {
                 ScriptServlet.class);
         serve(resourcePrefix + ".css").with(
                 CSSServlet.class);
+        
         serveRegex(".*/contextfw-update/.*").with(UpdateServlet.class);
         serveRegex(".*/contextfw-refresh/.*").with(UpdateServlet.class);
         serveRegex(".*/contextfw-remove/.*").with(UpdateServlet.class);
@@ -105,7 +144,7 @@ public class WebApplicationServletModule extends ServletModule {
                 rootPackages,
                 initHandler,
                 initializerProvider,
-                reloadConf,
+                internalDevelopmentTools,
                 classWatcher,
                 properties, 
                 filter);
@@ -143,5 +182,23 @@ public class WebApplicationServletModule extends ServletModule {
                 serve(mapping.getPath()).with(mapping.getInitServlet());
             }   
         }
+    }
+    
+    @Provides
+    @Singleton
+    public UpdateHandler provideUpdateHandler(
+            LifecycleListener listeners,
+            DirectoryWatcher watcher,
+            ResourceCleaner cleaner,
+            WebApplicationStorage storage,
+            Gson gson) {
+        
+        return new UpdateHandler(listeners, 
+                watcher, 
+                cleaner,
+                storage,
+                configuration,
+                pageScope,
+                gson);
     }
 }

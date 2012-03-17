@@ -1,5 +1,8 @@
 package net.contextfw.benchmark;
 
+import java.lang.reflect.Method;
+
+import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.lifecycle.LifecycleListener;
 
 import com.google.inject.Singleton;
@@ -53,4 +56,16 @@ public class MyLifecycleListener implements LifecycleListener {
 	public void afterRender() {
 		log("After render");
 	}
+
+    @Override
+    public boolean beforeRemotedMethod(Component component, Method method, Object[] args) {
+        // TODO Auto-generated method stub
+        return false;
+    }
+
+    @Override
+    public void afterRemoteMethod(Component component, Method method, RuntimeException thrown) {
+        // TODO Auto-generated method stub
+        
+    }
 }

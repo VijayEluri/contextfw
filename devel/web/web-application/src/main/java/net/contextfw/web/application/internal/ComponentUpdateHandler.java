@@ -1,3 +1,20 @@
+/**
+ * Copyright 2010 Marko Lavikainen
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package net.contextfw.web.application.internal;
 
 import java.lang.reflect.Constructor;
@@ -57,6 +74,7 @@ public class ComponentUpdateHandler {
         return null;
     }
 
+    @SuppressWarnings({ "unchecked", "rawtypes" })
     private Object invokeWithParams(Component rootComponent, Component component, HttpServletRequest request)
             throws IllegalAccessException, InstantiationException {
 
@@ -69,17 +87,22 @@ public class ComponentUpdateHandler {
     
                 String value = request.getParameter("p" + c);
                 if (value != null) {
+                    Class<?> type = paramTypes.get(c);
                     try {
-                        Constructor<?> constructor = paramTypes.get(c).getConstructor(String.class);
-                        params[c] = constructor.newInstance(value);
+                        if (type.isEnum()) {
+                            params[c] = Enum.valueOf((Class<Enum>) type, value);
+                        } else {
+                            Constructor<?> constructor = type.getConstructor(String.class);
+                            params[c] = constructor.newInstance(value);
+                        }
                     } catch (NoSuchMethodException e) {
-                        params[c] = gson.fromJson(value, paramTypes.get(c));
+                        params[c] = gson.fromJson(value, type);
                     } catch (InvocationTargetException ie) {
                         throw new WebApplicationException(ie);
                     }
                 }
             }
-            if (listener.beforeRemotedMethod(component, method, params)) {
+            if (listener.beforeUpdate(component, method, params)) {
                 returnVal = method.invoke(component, params);
             } else {
                 return null;
@@ -90,7 +113,7 @@ public class ComponentUpdateHandler {
         } catch (InvocationTargetException e) {
             thrown = new WebApplicationException(e);
         }
-        listener.afterRemoteMethod(component, method, thrown);
+        listener.afterUpdate(component, method, thrown);
         return returnVal;
     }
 

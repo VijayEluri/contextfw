@@ -1,3 +1,20 @@
+/**
+ * Copyright 2010 Marko Lavikainen
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package net.contextfw.web.application.component;
 
 import java.util.HashSet;
@@ -23,7 +40,7 @@ public abstract class Component {
     private boolean enabled = true;
 
     private enum RefreshMode {
-        NONE, PASS, UPDATE
+        NONE, PASS, UPDATE, PARTIAL_UPDATE
     };
 
     @Attribute
@@ -130,7 +147,16 @@ public abstract class Component {
             parent.bubbleUnregisterUp(el);
         }
     }
-
+    
+    /** 
+     * Removes component (this) from its parent, if parent exists.
+     */
+    public void detach() {
+        if (parent != null) {
+            parent.unregisterChild(this);
+        }
+    }
+    
     /**
      * Removes child component from the framework
      */
@@ -138,6 +164,7 @@ public abstract class Component {
         if (children != null) {
             children.remove(el);
             bubbleUnregisterUp(el);
+            el.parent = null;
         }
     }
 
@@ -157,8 +184,12 @@ public abstract class Component {
      * </p>
      */
     public void refresh() {
+        refresh(RefreshMode.UPDATE);
+    }
+    
+    private void refresh(RefreshMode mode) {
         if (id != null) {
-            refreshMode = RefreshMode.UPDATE;
+            refreshMode = mode;
             Component p = parent;
 
             while (p != null) {
@@ -176,17 +207,13 @@ public abstract class Component {
      * For internal use only
      */
     public final void buildComponentUpdate(DOMBuilder domBuilder, ComponentBuilder builder) {
-        boolean isNormalUpdate = (partialUpdateName == null);
 
         if (refreshMode == RefreshMode.UPDATE) {
-            if (isNormalUpdate) {
-                builder.buildUpdate(domBuilder, this, isNormalUpdate ? "update" : partialUpdateName);
-            } else {
-                builder.buildPartialUpdate(domBuilder, this, isNormalUpdate ? "update"
-                        : partialUpdateName, partialUpdates);
-            }
+            builder.buildUpdate(domBuilder, this, "update");
+        } else if (refreshMode == RefreshMode.PARTIAL_UPDATE) {
+            builder.buildPartialUpdate(domBuilder, this, partialUpdateName, partialUpdates);
         }
-        if ((refreshMode == RefreshMode.PASS || !isNormalUpdate) && children != null) {
+        if ((refreshMode == RefreshMode.PASS || refreshMode == RefreshMode.PARTIAL_UPDATE) && children != null) {
             for (Component child : children) {
                 child.buildComponentUpdate(domBuilder, builder);
             }
@@ -207,14 +234,14 @@ public abstract class Component {
      * @param updates
      */
     public void partialRefresh(String buildName, String... updates) {
-        if (partialUpdates != null) {
+        if (partialUpdates != null && refreshMode != RefreshMode.UPDATE) {
             this.partialUpdateName = buildName;
             for (String partialUpdate : updates) {
                 partialUpdates.add(partialUpdate);
             }
             partialUpdates.add("id");
+            refresh(RefreshMode.PARTIAL_UPDATE);
         }
-        refresh();
     }
 
     /**

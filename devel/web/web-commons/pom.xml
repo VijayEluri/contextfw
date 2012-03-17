@@ -13,22 +13,22 @@
 
 	<modelVersion>4.0.0</modelVersion>
 
-	<!-- parent>
+	<parent>
 		<artifactId>web</artifactId>
 		<groupId>net.contextfw</groupId>
-		<version>0.8.1</version>
-	</parent-->
+		<version>0.8.5</version>
+	</parent>
 
 	<groupId>net.contextfw</groupId>
 	<artifactId>web-commons</artifactId>
-	<version>0.8.1</version>
+	<version>0.8.5</version>
 	<name>Context :: Web :: Commons</name>
 	<packaging>jar</packaging>
 
 	<description>Context Web Application Framework</description>
 
 	<url>http://www.contextfw.net</url>
-
+	
 	<licenses>
 		<license>
 			<name>The Apache Software License, Version 2.0</name>
@@ -37,29 +37,42 @@
 		</license>
 	</licenses>
 
-	<scm>
-		<connection>scm:git:git@github.com:contextfw/contextfw.git</connection>
-		<developerConnection>scm:git:git@github.com:contextfw/contextfw.git</developerConnection>
-		<url>git@github.com:contextfw/contextfw.git</url>
-	</scm>
-
 	<dependencies>
 		<dependency>
 			<groupId>net.contextfw</groupId>
 			<artifactId>web-application</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+            <groupId>com.yahoo.platform.yui</groupId>
+            <artifactId>yuicompressor</artifactId>
+            <version>2.4.6</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.javascript</groupId>
+            <artifactId>closure-compiler</artifactId>
+            <version>r1043</version>
+        </dependency>
+        <dependency>
+            <groupId>com.thoughtworks.xstream</groupId>
+            <artifactId>xstream</artifactId>
+            <version>1.4.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.mongodb</groupId>
+            <artifactId>mongo-java-driver</artifactId>
+            <version>2.6.5</version>
+        </dependency>
+        <dependency>
+            <groupId>commons-codec</groupId>
+            <artifactId>commons-codec</artifactId>
+            <version>1.5</version>
+        </dependency>
+        <dependency>
+            <groupId>org.easymock</groupId>
+            <artifactId>easymock</artifactId>
+            <version>3.0</version>
+            <scope>test</scope>
+        </dependency>
 	</dependencies>
-	<build>
-	  <plugins>
-    	  <plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.8</version>
-				<configuration>
-				  <excludePackageNames>*.internal</excludePackageNames>
-				</configuration>
-			</plugin>
-	  </plugins>
-	</build>
 </project>

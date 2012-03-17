@@ -1,3 +1,20 @@
+/**
+ * Copyright 2010 Marko Lavikainen
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package net.contextfw.web.application.internal.component;
 
 import java.lang.reflect.Field;
@@ -15,6 +32,7 @@ import javax.servlet.http.HttpServletRequest;
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.component.Attribute;
 import net.contextfw.web.application.component.Buildable;
+import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.component.CustomBuild;
 import net.contextfw.web.application.component.Element;
 import net.contextfw.web.application.component.ScriptContext;
@@ -57,6 +75,9 @@ public final class MetaComponent {
     private final List<Method> pathParamMethods = new ArrayList<Method>();
     private final List<Field> requestParamFields = new ArrayList<Field>();
     private final List<Method> requestParamMethods = new ArrayList<Method>();
+    private final List<Field> autoregisterFields = new ArrayList<Field>();
+    private final List<Field> fields = new ArrayList<Field>();
+    
     public final String buildName;
     public final Buildable annotation;
 
@@ -83,7 +104,7 @@ public final class MetaComponent {
         }
     }
 
-    private final boolean processFieldBuilders(Field field) {
+    private boolean processFieldBuilders(Field field) {
         PropertyAccess<Object> propertyAccess =
                 new FieldPropertyAccess<Object>(field);
 
@@ -97,6 +118,9 @@ public final class MetaComponent {
             builder = new ElementBuilder(componentBuilder, propertyAccess,
                     element.wrap() ? name : null, field.getName());
             addToBuilders(element.onCreate(), element.onUpdate(), builder);
+            if (element.autoRegister()) {
+                autoregisterFields.add(field);
+            }
         } else if (field.getAnnotation(Attribute.class) != null) {
             Attribute attribute = field.getAnnotation(Attribute.class);
             name = "".equals(attribute.name()) ? field.getName()
@@ -172,26 +196,31 @@ public final class MetaComponent {
         registeredNames.add(method.getName());
     }
 
-    private final void iterateFields() {
+    private void iterateFields() {
         Class<?> currentClass = cl;
         while (currentClass != null) {
             for (Field field : currentClass.getDeclaredFields()) {
-                field.setAccessible(true);
-                if (canProcess(field) && processFieldBuilders(field)) {
-                    setProcessed(field);
-                }
-                if (canProcess(field) && processPathParam(field)) {
-                    setProcessed(field);
-                }
-                if (canProcess(field) && processRequestParam(field)) {
+                if (processField(field)) {
                     setProcessed(field);
                 }
             }
             currentClass = currentClass.getSuperclass();
         }
     }
+    
+    private boolean processField(Field field) {
+        field.setAccessible(true);
+        if (canProcess(field)) {
+            fields.add(field);
+            return processFieldBuilders(field) ||
+                   processPathParam(field) ||
+                   processRequestParam(field);
+        } else {
+            return false;
+        }
+    }
 
-    private final void iterateMethods() {
+    private void iterateMethods() {
         Class<?> currentClass = cl;
         while (currentClass != null) {
             for (Method method : currentClass.getDeclaredMethods()) {
@@ -556,5 +585,20 @@ public final class MetaComponent {
             }
         }
         return rv;
+    }
+    
+    public void registerChildren(Component parent) {
+        for (Field field : autoregisterFields) {
+            try {
+                Object child = field.get(parent);
+                if (child instanceof Component) {
+                    parent.registerChild((Component)child);
+                }
+            } catch (IllegalArgumentException e) {
+                throw new WebApplicationException(e);
+            } catch (IllegalAccessException e) {
+                throw new WebApplicationException(e);
+            }
+        }
     }
 }

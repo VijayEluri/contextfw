@@ -1,7 +1,23 @@
+/**
+ * Copyright 2010 Marko Lavikainen
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package net.contextfw.web.application.internal.initializer;
 
 import java.util.List;
-import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -17,19 +33,17 @@ import com.google.inject.Injector;
 
 public class InitializerContextImpl implements ViewContext {
 
-    private final List<Class<? extends Component>> chain;
-    private final Injector injector;
+    private final transient List<Class<? extends Component>> chain;
+    private final transient Injector injector;
     
     private int currentIndex = 0;
     
-    private Locale locale = null;
+    private transient Component leaf;
     
-    private Component leaf;
-    
-    private final ComponentBuilder componentBuilder;
-    private final UriMapping mapping;
-    private final String uri;
-    private final HttpServletRequest request;
+    private final transient ComponentBuilder componentBuilder;
+    private final transient UriMapping mapping;
+    private final transient String uri;
+    private final transient HttpServletRequest request;
     
     public InitializerContextImpl(ComponentBuilder componentBuilder,
                                   UriMapping mapping,
@@ -76,15 +90,6 @@ public class InitializerContextImpl implements ViewContext {
         }
         
         return component;
-    }
-
-    @Override
-    public void setLocale(Locale locale) {
-        this.locale = locale;
-    }
-    
-    public Locale getLocale() {
-        return locale;
     }
 
     public Component getLeaf() {

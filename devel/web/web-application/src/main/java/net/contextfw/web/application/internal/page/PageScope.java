@@ -1,34 +1,50 @@
-package net.contextfw.web.application.internal.page;
+/**
+ * Copyright 2010 Marko Lavikainen
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
 
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.UUID;
+package net.contextfw.web.application.internal.page;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.contextfw.web.application.HttpContext;
-import net.contextfw.web.application.WebApplicationHandle;
-import net.contextfw.web.application.lifecycle.PageFlowFilter;
+import net.contextfw.web.application.PageContext;
+import net.contextfw.web.application.lifecycle.LifecycleListener;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import com.google.inject.Inject;
 import com.google.inject.Key;
 import com.google.inject.OutOfScopeException;
 import com.google.inject.Provider;
 import com.google.inject.Scope;
 
+/*
+ * PageStorage
+ * 
+ *   - store(WebApplicationHandle handle, 
+ * 
+ * WebPage
+ * 
+ */
+
 public class PageScope implements Scope {
     
-    private Logger log = LoggerFactory.getLogger(PageScope.class);
+    //private Logger log = LoggerFactory.getLogger(PageScope.class);
 
-    private final Map<WebApplicationHandle, WebApplicationPage> pages = 
-        new HashMap<WebApplicationHandle, WebApplicationPage>();
-
+    private LifecycleListener listener;
+    
     private final ThreadLocal<WebApplicationPage> currentPage = 
         new ThreadLocal<WebApplicationPage>();
 
@@ -56,118 +72,43 @@ public class PageScope implements Scope {
     public void deactivateCurrentPage() {
         WebApplicationPage page = currentPage.get();
         if (page != null) {
-            HttpContext context = page.getBean(Key.get(HttpContext.class));
+            listener.beforePageScopeDeactivation();
+            PageContext context = page.getBean(Key.get(PageContext.class));
             context.setServlet(null);
             context.setRequest(null);
             context.setResponse(null);
-        }
-        currentPage.remove();
-    }
-
-    public int refreshPage(WebApplicationPage page, long maxInactivity) {
-        return page.refresh(System.currentTimeMillis() + maxInactivity);
-    }
-    
-    public synchronized int refreshPage(WebApplicationHandle handle, 
-                                        String remoteAddr,
-                                        long maxInactivity) {
-        WebApplicationPage page = pages.get(handle);
-        if (page != null) {
-            if (page.getRemoteAddr().equals(remoteAddr)) {
-                return refreshPage(page, maxInactivity);
-            } else {
-                log.info("Tried to refresh page {} from wrong address: {} != {}",
-                        new String[] { handle.getKey(),
-                        page.getRemoteAddr(), 
-                        remoteAddr });
-                return 0;
-            }
-        } else {
-            return 0;
+            currentPage.remove();
         }
     }
 
-    public int getPageCount() {
-        return pages.size();
-    }
-    
-    public synchronized WebApplicationPage findPage(WebApplicationHandle handle,
-                                                    String remoteAddr) {
-        WebApplicationPage page = pages.get(handle);
-        if (page != null) {
-            if (page.getRemoteAddr().equals(remoteAddr)) {
-                return page;
-            } else {
-                log.info("Tried to activate page {} from wrong address: {} != {}",
-                        new String[] { handle.getKey(),
-                        page.getRemoteAddr(), 
-                        remoteAddr });
-                return null;
-            }
-        } else {
-            return null;
-        }
-    }
-    
     public void activatePage(WebApplicationPage page,
                              HttpServlet servlet,
                              HttpServletRequest request,
                              HttpServletResponse response) {
         
-        HttpContext context = page.getBean(Key.get(HttpContext.class));
+        PageContext context = page.getBean(Key.get(PageContext.class));
         context.setServlet(servlet);
         context.setRequest(request);
         context.setResponse(response);
         currentPage.set(page);
+        listener.afterPageScopeActivation();
     }
 
-    public synchronized void removeExpiredPages(PageFlowFilter filter) {
-        
-        long timestamp = System.currentTimeMillis();
-        
-        Iterator<Entry<WebApplicationHandle, WebApplicationPage>> iterator = 
-            pages.entrySet().iterator();
-
-        while (iterator.hasNext()) {
-            Entry<WebApplicationHandle, WebApplicationPage> entry = iterator.next();
-            if (entry.getValue().isExpired(timestamp)) {
-                filter.pageExpired(getPageCount(),
-                        entry.getValue().getRemoteAddr(), 
-                        entry.getKey().getKey());
-                iterator.remove();
-            }
-        }
-    }
-
-    public synchronized WebApplicationPage createPage(String remoteAddr,
-                                                      HttpServlet servlet,
+    public synchronized WebApplicationPage createPage(HttpServlet servlet,
                                                       HttpServletRequest request,
-                                                      HttpServletResponse response,
-                                                      long initialMaxInActivity) {
+                                                      HttpServletResponse response) {
         
-        WebApplicationPage page = new WebApplicationPageImpl(
-                createNewHandle(), 
-                remoteAddr,
-                System.currentTimeMillis() + initialMaxInActivity);
+        WebApplicationPage page = new WebApplicationPageImpl();
         
-        page.setBean(Key.get(HttpContext.class), 
-                new HttpContext(servlet, request, response));
+        page.setBean(Key.get(PageContext.class), 
+                new PageContext(servlet, request, response));
         
-        pages.put(page.getHandle(), page);
         currentPage.set(page);
         return page;
     }
-    
-    private WebApplicationHandle createNewHandle() {
-        WebApplicationHandle handle;
-        do {
-            handle = new WebApplicationHandle(UUID.randomUUID().toString());
-        } while (pages.containsKey(handle));
-        
-        return handle;
-    }
 
-    public synchronized void removePage(WebApplicationHandle handle) {
-        pages.remove(handle);
+    @Inject
+    public void setListener(LifecycleListener listener) {
+        this.listener = listener;
     }
 }

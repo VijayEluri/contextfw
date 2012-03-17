@@ -1,3 +1,20 @@
+/**
+ * Copyright 2010 Marko Lavikainen
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package net.contextfw.web.application.internal;
 
 import java.io.IOException;
@@ -12,13 +29,15 @@ import java.util.regex.Pattern;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
+import net.contextfw.org.dom4j.io.XMLWriter;
 import net.contextfw.web.application.DocumentProcessor;
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.configuration.Configuration;
+import net.contextfw.web.application.development.XMLResponseLogger;
 import net.contextfw.web.application.internal.configuration.KeyValue;
 import net.contextfw.web.application.internal.util.ResourceEntry;
 import net.contextfw.web.application.internal.util.ResourceScanner;
-import net.contextfw.web.application.util.XMLResponseLogger;
+import net.contextfw.web.application.internal.util.Utils;
 
 import org.dom4j.Document;
 import org.dom4j.DocumentException;
@@ -27,7 +46,6 @@ import org.dom4j.Node;
 import org.dom4j.io.HTMLWriter;
 import org.dom4j.io.OutputFormat;
 import org.dom4j.io.SAXReader;
-import org.dom4j.io.XMLWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -76,7 +94,7 @@ public class WebResponder {
     @Inject
     public WebResponder(Configuration configuration, Injector injector) {
         rootResourcePaths.add("net.contextfw.web.application");
-        transformers = new Transformers(configuration.get(Configuration.TRANSFORMER_COUNT));
+        transformers = new Transformers();
         resourcePaths.addAll(configuration.get(Configuration.RESOURCE_PATH));
         namespaces.addAll(configuration.get(Configuration.NAMESPACE));
         
@@ -88,8 +106,8 @@ public class WebResponder {
         htmlFormat.setExpandEmptyElements(true);
         
         if (configuration.get(Configuration.XSL_POST_PROCESSOR) != null) {
-            xslPostProcessor = injector.getInstance(
-                    configuration.get(Configuration.XSL_POST_PROCESSOR));
+            xslPostProcessor = Utils.toInstance(
+                    configuration.get(Configuration.XSL_POST_PROCESSOR), injector);
         } else {
             xslPostProcessor = null;
         }
@@ -124,7 +142,7 @@ public class WebResponder {
         }
     }
 
-    protected String getXSLDocumentContent() {
+    protected Document getXSLDocument() {
 
         List<ResourceEntry> rootResources = ResourceScanner.findResources(
                 rootResourcePaths, XSL_ACCEPTOR);
@@ -191,16 +209,7 @@ public class WebResponder {
             if (xslPostProcessor != null) {
                 xslPostProcessor.process(document);
             }
-
-            StringWriter content = new StringWriter();
-            OutputFormat format = OutputFormat.createCompactFormat();
-            format.setXHTML(true);
-            format.setTrimText(false);
-            format.setPadText(true);
-            format.setNewlines(false);
-            XMLWriter writer = new XMLWriter(content, format);
-            writer.write(document);
-            return content.toString();
+            return document;
         } catch (DocumentException e) {
             throw new WebApplicationException(e);
         } catch (UnsupportedEncodingException e) {
@@ -209,10 +218,6 @@ public class WebResponder {
             throw new WebApplicationException(e);
         }
     }
-
-    // public Reader getXSLDocument() {
-    // return new StringReader(getXSLDocumentContent());
-    // }
 
     public void sendResponse(Document document, HttpServletResponse resp,
             Mode mode) throws ServletException, IOException {
@@ -245,7 +250,11 @@ public class WebResponder {
         resp.setHeader("Cache-Control", "no-cache, no-store");
 
         if (!transformers.isInitialized()) {
-            clean();
+            synchronized (transformers) {
+                if (!transformers.isInitialized()) {
+                    transformers.initialize(getXSLDocument());
+                }
+            }
         }
 
         Document rDocument = transformers.transform(document);
@@ -262,6 +271,6 @@ public class WebResponder {
 
     public void clean() {
         logger.debug("Reloading resources");
-        transformers.initialize(getXSLDocumentContent());
+        transformers.invalidate();
     }
 }

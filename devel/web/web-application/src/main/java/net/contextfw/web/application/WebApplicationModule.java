@@ -1,35 +1,53 @@
+/**
+ * Copyright 2010 Marko Lavikainen
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package net.contextfw.web.application;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 import java.util.regex.Pattern;
 
 import net.contextfw.web.application.component.Component;
+import net.contextfw.web.application.component.ComponentRegister;
+import net.contextfw.web.application.configuration.BindableProperty;
 import net.contextfw.web.application.configuration.Configuration;
+import net.contextfw.web.application.development.DevelopmentTools;
 import net.contextfw.web.application.internal.WebApplicationServletModule;
 import net.contextfw.web.application.internal.component.AutoRegisterListener;
+import net.contextfw.web.application.internal.component.InternalComponentRegister;
 import net.contextfw.web.application.internal.configuration.KeyValue;
+import net.contextfw.web.application.internal.development.DevelopmentToolsImpl;
+import net.contextfw.web.application.internal.development.InternalDevelopmentTools;
 import net.contextfw.web.application.internal.page.PageScope;
 import net.contextfw.web.application.internal.service.DirectoryWatcher;
+import net.contextfw.web.application.internal.service.WebApplicationConf;
 import net.contextfw.web.application.internal.util.AttributeHandler;
 import net.contextfw.web.application.internal.util.ObjectAttributeSerializer;
 import net.contextfw.web.application.lifecycle.LifecycleListener;
-import net.contextfw.web.application.lifecycle.PageFlowFilter;
 import net.contextfw.web.application.lifecycle.PageScoped;
 import net.contextfw.web.application.lifecycle.RequestInvocationFilter;
+import net.contextfw.web.application.scope.WebApplicationStorage;
 import net.contextfw.web.application.serialize.AttributeJsonSerializer;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonSerializer;
 import com.google.inject.AbstractModule;
-import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Key;
 import com.google.inject.Provides;
@@ -43,33 +61,44 @@ public final class WebApplicationModule extends AbstractModule {
 
     private final Configuration configuration;
     
-    private PageScope pageScope;
-    
-    @Inject
-    private PageFlowFilter pageFlowFilter;
-
-    private Logger logger = LoggerFactory.getLogger(WebApplicationModule.class);
-
     @SuppressWarnings("rawtypes")
-    private AutoRegisterListener autoRegisterListener = new AutoRegisterListener();
+    private AutoRegisterListener autoRegisterListener 
+            = new AutoRegisterListener();
+
+    private DevelopmentToolsImpl developmentTools;
 
     public WebApplicationModule(Configuration configuration) {
         this.configuration = configuration;
     }
 
+    @SuppressWarnings("unchecked")
+    private <T> void bind(Class<T> type, BindableProperty<T> property) {
+        Object obj = configuration.get(property);
+        if (obj instanceof Class<?>) {
+            bind(type).to((Class<T>) obj);
+        } else {
+            bind(type).toInstance((T) obj);
+            requestInjection(obj);
+        }
+    }
+    
     @Override
     protected void configure() {
-        pageScope = new PageScope();
+        handleDevelopmentTools();
+        bind(WebApplicationStorage.class, Configuration.WEB_APPLICATION_STORAGE);
+        bind(LifecycleListener.class, Configuration.LIFECYCLE_LISTENER);
+        PageScope pageScope = new PageScope();
+        requestInjection(pageScope);
         bindScope(PageScoped.class, pageScope);
         bind(PageScope.class).toInstance(pageScope);
-        bind(HttpContext.class).toProvider(pageScope.scope(Key.get(HttpContext.class), null));
-        bind(WebApplicationHandle.class).toProvider(pageScope.scope(Key.get(WebApplicationHandle.class), null));
+        bind(PageContext.class).toProvider(pageScope.scope(Key.get(PageContext.class), null));
+        bind(PageHandle.class).toProvider(pageScope.scope(Key.get(PageHandle.class), null));
         bind(ObjectAttributeSerializer.class).to(AttributeHandler.class);
         bind(Configuration.class).toInstance(configuration);
+        bind(ComponentRegister.class).to(InternalComponentRegister.class);
         bind(PropertyProvider.class).toInstance(configuration.get(Configuration.PROPERTY_PROVIDER));
-        bind(RequestInvocationFilter.class).toInstance(configuration.get(Configuration.REQUEST_INVOCATION_FILTER));        
-        handlePageFlowFilter();
-        handleLifecycleListener();
+        bind(RequestInvocationFilter.class).toInstance(configuration.get(Configuration.REQUEST_INVOCATION_FILTER));
+
         this.bindListener(Matchers.any(), new TypeListener() {
             @SuppressWarnings("unchecked")
             @Override
@@ -82,32 +111,17 @@ public final class WebApplicationModule extends AbstractModule {
             }
         });
 
+        requestInjection(this);
+        requestInjection(autoRegisterListener);
+        
         WebApplicationServletModule servletModule =
                 new WebApplicationServletModule(configuration,
-                        configuration.get(Configuration.PROPERTY_PROVIDER));
+                        configuration.get(Configuration.PROPERTY_PROVIDER),
+                        pageScope,
+                        developmentTools);
 
         install(servletModule);
-        requestInjection(this);
-    }
-
-    @SuppressWarnings("unchecked")
-    private void handlePageFlowFilter() {
-        Object obj = configuration.get(Configuration.PAGEFLOW_FILTER);
-        if (obj instanceof PageFlowFilter) {
-            bind(PageFlowFilter.class).toInstance((PageFlowFilter) obj);
-        } else {
-            bind(PageFlowFilter.class).to((Class<PageFlowFilter>) obj);
-        }
-    }
-
-    @SuppressWarnings({ "unchecked" })
-    private void handleLifecycleListener() {
-        Object obj = configuration.get(Configuration.LIFECYCLE_LISTENER);
-        if (obj instanceof LifecycleListener) {
-            bind(LifecycleListener.class).toInstance((LifecycleListener) obj);
-        } else {
-            bind(LifecycleListener.class).to((Class<LifecycleListener>) obj);
-        }
+        
     }
 
     @Singleton
@@ -134,18 +148,6 @@ public final class WebApplicationModule extends AbstractModule {
         return builder.create();
     }
 
-    public void startExpiredPagesRemoval() {
-        Timer timer = new Timer(true);
-        logger.info("Starting scheduled removal for expired web applications");
-
-        timer.schedule(new TimerTask() {
-            public void run() {
-                pageScope.removeExpiredPages(pageFlowFilter);
-            }
-        }, configuration.get(Configuration.REMOVAL_SCHEDULE_PERIOD),
-                configuration.get(Configuration.REMOVAL_SCHEDULE_PERIOD));
-    }
-
     @Provides
     @Singleton
     public DirectoryWatcher resourceDirectoryWatcher() {
@@ -155,11 +157,37 @@ public final class WebApplicationModule extends AbstractModule {
             paths.addAll(configuration.get(Configuration.RESOURCE_PATH));
         }
         
-        Pattern matcher = Pattern.compile(".+\\.(xsl|css|js)", Pattern.CASE_INSENSITIVE);
+        Pattern matcher = Pattern.compile(".+\\.(xsl|css|js|properties)", Pattern.CASE_INSENSITIVE);
         
         if (!configuration.get(Configuration.CLASS_RELOADING_ENABLED)) {
-            matcher = Pattern.compile(".+\\.(xsl|css|js|class)", Pattern.CASE_INSENSITIVE);
+            matcher = Pattern.compile(".+\\.(xsl|css|js|class|properties)", Pattern.CASE_INSENSITIVE);
         }
         return new DirectoryWatcher(paths, matcher); 
+    }
+    
+    @Provides
+    @Singleton
+    public WebApplicationConf provideWebApplicationConf() {
+        return new WebApplicationConf(
+                configuration.get(Configuration.DEVELOPMENT_MODE),
+                configuration.get(Configuration.XML_PARAM_NAME),
+                configuration.get(Configuration.NAMESPACE));
+    }
+    
+    
+    private void handleDevelopmentTools() {
+        developmentTools = new DevelopmentToolsImpl(configuration);
+    }
+    
+    @Provides
+    @Singleton
+    public DevelopmentTools provideDevelopmentTools() {
+        return developmentTools;
+    }
+    
+    @Provides
+    @Singleton
+    public InternalDevelopmentTools provideInternalDevelopmentTools() {
+        return developmentTools;
     }
 }
