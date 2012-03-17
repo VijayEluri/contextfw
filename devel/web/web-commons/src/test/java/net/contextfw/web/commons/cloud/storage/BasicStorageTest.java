@@ -18,6 +18,8 @@ import org.junit.Test;
 
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+import com.mongodb.BasicDBObjectBuilder;
+import com.mongodb.DBObject;
 
 public class BasicStorageTest extends AbstractStorageTest {
 
@@ -58,21 +60,38 @@ public class BasicStorageTest extends AbstractStorageTest {
     }
     
     private PageHandle initWebApplication() {
+        return initWebApplication(System.currentTimeMillis() + 1100);
+    }
+    
+    private PageHandle initWebApplication(long initialMaxInactivity) {
         WebApplicationMock app = webApplicationProvider.get();
         app.getScoped1().setMsg(SCOPED1);
         app.getScoped2().setMsg("Scoped2");
         storage.initialize(app, 
                            mockRequest(RequestExpect.WITH_REMOTE_ADDR), 
-                           System.currentTimeMillis() + 1100,
+                           initialMaxInactivity,
                            mockExecution(app));
         return app.getHandle();
     }
     
     @Test
     public void WebApplication_Is_Initialized() {
+
+        long initialMaxInactivity = System.currentTimeMillis() + 1100;
+        long maxInactivity = initialMaxInactivity - 500;
         
-        final PageHandle handle = initWebApplication();
+        final PageHandle handle = initWebApplication(initialMaxInactivity);
         assertNotNull(handle);
+        BasicDBObjectBuilder b = new BasicDBObjectBuilder();
+        b.add("handle", handle.toString());
+        DBObject obj = db.getCollection("pages").findOne(b.get());
+        assertNotNull(obj);
+        assertEquals(initialMaxInactivity, obj.get("validThrough"));
+        
+        storage.refresh(handle, mockRequest(RequestExpect.WITH_REMOTE_ADDR), maxInactivity);
+        obj = db.getCollection("pages").findOne(b.get());
+        assertNotNull(obj);
+        assertEquals(maxInactivity, obj.get("validThrough"));
 
         final MutableBoolean executionCalled = new MutableBoolean(false);
         

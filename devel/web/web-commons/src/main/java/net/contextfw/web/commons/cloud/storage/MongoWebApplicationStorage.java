@@ -27,6 +27,7 @@ import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DB;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
+import com.mongodb.WriteConcern;
 
 @Singleton
 public class MongoWebApplicationStorage extends MongoBase implements WebApplicationStorage {
@@ -154,7 +155,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
         doc.put(KEY_VALID_THROUGH, validThrough);
         doc.put(KEY_LOCKED, true);
         
-        getCollection().insert(doc);
+        getCollection().insert(doc, WriteConcern.SAFE);
     }
 
     private WebApplication load(DBObject obj) {
@@ -181,7 +182,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
     @Override
     public void initialize(final WebApplication application, 
                            HttpServletRequest request,
-                           long validThrough,
+                           long initialValidThrough,
                            final ScopedWebApplicationExecution execution) {
         String remoteAddr = request.getRemoteAddr();
         
@@ -190,9 +191,9 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
         
         final PageHandle handle = createHandle();
         
-        create(handle, remoteAddr, application, validThrough);
+        create(handle, remoteAddr, application, initialValidThrough);
         
-        executeExclusive(handle.toString(), remoteAddr, validThrough,  application, execution);
+        executeExclusive(handle.toString(), remoteAddr, null,  application, execution);
     }
 
     @Override
@@ -221,8 +222,9 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
                 .add(KEY_HANDLE, handle.toString())
                 .add(KEY_REMOTE_ADDR, request.getRemoteAddr())
                 .add(KEY_VALID_THROUGH, o("$gte", System.currentTimeMillis())).get();
-        
-        getCollection().update(query, o("$set", o(KEY_VALID_THROUGH, validThrough)));        
+
+        getCollection().update(query, o("$set", o(KEY_VALID_THROUGH, validThrough)), 
+                false, false, WriteConcern.SAFE);        
     }
 
     @Override
