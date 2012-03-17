@@ -1,6 +1,6 @@
 .classpath
 .project
 .settings
+.metadata
 target
-orientdb
 /devel/web/web-application/roadmap.txt
