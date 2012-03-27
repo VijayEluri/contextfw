@@ -19,27 +19,21 @@ package net.contextfw.web.application.internal.service;
 
 import java.io.IOException;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.Set;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.ThreadPoolExecutor;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import net.contextfw.web.application.PageHandle;
 import net.contextfw.web.application.ResourceCleaner;
 import net.contextfw.web.application.WebApplication;
 import net.contextfw.web.application.WebApplicationException;
-import net.contextfw.web.application.PageHandle;
 import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.internal.page.PageScope;
 import net.contextfw.web.application.internal.page.WebApplicationPage;
 import net.contextfw.web.application.lifecycle.LifecycleListener;
 import net.contextfw.web.application.remote.ResourceResponse;
-import net.contextfw.web.application.scope.Execution;
-import net.contextfw.web.application.scope.PageScopedExecutor;
 import net.contextfw.web.application.scope.ScopedWebApplicationExecution;
 import net.contextfw.web.application.scope.WebApplicationStorage;
 
@@ -59,8 +53,6 @@ public class UpdateHandler {
 
     private static final String CONTEXTFW_REMOVE = "contextfw-remove";
     
-    private ThreadPoolExecutor executor = new ScheduledThreadPoolExecutor(10);
-
     private Logger logger = LoggerFactory.getLogger(UpdateHandler.class);
 
     private final LifecycleListener listeners;
@@ -185,30 +177,8 @@ public class UpdateHandler {
                     }
                 });
 
-                Set<Execution> afterRun =  new HashSet<Execution>();
-                
-                Object retVal = null;
-                
                 if (invocation[0].isResource()) {
-                    retVal = handleResource(request, response, invocation[0]);
-                } else {
-                    retVal = invocation[0].getRetVal();
-                }
-                
-                if (retVal instanceof Execution) {
-                    afterRun.add((Execution) retVal);
-                } else if (retVal instanceof Iterable) {
-                    for (Object i : ((Iterable<?>) retVal)) {
-                        afterRun.add((Execution) i);
-                    }
-                } else if (retVal instanceof Execution[]) {
-                    for (Execution i : ((Execution[]) retVal)) {
-                        afterRun.add(i);
-                    }
-                }
-
-                if (!afterRun.isEmpty()) {
-                    runAfterRun(handle, afterRun);
+                    handleResource(request, response, invocation[0]);
                 }
             }
         }
@@ -217,58 +187,20 @@ public class UpdateHandler {
         }
     }
 
-    private void runAfterRun(final PageHandle handle,
-                             final Set<Execution> afterRun) throws IOException {
-
-        final PageScopedExecutor pageScopedExecutor = new PageScopedExecutor() {
-            @Override
-            public void execute(final Runnable execution) {
-                    storage.execute(handle,
-                                    new ScopedWebApplicationExecution() {
-                        @Override
-                        public void execute(WebApplication application) {
-                            if (application != null) {
-                                WebApplicationPage page = (WebApplicationPage) application;
-                                pageScope.activatePage(page, null, null, null);
-                                try {
-                                    execution.run();
-                                } finally {
-                                    pageScope.deactivateCurrentPage();
-                                }
-                            }
-                        }
-                    });
-            }
-        };
-        for (final Execution exec : afterRun) {
-            executor.execute(new Runnable() {
-                public void run() {
-                    try {
-                        exec.execute(pageScopedExecutor);
-                    } catch (RuntimeException e) {
-                        logger.error("Error during running Execution", e);
-                    }
-                }
-            });
-        }
-    }
-
-    private Execution handleResource(final HttpServletRequest request,
+    private void handleResource(final HttpServletRequest request,
                                     final HttpServletResponse response,
                                     UpdateInvocation invocation) throws IOException {
 
         if (invocation.getRetVal() == null) {
             response.getWriter().close();
-            return null;
         }
         if (invocation.getRetVal() instanceof ResourceResponse) {
-            return ((ResourceResponse) invocation.getRetVal()).serve(request, response);
+            ((ResourceResponse) invocation.getRetVal()).serve(request, response);
         } else {
             setHeaders(response);
             response.setContentType("application/json; charset=UTF-8");
             gson.toJson(invocation.getRetVal(), response.getWriter());
             response.getWriter().close();
-            return null;
         }
     }
 
