@@ -23,6 +23,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import javax.servlet.http.HttpServlet;
+
 import net.contextfw.web.application.DocumentProcessor;
 import net.contextfw.web.application.PropertyProvider;
 import net.contextfw.web.application.SystemPropertyProvider;
@@ -38,6 +40,7 @@ import net.contextfw.web.application.internal.configuration.SelfSettableProperty
 import net.contextfw.web.application.internal.configuration.SetPropertyImpl;
 import net.contextfw.web.application.internal.configuration.StringSetPropertyImpl;
 import net.contextfw.web.application.internal.configuration.TemporalPropertyImpl;
+import net.contextfw.web.application.internal.servlet.UpdateServlet;
 import net.contextfw.web.application.lifecycle.DefaultLifecycleListener;
 import net.contextfw.web.application.lifecycle.DefaultRequestInvocationFilter;
 import net.contextfw.web.application.lifecycle.LifecycleListener;
@@ -110,7 +113,11 @@ public class Configuration {
     private static final String KEY_HOST = "contextfw.host";
     
     private static final String KEY_VERSION = "contextfw.version";
-
+    
+    private static final String KEY_UPDATE_SERVLET = "contextfw.updateServlet";
+    
+    private static final String KEY_PROXIED = "contextfw.proxied"; 
+    
     /**
      * Creates the default configuration.
      * 
@@ -129,11 +136,13 @@ public class Configuration {
           .set(PROPERTY_PROVIDER, new SystemPropertyProvider())
           .set(REQUEST_INVOCATION_FILTER, new DefaultRequestInvocationFilter())
           .set(LIFECYCLE_LISTENER.as(DefaultLifecycleListener.class))
+          .set(UPDATE_SERVLET.as(UpdateServlet.class))
           .set(WEB_APPLICATION_STORAGE.as(DefaultWebApplicationStorage.class))
           .set(RESOURCE_PATH, new HashSet<String>())
           .set(VIEW_COMPONENT_ROOT_PACKAGE, new HashSet<String>())
           .set(INITIAL_MAX_INACTIVITY.inSeconds(30))
           .set(REMOVAL_SCHEDULE_PERIOD.inMinutes(1))
+          .set(PROXIED, false)
           .set(MAX_INACTIVITY.inMinutes(2))
           .set(NAMESPACE, new HashSet<KeyValue<String, String>>())
           .set(ATTRIBUTE_JSON_SERIALIZER, new HashSet<KeyValue<Class<?>, 
@@ -222,6 +231,14 @@ public class Configuration {
     public static final SettableProperty<String> VERSION = 
             createProperty(String.class, KEY_VERSION);
     
+    
+    /**
+     * Tells if this application is befind proxy and the remote address of the client
+     * is not the remote address itself but instead a value in "X-Forwarded-For"-header
+     */
+    public static final SettableProperty<Boolean> PROXIED = 
+           createProperty(Boolean.class, KEY_PROXIED);
+    
     /**
      * Besides property <code>LOG_XML</code> it is possible to see the the page XML-representation
      * on web client. 
@@ -252,6 +269,19 @@ public class Configuration {
      */
     public static final SettableProperty<PropertyProvider> PROPERTY_PROVIDER = 
         createProperty(PropertyProvider.class, KEY_PROPERTY_PROVIDER);
+    
+    
+    /**
+     * Defines servlet that is used during updates.
+     * 
+     * <p>
+     *  With this property it is possible to use web container specific 
+     *  servlet implementations. This is important for instance in long polling
+     *  scenarios where Jetty and Tomcat specifications differ.
+     * </p>
+     */
+    public static final BindableProperty<HttpServlet>  UPDATE_SERVLET = 
+         createBindableProperty(HttpServlet.class, KEY_UPDATE_SERVLET);
     
     /**
      * Binds a lifecycle listener to the system
