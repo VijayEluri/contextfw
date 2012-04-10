@@ -44,6 +44,8 @@ public class PageContext {
     private Integer errorCode;
     private boolean reload = false;
     
+    private final String contextPath;
+    
     private Locale locale;
 
     /**
@@ -137,6 +139,7 @@ public class PageContext {
         this.request = request;
         this.response = response;
         
+        contextPath = request.getContextPath();
         requestURI = request.getRequestURI();
         queryString = request.getQueryString();
     }
@@ -184,5 +187,9 @@ public class PageContext {
 
     public void setLocale(Locale locale) {
         this.locale = locale;
+    }
+
+    public String getContextPath() {
+        return contextPath;
     }
 }
