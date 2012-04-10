@@ -54,7 +54,7 @@ public class LargeObjectTest extends AbstractStorageTest {
         app.getScoped1().setMsg(SCOPED1);
         app.getScoped2().setMsg("Scoped2");
         storage.initialize(app, 
-                           mockRequest(RequestExpect.WITH_REMOTE_ADDR), 
+                           LOCALHOST, 
                            System.currentTimeMillis() + 1100,
                            mockExecution(app));
         return app.getHandle();

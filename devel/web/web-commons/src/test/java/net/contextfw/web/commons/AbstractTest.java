@@ -18,6 +18,7 @@ import com.mongodb.MongoException;
 
 public abstract class AbstractTest {
 
+    protected static final String LOCALHOST = "127.0.0.1";
     protected static final String FOOBAR = "foobar";
     
     protected <T> T createMock(Class<T> cl) {
@@ -64,8 +65,9 @@ public abstract class AbstractTest {
     protected HttpServletRequest mockRequest(RequestExpect expect,
                                            final Cookie givenCookie) {
         HttpServletRequest request = createStrictMock(HttpServletRequest.class);
+        expect(request.getContextPath()).andReturn("");
         if (expect == RequestExpect.WITH_REMOTE_ADDR) {
-            expect(request.getRemoteAddr()).andReturn("127.0.0.1");
+            expect(request.getRemoteAddr()).andReturn(LOCALHOST);
         } else {
             expect(request.getRequestURI()).andReturn("/");
             expect(request.getQueryString()).andReturn(null);

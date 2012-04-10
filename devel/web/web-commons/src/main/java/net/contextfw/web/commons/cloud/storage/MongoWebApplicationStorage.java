@@ -2,13 +2,12 @@ package net.contextfw.web.commons.cloud.storage;
 
 import java.util.UUID;
 
-import javax.servlet.http.HttpServletRequest;
-
 import net.contextfw.web.application.PageHandle;
 import net.contextfw.web.application.WebApplication;
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.configuration.SettableProperty;
+import net.contextfw.web.application.scope.NoPageScopeException;
 import net.contextfw.web.application.scope.ScopedWebApplicationExecution;
 import net.contextfw.web.application.scope.WebApplicationStorage;
 import net.contextfw.web.commons.cloud.binding.CloudDatabase;
@@ -91,6 +90,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
     private static final String KEY_APPLICATION = "application";
 
     private static final DBObject APPLICATION_FIELDS = new BasicDBObject(KEY_APPLICATION, 1);
+    private static final DBObject LOCKED_FIELD = new BasicDBObject(KEY_LOCKED, 1);
     
     private final boolean throttle;
     private final int throttleTreshold;
@@ -181,10 +181,9 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
 
     @Override
     public void initialize(final WebApplication application, 
-                           HttpServletRequest request,
+                           String remoteAddr,
                            long initialValidThrough,
                            final ScopedWebApplicationExecution execution) {
-        String remoteAddr = request.getRemoteAddr();
         
         removeExpiredPages();
         throttle(remoteAddr);
@@ -198,10 +197,9 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
 
     @Override
     public void update(final PageHandle handle, 
-                       HttpServletRequest request, 
+                        String remoteAddr, 
                        long validThrough,
                        final ScopedWebApplicationExecution execution) {
-        String remoteAddr = request.getRemoteAddr();
         removeExpiredPages();
         throttle(remoteAddr);
         
@@ -216,11 +214,11 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
     }
 
     @Override
-    public void refresh(PageHandle handle, HttpServletRequest request, long validThrough) {
+    public void refresh(PageHandle handle, String remoteAddr, long validThrough) {
         
         DBObject query = b()
                 .add(KEY_HANDLE, handle.toString())
-                .add(KEY_REMOTE_ADDR, request.getRemoteAddr())
+                .add(KEY_REMOTE_ADDR, remoteAddr)
                 .add(KEY_VALID_THROUGH, o("$gte", System.currentTimeMillis())).get();
 
         getCollection().update(query, o("$set", o(KEY_VALID_THROUGH, validThrough)), 
@@ -228,16 +226,16 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
     }
 
     @Override
-    public void remove(PageHandle handle, HttpServletRequest request) {
+    public void remove(PageHandle handle, String remoteAddr) {
         
         DBObject query = b()
                 .add(KEY_HANDLE, handle.toString())
-                .add(KEY_REMOTE_ADDR, request.getRemoteAddr()).get();
+                .add(KEY_REMOTE_ADDR, remoteAddr).get();
         
         getCollection().remove(query);
     }
     
-    private DBObject openExclusive(String handle) {
+    private DBObject openExclusive(String handle, DBObject fields) {
 
         BasicDBObjectBuilder queryBuilder = b()
                 .add(KEY_HANDLE, handle)
@@ -249,7 +247,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
         for (int i = 0; i < TRY_OUTS; i++) {
             DBObject rv = getCollection().findAndModify(
                     query, 
-                    APPLICATION_FIELDS, 
+                    fields, 
                     null,
                     false,
                     update,
@@ -264,9 +262,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
                 return rv;
             }
         }
-        return getCollection().findOne(
-                o(KEY_HANDLE, handle), 
-                APPLICATION_FIELDS);
+        return getCollection().findOne(o(KEY_HANDLE, handle), fields);
     }
     
     private void closeExclusive(final String handle,
@@ -275,7 +271,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
         
         executeAsync(new ExceptionSafeExecution() {
             public void execute() throws Exception {
-                
+
                 DBObject query = o(KEY_HANDLE, handle);
                 
                 BasicDBObjectBuilder updateBuilder = b();
@@ -313,6 +309,15 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
     
     private WebApplication loadExclusive(String handle, String remoteAddr) {
         
+        if (scopeExists(handle, remoteAddr)) {
+            return load(openExclusive(handle, APPLICATION_FIELDS));
+        } else {
+            return null;
+        }
+       
+    }
+    
+    private boolean scopeExists(String handle, String remoteAddr) {
         DBCollection collection = getCollection();
 
         BasicDBObjectBuilder queryBuilder = b().add(KEY_HANDLE, handle);
@@ -328,14 +333,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
         
         DBObject query = queryBuilder.get();
 
-        boolean exists = collection.count(query) == 1;
-        
-        if (exists) {
-            return load(openExclusive(handle));
-        } else {
-            return null;
-        }
-       
+        return collection.count(query) == 1;
     }
 
     @Override
@@ -360,7 +358,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
         }
         
         if (getCollection().update(query, update).getN() != 1) {
-            throw new WebApplicationException("Page scope does not exist");
+            throw new NoPageScopeException(handle);
         }
     }
 
@@ -382,11 +380,35 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
         DBObject obj = getCollection().findOne(query, field);
         
         if (obj == null) {
-            throw new WebApplicationException("Page scope does not exist");
+            throw new NoPageScopeException(handle);
         }
         
         byte[] data = (byte[]) obj.get("large_" + key);
         
         return data == null ? null : (T) serializer.unserialize(data);
+    }
+
+    @Override
+    public void executeSynchronized(PageHandle handle, Runnable runnable) {
+        
+        if (handle == null) {
+            throw new IllegalArgumentException("Handle cannot be null");
+        } else if (runnable == null) {
+            throw new IllegalArgumentException("Runnable cannot be null");
+        }
+        try {
+            if (scopeExists(handle.toString(), null)) {
+                openExclusive(handle.toString(), LOCKED_FIELD);
+                runnable.run();
+            } else {
+                throw new NoPageScopeException(handle);
+            }
+        } catch (WebApplicationException e) {
+            throw e;
+        } catch (RuntimeException e) {
+            throw new WebApplicationException(e);
+        } finally {
+            closeExclusive(handle.toString(), null, null);
+        }
     }
 }

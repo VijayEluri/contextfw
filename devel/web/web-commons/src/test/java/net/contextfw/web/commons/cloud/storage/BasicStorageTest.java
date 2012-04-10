@@ -68,7 +68,7 @@ public class BasicStorageTest extends AbstractStorageTest {
         app.getScoped1().setMsg(SCOPED1);
         app.getScoped2().setMsg("Scoped2");
         storage.initialize(app, 
-                           mockRequest(RequestExpect.WITH_REMOTE_ADDR), 
+                           LOCALHOST, 
                            initialMaxInactivity,
                            mockExecution(app));
         return app.getHandle();
@@ -88,7 +88,7 @@ public class BasicStorageTest extends AbstractStorageTest {
         assertNotNull(obj);
         assertEquals(initialMaxInactivity, obj.get("validThrough"));
         
-        storage.refresh(handle, mockRequest(RequestExpect.WITH_REMOTE_ADDR), maxInactivity);
+        storage.refresh(handle, LOCALHOST, maxInactivity);
         obj = db.getCollection("pages").findOne(b.get());
         assertNotNull(obj);
         assertEquals(maxInactivity, obj.get("validThrough"));
@@ -109,7 +109,7 @@ public class BasicStorageTest extends AbstractStorageTest {
         };
         
         storage.update(handle, 
-                        mockRequest(RequestExpect.WITH_REMOTE_ADDR), 
+                        LOCALHOST, 
                         System.currentTimeMillis() + 1000,
                         execution);
         
@@ -131,10 +131,10 @@ public class BasicStorageTest extends AbstractStorageTest {
             }
         };
         
-        storage.remove(handle, mockRequest(RequestExpect.WITH_REMOTE_ADDR));
+        storage.remove(handle, LOCALHOST);
         
         storage.update(handle, 
-                        mockRequest(RequestExpect.WITH_REMOTE_ADDR), 
+                        LOCALHOST, 
                         System.currentTimeMillis() + 1000,
                         execution);
         
@@ -151,6 +151,7 @@ public class BasicStorageTest extends AbstractStorageTest {
                 assertNotNull(application);
                 WebApplicationMock mock = (WebApplicationMock) application;
                 mock.getScoped1().setMsg(I_WAS_CHANGED);
+                mock.getScoped1().addItem("Item1");
             }
         };
         
@@ -162,6 +163,7 @@ public class BasicStorageTest extends AbstractStorageTest {
             public void execute(WebApplication application) {
                 WebApplicationMock mock = (WebApplicationMock) application;
                 assertEquals(I_WAS_CHANGED, mock.getScoped1().getMsg());
+                assertEquals("Item1", mock.getScoped1().getItem(0));
                 executionCalled.setValue(true);
             }
         };
@@ -196,7 +198,7 @@ public class BasicStorageTest extends AbstractStorageTest {
         sleep(500);
         
         storage.refresh(handle,
-                mockRequest(RequestExpect.WITH_REMOTE_ADDR), 
+                LOCALHOST, 
                 System.currentTimeMillis() + 1500);
         
         sleep(1000);
