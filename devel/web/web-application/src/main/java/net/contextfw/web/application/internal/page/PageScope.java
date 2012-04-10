@@ -23,6 +23,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import net.contextfw.web.application.PageContext;
 import net.contextfw.web.application.lifecycle.LifecycleListener;
+import net.contextfw.web.application.util.Tracker;
 
 import com.google.inject.Inject;
 import com.google.inject.Key;
@@ -49,6 +50,7 @@ public class PageScope implements Scope {
         new ThreadLocal<WebApplicationPage>();
 
     public PageScope() {
+        Tracker.initialized(this);
     }
     
     public <T> Provider<T> scope(final Key<T> key, final Provider<T> unscoped) {

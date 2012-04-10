@@ -34,11 +34,13 @@ import net.contextfw.web.application.internal.development.DevelopmentToolsImpl;
 import net.contextfw.web.application.internal.development.InternalDevelopmentTools;
 import net.contextfw.web.application.internal.page.PageScope;
 import net.contextfw.web.application.internal.service.DirectoryWatcher;
+import net.contextfw.web.application.internal.service.PageScopedExecutorImpl;
 import net.contextfw.web.application.internal.service.WebApplicationConf;
 import net.contextfw.web.application.internal.util.AttributeHandler;
 import net.contextfw.web.application.internal.util.ObjectAttributeSerializer;
 import net.contextfw.web.application.lifecycle.LifecycleListener;
 import net.contextfw.web.application.lifecycle.PageScoped;
+import net.contextfw.web.application.lifecycle.PageScopedExecutor;
 import net.contextfw.web.application.lifecycle.RequestInvocationFilter;
 import net.contextfw.web.application.scope.WebApplicationStorage;
 import net.contextfw.web.application.serialize.AttributeJsonSerializer;
@@ -70,6 +72,8 @@ public final class WebApplicationModule extends AbstractModule {
     public WebApplicationModule(Configuration configuration) {
         this.configuration = configuration;
     }
+    
+    private PageScope pageScope;
 
     @SuppressWarnings("unchecked")
     private <T> void bind(Class<T> type, BindableProperty<T> property) {
@@ -84,19 +88,22 @@ public final class WebApplicationModule extends AbstractModule {
     
     @Override
     protected void configure() {
-        handleDevelopmentTools();
         bind(WebApplicationStorage.class, Configuration.WEB_APPLICATION_STORAGE);
-        bind(LifecycleListener.class, Configuration.LIFECYCLE_LISTENER);
-        PageScope pageScope = new PageScope();
-        requestInjection(pageScope);
+        
+        pageScope = new PageScope();
         bindScope(PageScoped.class, pageScope);
         bind(PageScope.class).toInstance(pageScope);
+        bind(Configuration.class).toInstance(configuration);
+        bind(PropertyProvider.class).toInstance(configuration.get(Configuration.PROPERTY_PROVIDER));
+        
+        handleDevelopmentTools();
+        
+        //bind(LifecycleListener.class, Configuration.LIFECYCLE_LISTENER);
         bind(PageContext.class).toProvider(pageScope.scope(Key.get(PageContext.class), null));
         bind(PageHandle.class).toProvider(pageScope.scope(Key.get(PageHandle.class), null));
         bind(ObjectAttributeSerializer.class).to(AttributeHandler.class);
-        bind(Configuration.class).toInstance(configuration);
         bind(ComponentRegister.class).to(InternalComponentRegister.class);
-        bind(PropertyProvider.class).toInstance(configuration.get(Configuration.PROPERTY_PROVIDER));
+
         bind(RequestInvocationFilter.class).toInstance(configuration.get(Configuration.REQUEST_INVOCATION_FILTER));
 
         this.bindListener(Matchers.any(), new TypeListener() {
@@ -113,6 +120,7 @@ public final class WebApplicationModule extends AbstractModule {
 
         requestInjection(this);
         requestInjection(autoRegisterListener);
+        //requestInjection(pageScope);
         
         WebApplicationServletModule servletModule =
                 new WebApplicationServletModule(configuration,
@@ -189,5 +197,27 @@ public final class WebApplicationModule extends AbstractModule {
     @Singleton
     public InternalDevelopmentTools provideInternalDevelopmentTools() {
         return developmentTools;
+    }
+    
+    @Provides
+    @Singleton
+    public PageScopedExecutor providePageScopedExecutor(PageScope pageScope,
+                                                        WebApplicationStorage storage) {
+        return new PageScopedExecutorImpl(storage, pageScope);
+    }
+
+    @SuppressWarnings("unchecked")
+    @Provides
+    @Singleton
+    public LifecycleListener provideLifecycleListener(Injector injector) {
+        Object obj = configuration.get(Configuration.LIFECYCLE_LISTENER);
+        LifecycleListener listener = null;
+        if (obj instanceof LifecycleListener) {
+            listener = (LifecycleListener) obj;
+        } else {
+            listener = injector.getInstance(((Class<LifecycleListener>) obj));
+        }
+        pageScope.setListener(listener);
+        return listener;
     }
 }

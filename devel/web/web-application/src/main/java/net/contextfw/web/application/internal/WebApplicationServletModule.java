@@ -24,6 +24,8 @@ import java.util.Set;
 import java.util.SortedSet;
 import java.util.regex.Pattern;
 
+import javax.servlet.http.HttpServlet;
+
 import net.contextfw.web.application.PropertyProvider;
 import net.contextfw.web.application.ResourceCleaner;
 import net.contextfw.web.application.configuration.Configuration;
@@ -33,6 +35,7 @@ import net.contextfw.web.application.internal.initializer.InitializerProvider;
 import net.contextfw.web.application.internal.page.PageScope;
 import net.contextfw.web.application.internal.service.DirectoryWatcher;
 import net.contextfw.web.application.internal.service.InitHandler;
+import net.contextfw.web.application.internal.service.UpdateExecutorImpl;
 import net.contextfw.web.application.internal.service.UpdateHandler;
 import net.contextfw.web.application.internal.servlet.CSSServlet;
 import net.contextfw.web.application.internal.servlet.DevelopmentFilter;
@@ -45,6 +48,7 @@ import net.contextfw.web.application.internal.servlet.UriMappingFactory;
 import net.contextfw.web.application.internal.util.ClassScanner;
 import net.contextfw.web.application.lifecycle.LifecycleListener;
 import net.contextfw.web.application.lifecycle.RequestInvocationFilter;
+import net.contextfw.web.application.lifecycle.UpdateExecutor;
 import net.contextfw.web.application.scope.WebApplicationStorage;
 
 import org.slf4j.Logger;
@@ -104,10 +108,13 @@ public class WebApplicationServletModule extends ServletModule {
         
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     protected void configureServlets() {
+        //bind(UpdateExecutor.class).to(UpdateExecutorImpl.class);
         //bind(RequestInvocationFilter.class).toInstance(this.filter);
         requestInjection(this.filter);
+        
         initHandler = new InitHandler(configuration, 
                                       pageScope, 
                                       internalDevelopmentTools);
@@ -119,8 +126,15 @@ public class WebApplicationServletModule extends ServletModule {
                 ScriptServlet.class);
         serve(resourcePrefix + ".css").with(
                 CSSServlet.class);
+
+        Object updateServlet = configuration.get(Configuration.UPDATE_SERVLET);
         
-        serveRegex(".*/contextfw-update/.*").with(UpdateServlet.class);
+        if (updateServlet instanceof HttpServlet) {
+            serveRegex(".*/contextfw-update/.*").with((HttpServlet) updateServlet);
+        } else {
+            serveRegex(".*/contextfw-update/.*").with((Class<HttpServlet>) updateServlet);
+        }
+        
         serveRegex(".*/contextfw-refresh/.*").with(UpdateServlet.class);
         serveRegex(".*/contextfw-remove/.*").with(UpdateServlet.class);
         requestInjection(this);
@@ -200,5 +214,13 @@ public class WebApplicationServletModule extends ServletModule {
                 configuration,
                 pageScope,
                 gson);
+    }
+    
+    @Provides
+    @Singleton
+    public UpdateExecutor provideUpdateExecutor(UpdateHandler updateHandler,
+            WebApplicationStorage storage,
+            Configuration configuration) {
+        return new UpdateExecutorImpl(updateHandler, storage, configuration);
     }
 }
