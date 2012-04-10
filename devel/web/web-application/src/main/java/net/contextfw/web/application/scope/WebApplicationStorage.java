@@ -1,31 +1,42 @@
 package net.contextfw.web.application.scope;
 
-import javax.servlet.http.HttpServletRequest;
-
-import net.contextfw.web.application.WebApplication;
 import net.contextfw.web.application.PageHandle;
+import net.contextfw.web.application.WebApplication;
 
 public interface WebApplicationStorage {
     
     void initialize(WebApplication application,
-                    HttpServletRequest request,
+                    String remoteAddr,
                     long validThrough,
                     ScopedWebApplicationExecution execution);
 
     void update(PageHandle handle,
-                HttpServletRequest request,
+                String remoteAddr,
                 long validThrough,
                 ScopedWebApplicationExecution execution);
     
     void execute(PageHandle handle,
                  ScopedWebApplicationExecution execution);
 
+    /**
+     * Runs runnable in locked environment.
+     * 
+     * This method does not initialized page scope at all, it only locks
+     * the scope execution so that no other thread or server can access the scope.
+     * 
+     * It is useful to use loadLarge and storeLarge in this mode.
+     * 
+     * @param handle
+     * @param runnable
+     */
+    void executeSynchronized(PageHandle handle, Runnable runnable);
+    
     void refresh(PageHandle handle, 
-             HttpServletRequest request,
-             long validThrough);
+                 String remoteAddr,
+                 long validThrough);
 
     void remove(PageHandle handle,
-            HttpServletRequest request);
+                String remoteAddr);
     
     /**
      * Stores store large object to page scope.

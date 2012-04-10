@@ -24,10 +24,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import net.contextfw.web.application.internal.service.UpdateHandler;
-import net.contextfw.web.application.lifecycle.RequestInvocation;
-import net.contextfw.web.application.lifecycle.RequestInvocationFilter;
-import net.contextfw.web.application.lifecycle.RequestInvocationFilter.Mode;
+import net.contextfw.web.application.lifecycle.UpdateExecutor;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -37,36 +34,20 @@ public class UpdateServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
-            value="SE_BAD_FIELD", justification="I know what I'm doing")
-    @Inject
-    private transient UpdateHandler handler;
+    private final UpdateExecutor executor;
     
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
-            value="SE_BAD_FIELD", justification="I know what I'm doing")
-    @Inject
-    private RequestInvocationFilter filter;
-    
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
-            value="SE_BAD_FIELD", justification="I know what I'm doing")
-    private final RequestInvocation invocation = new RequestInvocation() {
-        @Override
-        public void invoke(HttpServlet servlet, HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-            handler.handleRequest(servlet, request, response);
-        }
-    };
-
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        filter.filter(Mode.UPDATE, this, req, resp, invocation);
+        executor.update(this, req, resp);
     }
 
     @Override
     protected void doPost(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {
-        filter.filter(Mode.UPDATE, this, req, resp, invocation);
+        executor.update(this, req, resp);
     }
 
     @Inject
-    public UpdateServlet() {
+    public UpdateServlet(UpdateExecutor executor) {
+        this.executor = executor;
     }
 }

@@ -18,7 +18,6 @@
 package net.contextfw.web.application.internal.service;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.List;
 
 import javax.servlet.ServletException;
@@ -39,6 +38,7 @@ import net.contextfw.web.application.lifecycle.LifecycleListener;
 import net.contextfw.web.application.remote.ErrorResolution;
 import net.contextfw.web.application.scope.ScopedWebApplicationExecution;
 import net.contextfw.web.application.scope.WebApplicationStorage;
+import net.contextfw.web.application.util.Tracker;
 
 import org.apache.commons.lang.mutable.MutableBoolean;
 import org.slf4j.Logger;
@@ -47,7 +47,7 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
-public class InitHandler {
+public class InitHandler extends AbstractHandler {
 
     private Logger logger = LoggerFactory.getLogger(InitHandler.class);
 
@@ -55,6 +55,7 @@ public class InitHandler {
 
     @Inject
     private Provider<WebApplication> webApplicationProvider;
+    
     @Inject
     private LifecycleListener listeners;
     
@@ -76,10 +77,12 @@ public class InitHandler {
     public InitHandler(Configuration properties, 
                        PageScope pageScope,
                        InternalDevelopmentTools internalDevelopmentTools) {
+        super(properties.get(Configuration.PROXIED));
         initialMaxInactivity = properties.get(Configuration.INITIAL_MAX_INACTIVITY);
         developmentMode = properties.get(Configuration.DEVELOPMENT_MODE);
         this.pageScope = pageScope;
         this.internalDevelopmentTools = internalDevelopmentTools;
+        Tracker.initialized(this);
     }
 
     public final void handleRequest(
@@ -96,21 +99,16 @@ public class InitHandler {
             internalDevelopmentTools.reloadResources();
         }
 
-        response.addHeader("Expires", "Sun, 19 Nov 1978 05:00:00 GMT");
-        response.addHeader("Last-Modified", new Date().toString());
-        response.addHeader("Cache-Control", "no-store, no-cache, must-revalidate");
-        response.addHeader("Cache-Control", "post-check=0, pre-check=0");
-        response.addHeader("Pragma", "no-cache");
-
         if (chain == null) {
             response.sendError(HttpServletResponse.SC_NOT_FOUND);
         } else {
-
+            String remoteAddr = getRemoteAddr(request);
             WebApplicationPage page = pageScope.createPage(servlet, request, response);
             final MutableBoolean expired = new MutableBoolean(false);
+            final Responder resp = new ServletResponder(response);
             storage.initialize(
                     page,
-                    request,
+                    remoteAddr,
                     System.currentTimeMillis() + HOUR,
                     new ScopedWebApplicationExecution() {
                         @Override
@@ -124,7 +122,7 @@ public class InitHandler {
                                 page.getWebApplication().initState(mapping);
                                 listeners.afterInitialize();
                                 listeners.beforeRender();
-                                expired.setValue(page.getWebApplication().sendResponse());
+                                expired.setValue(page.getWebApplication().sendResponse(resp));
                                 listeners.afterRender();
                             } catch (Exception e) {
                                 // TODO Fix this construct with test
@@ -153,11 +151,11 @@ public class InitHandler {
             // not
             // penalizing client
             if (expired.booleanValue()) {
-                storage.remove(page.getHandle(), request);
+                storage.remove(page.getHandle(), remoteAddr);
             } else {
                 storage.refresh(
                         page.getHandle(), 
-                        request,
+                        remoteAddr,
                         System.currentTimeMillis() + initialMaxInactivity);
             }
         }

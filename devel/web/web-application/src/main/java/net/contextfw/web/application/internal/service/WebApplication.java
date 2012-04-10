@@ -37,12 +37,14 @@ public interface WebApplication {
      * @return
      *      true, if web application should be removed
      */
-    boolean sendResponse();
+    boolean sendResponse(Responder resp);
 
     /**
      * This is called when page is updated
      */
-    UpdateInvocation updateState(String componentId, String method);
+    UpdateInvocation updateState(String componentId, 
+                                 String method,
+                                 List<String> params);
     
     void setInitializerChain(List<Class<? extends Component>> chain);
 }

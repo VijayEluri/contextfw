@@ -1,6 +1,5 @@
 package net.contextfw.web.application.scope;
 
-import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
 import static org.easymock.EasyMock.verify;
 import static org.junit.Assert.assertEquals;
@@ -10,9 +9,9 @@ import static org.junit.Assert.assertNull;
 import javax.servlet.http.HttpServletRequest;
 
 import net.contextfw.application.AbstractTest;
+import net.contextfw.web.application.PageHandle;
 import net.contextfw.web.application.WebApplication;
 import net.contextfw.web.application.WebApplicationException;
-import net.contextfw.web.application.PageHandle;
 import net.contextfw.web.application.configuration.Configuration;
 
 import org.junit.After;
@@ -50,7 +49,6 @@ public class DefaultWebApplicationStorageTest extends AbstractTest {
         application = new SimpleWebApplication();
         
         request = createStrictMock(HttpServletRequest.class);
-        expect(request.getRemoteAddr()).andReturn(LOCALHOST);
         
         execution = createStrictMock(ScopedWebApplicationExecution.class);
         execution.execute(application);
@@ -58,7 +56,7 @@ public class DefaultWebApplicationStorageTest extends AbstractTest {
         replay(request, execution);
         
         storage.initialize(application, 
-                request, 
+                LOCALHOST, 
                 System.currentTimeMillis() + MAX_INACTIVITY,
                 execution);
         
@@ -83,7 +81,19 @@ public class DefaultWebApplicationStorageTest extends AbstractTest {
         execution.execute(application);
         replay(execution);
         storage.update(application.handle, 
-               getRequest(LOCALHOST),
+               LOCALHOST,
+               System.currentTimeMillis() + 1000, 
+               execution);
+        verify(execution);
+    }
+    
+    @Test
+    public void Update_From_Null_Address() {
+        ScopedWebApplicationExecution execution = createStrictMock(ScopedWebApplicationExecution.class);
+        execution.execute(application);
+        replay(execution);
+        storage.update(application.handle, 
+               null,
                System.currentTimeMillis() + 1000, 
                execution);
         verify(execution);
@@ -95,7 +105,7 @@ public class DefaultWebApplicationStorageTest extends AbstractTest {
         execution.execute(null);
         replay(execution);
         storage.update(application.handle, 
-               getRequest(WRONG_ADDRESS),
+               WRONG_ADDRESS,
                System.currentTimeMillis() + 1000,
                execution);
         verify(execution);
@@ -108,7 +118,7 @@ public class DefaultWebApplicationStorageTest extends AbstractTest {
         execution.execute(null);
         replay(execution);
         storage.update(application.handle, 
-               getRequest(LOCALHOST),
+               LOCALHOST,
                System.currentTimeMillis() + 1000,
                execution);
         verify(execution);
@@ -118,14 +128,14 @@ public class DefaultWebApplicationStorageTest extends AbstractTest {
     public void Refresh_From_Wrong_Address() {
         
         storage.refresh(application.handle, 
-                        getRequest(WRONG_ADDRESS), 
+                        WRONG_ADDRESS, 
                         System.currentTimeMillis() + 1000);
         sleep(250);
         ScopedWebApplicationExecution execution = createStrictMock(ScopedWebApplicationExecution.class);
         execution.execute(null);
         replay(execution);
         storage.update(application.handle, 
-                       getRequest(LOCALHOST), 
+                       LOCALHOST, 
                        System.currentTimeMillis() + 1000, 
                        execution);
         verify(execution);
@@ -135,16 +145,16 @@ public class DefaultWebApplicationStorageTest extends AbstractTest {
     public void Remove_From_Wrong_Address() {
         
         storage.refresh(application.handle, 
-                getRequest(LOCALHOST), 
+                LOCALHOST, 
                 System.currentTimeMillis() + 1000);
         
-        storage.remove(application.handle,  getRequest(WRONG_ADDRESS));
+        storage.remove(application.handle,  WRONG_ADDRESS);
         
         ScopedWebApplicationExecution execution = createStrictMock(ScopedWebApplicationExecution.class);
         execution.execute(application);
         replay(execution);
         storage.update(application.handle, 
-               getRequest(LOCALHOST),
+               LOCALHOST,
                System.currentTimeMillis() + 1000, 
                execution);
         verify(execution);
@@ -154,16 +164,35 @@ public class DefaultWebApplicationStorageTest extends AbstractTest {
     public void Remove_From_Correct_Address() {
         
         storage.refresh(application.handle, 
-                getRequest(LOCALHOST), 
+                LOCALHOST, 
                 System.currentTimeMillis() + 1000);
         
-        storage.remove(application.handle,  getRequest(LOCALHOST));
+        storage.remove(application.handle,  LOCALHOST);
         
         ScopedWebApplicationExecution execution = createStrictMock(ScopedWebApplicationExecution.class);
         execution.execute(null);
         replay(execution);
         storage.update(application.handle, 
-               getRequest(LOCALHOST),
+               LOCALHOST,
+               System.currentTimeMillis() + 1000, 
+               execution);
+        verify(execution);
+    }
+    
+    @Test
+    public void Remove_From_Null_Address() {
+        
+        storage.refresh(application.handle, 
+                LOCALHOST, 
+                System.currentTimeMillis() + 1000);
+        
+        storage.remove(application.handle,  null);
+        
+        ScopedWebApplicationExecution execution = createStrictMock(ScopedWebApplicationExecution.class);
+        execution.execute(null);
+        replay(execution);
+        storage.update(application.handle, 
+               LOCALHOST,
                System.currentTimeMillis() + 1000, 
                execution);
         verify(execution);
@@ -172,14 +201,30 @@ public class DefaultWebApplicationStorageTest extends AbstractTest {
     @Test
     public void Refresh_From_Correct_Address() {
         storage.refresh(application.handle, 
-                        getRequest(LOCALHOST), 
+                        LOCALHOST, 
                         System.currentTimeMillis() + 1000);
         sleep(250);
         ScopedWebApplicationExecution execution = createStrictMock(ScopedWebApplicationExecution.class);
         execution.execute(application);
         replay(execution);
         storage.update(application.handle, 
-                       getRequest(LOCALHOST),
+                      LOCALHOST,
+                       System.currentTimeMillis() + 1000, 
+                       execution);
+        verify(execution);
+    }
+    
+    @Test
+    public void Refresh_From_Null_Address() {
+        storage.refresh(application.handle, 
+                        null, 
+                        System.currentTimeMillis() + 1000);
+        sleep(250);
+        ScopedWebApplicationExecution execution = createStrictMock(ScopedWebApplicationExecution.class);
+        execution.execute(application);
+        replay(execution);
+        storage.update(application.handle, 
+                      LOCALHOST,
                        System.currentTimeMillis() + 1000, 
                        execution);
         verify(execution);
@@ -191,23 +236,16 @@ public class DefaultWebApplicationStorageTest extends AbstractTest {
         sleep(250);
         
         storage.refresh(application.handle, 
-                        getRequest(LOCALHOST), 
+                        LOCALHOST, 
                         System.currentTimeMillis() + 1000);
         ScopedWebApplicationExecution execution = createStrictMock(ScopedWebApplicationExecution.class);
         execution.execute(null);
         replay(execution);
         storage.update(application.handle, 
-                       getRequest(LOCALHOST),
+                       LOCALHOST,
                        System.currentTimeMillis() + 1000,
                        execution);
         verify(execution);
-    }
-    
-    private HttpServletRequest getRequest(String remoteAddr) {
-        HttpServletRequest request = createMock(HttpServletRequest.class);
-        expect(request.getRemoteAddr()).andReturn(remoteAddr);
-        replay(request);
-        return request;
     }
     
     @Test

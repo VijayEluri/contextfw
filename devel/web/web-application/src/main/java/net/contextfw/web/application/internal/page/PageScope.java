@@ -107,7 +107,7 @@ public class PageScope implements Scope {
         return page;
     }
 
-    @Inject
+    //@Inject
     public void setListener(LifecycleListener listener) {
         this.listener = listener;
     }

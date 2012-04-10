@@ -9,13 +9,11 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.UUID;
 
-import javax.servlet.http.HttpServletRequest;
-
+import net.contextfw.web.application.PageHandle;
 import net.contextfw.web.application.WebApplication;
 import net.contextfw.web.application.WebApplicationException;
-import net.contextfw.web.application.PageHandle;
 import net.contextfw.web.application.configuration.Configuration;
-import net.contextfw.web.application.configuration.SettableProperty;
+import net.contextfw.web.application.util.Tracker;
 
 import org.apache.commons.lang.StringUtils;
 import org.slf4j.Logger;
@@ -27,20 +25,10 @@ import com.google.inject.Singleton;
 @Singleton
 public class DefaultWebApplicationStorage implements WebApplicationStorage {
 
-    private static final int MAX_LENGTH = 16;
-
     private Logger logger = LoggerFactory.getLogger(DefaultWebApplicationStorage.class);
 
     private final Map<PageHandle, Holder> pages = 
             new HashMap<PageHandle, Holder>();
-    
-    
-    
-    public static final SettableProperty<Boolean> PROXIED = 
-            Configuration.createProperty(Boolean.class, 
-                    DefaultWebApplicationStorage.class.getName() + ".proxied");
-    
-    private final boolean proxied;
     
     private static final class Holder {
         private long validThrough;
@@ -60,8 +48,6 @@ public class DefaultWebApplicationStorage implements WebApplicationStorage {
     @Inject
     public DefaultWebApplicationStorage(Configuration configuration) {
         
-        this.proxied = configuration.getOrElse(PROXIED, false);
-        
         Timer timer = new Timer(true);
         logger.info("Starting scheduled removal for expired web applications");
 
@@ -71,17 +57,19 @@ public class DefaultWebApplicationStorage implements WebApplicationStorage {
             }
         }, configuration.get(Configuration.REMOVAL_SCHEDULE_PERIOD),
                 configuration.get(Configuration.REMOVAL_SCHEDULE_PERIOD));
+        
+        Tracker.initialized(this);
     }
     
     @Override
     public void initialize(WebApplication application, 
-                           HttpServletRequest request,
+                           String remoteAddr,
                            long validThrough, 
                            ScopedWebApplicationExecution execution) {
         
         PageHandle handle = createHandle();
         application.setHandle(handle);
-        Holder holder = new Holder(application, getRemoteAddr(request), validThrough);
+        Holder holder = new Holder(application, remoteAddr, validThrough);
         synchronized(this) {
             pages.put(handle, holder);
         }
@@ -92,11 +80,11 @@ public class DefaultWebApplicationStorage implements WebApplicationStorage {
 
     @Override
     public void update(PageHandle handle, 
-                       HttpServletRequest request,
+                       String remoteAddr,
                        long validThrough,
                        ScopedWebApplicationExecution execution) {
         
-        Holder holder = getHolder(handle, request);
+        Holder holder = getHolder(handle, remoteAddr);
         
         if (holder != null) {
             synchronized (holder) {
@@ -110,23 +98,23 @@ public class DefaultWebApplicationStorage implements WebApplicationStorage {
 
     @Override
     public void refresh(PageHandle handle, 
-                        HttpServletRequest request, 
+                        String remoteAddr, 
                         long validThrough) {
         
-        Holder holder = getHolder(handle, request);
+        Holder holder = getHolder(handle, remoteAddr);
         if (holder != null) {
             holder.validThrough = validThrough;
         }
     }
     
-    private Holder getHolder(PageHandle handle, HttpServletRequest request) {
+    private Holder getHolder(PageHandle handle, String remoteAddr) {
         Holder holder;
         synchronized (this) {
             holder = pages.get(handle);    
         }
-        String remoteAddr = getRemoteAddr(request);
         long now = System.currentTimeMillis();
-        if (holder != null && holder.remoteAddr.equals(remoteAddr) 
+        if (holder != null
+                && (remoteAddr == null || holder.remoteAddr.equals(remoteAddr)) 
                 && holder.validThrough >= now) {
             return holder;
         } else {
@@ -136,29 +124,15 @@ public class DefaultWebApplicationStorage implements WebApplicationStorage {
 
     @Override
     public synchronized void remove(PageHandle handle,
-                       HttpServletRequest request) {
+                                    String remoteAddr) {
         
-        Holder holder = getHolder(handle, request);
+        Holder holder = getHolder(handle, remoteAddr);
         if (holder != null) {
             pages.remove(handle);
-            pageRemoved(handle, pages.size(), getRemoteAddr(request));
+            pageRemoved(handle, pages.size(), remoteAddr);
         }
     }
 
-    protected String getRemoteAddr(HttpServletRequest request) {
-        if (proxied) {
-            String proxy = StringUtils.trimToEmpty(request.getHeader("X-Forwarded-For"));
-            int length = proxy.length();
-            if (length > MAX_LENGTH) {
-                return proxy.substring(length - MAX_LENGTH, length);
-            } else {
-                return proxy;
-            }
-        } else {
-            return request.getRemoteAddr();
-        }
-    }
-    
     protected void pageRemoved(PageHandle handle, int pageCount, String remoteAddr) {
         
     }
@@ -226,7 +200,7 @@ public class DefaultWebApplicationStorage implements WebApplicationStorage {
         synchronized (this) {
             Holder holder = pages.get(handle);
             if (holder == null) {
-                throw new WebApplicationException("Page scope does not exist!");
+                throw new NoPageScopeException(handle);
             }
             if (obj == null) {
                 holder.largeObjects.remove(key);
@@ -247,9 +221,22 @@ public class DefaultWebApplicationStorage implements WebApplicationStorage {
         synchronized (this) {
             Holder holder = pages.get(handle);
             if (holder == null) {
-                throw new WebApplicationException("Page scope does not exist!");
+                throw new NoPageScopeException(handle);
             }
             return (T) holder.largeObjects.get(key);
+        }
+    }
+
+    @Override
+    public void executeSynchronized(PageHandle handle, Runnable runnable) {
+        Holder holder = getHolder(handle, null);
+        
+        if (holder != null) {
+            synchronized (holder) {
+                runnable.run();
+            }
+        } else {
+            throw new NoPageScopeException(handle);
         }
     }
 }

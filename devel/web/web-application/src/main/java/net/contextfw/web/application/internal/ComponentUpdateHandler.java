@@ -22,8 +22,6 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.List;
 
-import javax.servlet.http.HttpServletRequest;
-
 import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.internal.util.ClassScanner;
@@ -59,10 +57,10 @@ public class ComponentUpdateHandler {
         return key;
     }
 
-    public Object invoke(Component rootComponent, Component element, HttpServletRequest request) {
+    public Object invoke(Component rootComponent, Component element, List<String> params) {
         try {
             if (element != null && element.isEnabled()) {
-                return invokeWithParams(rootComponent, element, request);
+                return invokeWithParams(rootComponent, element, params);
             }
         } catch (IllegalArgumentException e) {
             throw new WebApplicationException(e);
@@ -75,7 +73,9 @@ public class ComponentUpdateHandler {
     }
 
     @SuppressWarnings({ "unchecked", "rawtypes" })
-    private Object invokeWithParams(Component rootComponent, Component component, HttpServletRequest request)
+    private Object invokeWithParams(Component rootComponent, 
+                                    Component component, 
+                                    List<String> strParams)
             throws IllegalAccessException, InstantiationException {
 
         List<Class<?>> paramTypes = ClassScanner.getParamTypes(component.getClass(), method);
@@ -84,8 +84,12 @@ public class ComponentUpdateHandler {
         Object returnVal = null;
         try {
             for (int c = 0; c < paramTypes.size(); c++) {
-    
-                String value = request.getParameter("p" + c);
+                String value = null;
+                try {
+                    value = strParams.get(c);
+                } catch (RuntimeException e) {
+                    // Don't care what exception is thrown. Such values are considered null.
+                }
                 if (value != null) {
                     Class<?> type = paramTypes.get(c);
                     try {

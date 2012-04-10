@@ -27,7 +27,6 @@ import java.util.List;
 import java.util.regex.Pattern;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
 
 import net.contextfw.org.dom4j.io.XMLWriter;
 import net.contextfw.web.application.DocumentProcessor;
@@ -35,6 +34,7 @@ import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.development.XMLResponseLogger;
 import net.contextfw.web.application.internal.configuration.KeyValue;
+import net.contextfw.web.application.internal.service.Responder;
 import net.contextfw.web.application.internal.util.ResourceEntry;
 import net.contextfw.web.application.internal.util.ResourceScanner;
 import net.contextfw.web.application.internal.util.Utils;
@@ -219,7 +219,7 @@ public class WebResponder {
         }
     }
 
-    public void sendResponse(Document document, HttpServletResponse resp,
+    public void sendResponse(Document document, Responder resp,
             Mode mode) throws ServletException, IOException {
         if (responseLogger != null) {
             logXML(document);
@@ -231,23 +231,17 @@ public class WebResponder {
         }
     }
 
-    private void sendXMLResponse(Document document, HttpServletResponse resp)
+    private void sendXMLResponse(Document document, Responder resp)
             throws IOException {
-        resp.setContentType(Mode.XML.getContentType());
-        resp.setHeader("Expires", "-1");
-        resp.setHeader("Pragma", "no-cache");
-        resp.setHeader("Cache-Control", "no-cache, no-store");
+        resp.setHeaders(Mode.XML.getContentType());
         OutputFormat format = OutputFormat.createPrettyPrint();
         new XMLWriter(resp.getWriter(), format).write(document);
     }
 
-    public void sendHTMLResponse(Document document, HttpServletResponse resp,
+    public void sendHTMLResponse(Document document, Responder resp,
             Mode mode) throws ServletException, IOException {
 
-        resp.setContentType(mode.getContentType());
-        resp.setHeader("Expires", "-1");
-        resp.setHeader("Pragma", "no-cache");
-        resp.setHeader("Cache-Control", "no-cache, no-store");
+        resp.setHeaders(mode.getContentType());
 
         if (!transformers.isInitialized()) {
             synchronized (transformers) {
@@ -265,7 +259,6 @@ public class WebResponder {
                 "-//W3C//DTD XHTML 1.0 Transitional//EN",
                 "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd");
         }
-        
         new HTMLWriter(resp.getWriter(), htmlFormat).write(rDocument);
     }
 

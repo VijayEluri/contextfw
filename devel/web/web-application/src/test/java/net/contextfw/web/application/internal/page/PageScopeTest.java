@@ -86,7 +86,7 @@ public class PageScopeTest extends AbstractTest {
         
         final MutableBoolean executionRun = new MutableBoolean(false);
         storage.initialize(page, 
-                request, 
+                LOCALHOST, 
                 System.currentTimeMillis() + MAX_INACTIVITY,
                 new ScopedWebApplicationExecution() {
             @Override

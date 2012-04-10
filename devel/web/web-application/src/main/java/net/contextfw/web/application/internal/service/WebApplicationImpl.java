@@ -27,8 +27,8 @@ import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletResponse;
 
 import net.contextfw.web.application.PageContext;
-import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.PageHandle;
+import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.component.DOMBuilder;
 import net.contextfw.web.application.internal.ComponentUpdateHandler;
@@ -121,46 +121,40 @@ public class WebApplicationImpl implements WebApplication {
     }
 
     @Override
-    public boolean sendResponse() {
+    public boolean sendResponse(Responder resp) {
+        if (mode == Mode.INIT) {
+            if (pageContext.getRedirectUrl() != null) {
+                resp.sendRedirect(pageContext.getRedirectUrl());
+                return true;
+            } else if (pageContext.getErrorCode() != null) {
+                resp.sendError(pageContext.getErrorCode(), pageContext.getErrorMsg());
+                return true;
+            } else if (pageContext.isReload()) {
+                StringBuilder sb = new StringBuilder(pageContext.getRequestURI());
+                if (pageContext.getQueryString() != null) {
+                    sb.append("?").append(pageContext.getQueryString());
+                }
+                resp.sendRedirect(sb.toString());
+            }
+        }
 
         try {
-            if (mode == Mode.INIT) {
-                if (pageContext.getRedirectUrl() != null) {
-                    pageContext.getResponse().sendRedirect(pageContext.getRedirectUrl());
-                    return true;
-                } else if (pageContext.getErrorCode() != null) {
-                    pageContext.getResponse().sendError(pageContext.getErrorCode(), pageContext.getErrorMsg());
-                    return true;
-                } else if (pageContext.isReload()) {
-                    StringBuilder sb = new StringBuilder(pageContext.getRequestURI());
-                    if (pageContext.getQueryString() != null) {
-                        sb.append("?").append(pageContext.getQueryString());
-                    }
-                    pageContext.getResponse().sendRedirect(sb.toString());
-                }
+            if (mode == Mode.INIT && context.getLeaf() instanceof ResourceView) {
+                return sendResourceResponse(resp);
+            } else {
+                sendNormalResponse(resp);
+                return false;
             }
-
-            try {
-                if (mode == Mode.INIT && context.getLeaf() instanceof ResourceView) {
-                    return sendResourceResponse();
-                } else {
-                    sendNormalResponse();
-                    return false;
-                }
-            } catch (Exception e) {
-                if (e instanceof WebApplicationException) {
-                    throw (WebApplicationException) e;
-                } else {
-                    throw new WebApplicationException("Exception while trying to init state", e);
-                }
+        } catch (Exception e) {
+            if (e instanceof WebApplicationException) {
+                throw (WebApplicationException) e;
+            } else {
+                throw new WebApplicationException("Exception while trying to init state", e);
             }
-
-        } catch (IOException e) {
-            throw new WebApplicationException(e);
         }
     }
 
-    private boolean sendResourceResponse() throws IOException {
+    private boolean sendResourceResponse(Responder resp) throws IOException {
         boolean expire = true;
         
         ResourceView leaf = (ResourceView) context.getLeaf();
@@ -186,16 +180,13 @@ public class WebApplicationImpl implements WebApplication {
                     pageContext.getRequest(), 
                     pageContext.getResponse());
         } else {
-            HttpServletResponse response = pageContext.getResponse();
-            setHeaders(response);
-            response.setContentType("application/json; charset=UTF-8");
-            gson.toJson(retVal, response.getWriter());
+            resp.setHeaders("application/json; charset=UTF-8");
+            gson.toJson(retVal, resp.getWriter());
         }
         return expire;
     }
 
-    private void sendNormalResponse() throws ServletException, IOException {
-        pageContext.getResponse().setContentType("text/html; charset=UTF-8");
+    private void sendNormalResponse(Responder resp) throws ServletException, IOException {
 
         DOMBuilder d;
 
@@ -209,7 +200,7 @@ public class WebApplicationImpl implements WebApplication {
         }
 
         d.attr("handle", pageHandle.toString());
-        d.attr("contextPath", pageContext.getRequest().getContextPath());
+        d.attr("contextPath", pageContext.getContextPath());
 
         if (pageContext.getLocale() != null) {
             d.attr("xml:lang", pageContext.getLocale().toString());
@@ -229,28 +220,22 @@ public class WebApplicationImpl implements WebApplication {
 
         getRootComponent().clearCascadedUpdate();
 
-        if (conf.getXmlParamName() == null
-                || pageContext.getRequest().getParameter(conf.getXmlParamName()) == null) {
-            responder.sendResponse(d.toDocument(), pageContext.getResponse(), mode);
-        } else {
-            responder.sendResponse(d.toDocument(), pageContext.getResponse(), Mode.XML);
-        }
-    }
-
-    @Override
-    public UpdateInvocation updateState(String componentId, String method) {
-        mode = Mode.UPDATE;
-        return updateElements(componentId, method);
+        responder.sendResponse(d.toDocument(), resp, mode);
     }
 
     @SuppressWarnings("unchecked")
-    protected UpdateInvocation updateElements(final String id, final String method) {
+    @Override
+    public UpdateInvocation updateState(String id, 
+                                        String method,
+                                        List<String> parameters) {
+        mode = Mode.UPDATE;
+        
         try {
-            Component element = componentRegister.findComponent(id);
-            String key = ComponentUpdateHandler.getKey(element.getClass(), method);
+            Component component = componentRegister.findComponent(id);
+            String key = ComponentUpdateHandler.getKey(component.getClass(), method);
 
                 if (!updateHandlers.containsKey(key) || conf.isDevelopmentMode()) {
-                    updateHandlers.put(key, euhf.createHandler(element.getClass(), method));
+                    updateHandlers.put(key, euhf.createHandler(component.getClass(), method));
                 }
 
                 ComponentUpdateHandler handler = updateHandlers.get(key);
@@ -258,11 +243,10 @@ public class WebApplicationImpl implements WebApplication {
                 if (handler != null) {
                     if (handler.getDelayed() == null
                                 || !injector.getInstance(handler.getDelayed().value())
-                                  .isUpdateDelayed(element, pageContext.getRequest())) {
+                                  .isUpdateDelayed(component, pageContext.getRequest())) {
                         return new UpdateInvocation(
                                 handler.isResource(),
-                                handler.invoke(rootComponent, element, pageContext.getRequest())
-                                );
+                                handler.invoke(rootComponent, component, parameters));
                     } else {
                         return UpdateInvocation.DELAYED;
                     }
@@ -283,15 +267,6 @@ public class WebApplicationImpl implements WebApplication {
         this.chain = chain;
     }
     
-    public void setHeaders(HttpServletResponse response) {
-        response.addHeader("Expires", "Sun, 19 Nov 1978 05:00:00 GMT");
-        response.addHeader("Last-Modified", new Date().toString());
-        response.addHeader("Cache-Control", "no-store, no-cache, must-revalidate");
-        // response.addHeader("Cache-Control","post-check=0, pre-check=0");
-        response.addHeader("Pragma", "no-cache");
-        response.setHeader("Connection", "Keep-Alive");
-    }
-
     public WebApplicationComponent getRootComponent() {
         return rootComponent;
     }
