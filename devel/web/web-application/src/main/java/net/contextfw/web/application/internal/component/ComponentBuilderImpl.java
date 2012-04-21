@@ -36,9 +36,9 @@ import com.google.inject.Singleton;
 @Singleton
 public class ComponentBuilderImpl implements ComponentBuilder, ScriptContext {
 
-    private static final Map<Class<?>, MetaComponent> metaModels = 
+    private static final Map<Class<?>, MetaComponent> META_MODELS = 
         new HashMap<Class<?>, MetaComponent>();
-    private static final Map<Class<?>, Class<?>> actualClasses =
+    private static final Map<Class<?>, Class<?>> ACTUAL_CLASSES =
         new WeakHashMap<Class<?>, Class<?>>();
 
     private final AttributeHandler attributeHandler;
@@ -53,22 +53,22 @@ public class ComponentBuilderImpl implements ComponentBuilder, ScriptContext {
 
     @Override
     public MetaComponent getMetaComponent(final Class<?> cl) {
-        Class<?> actual = actualClasses.get(cl);
+        Class<?> actual = ACTUAL_CLASSES.get(cl);
         if (actual == null) {
             actual = getActualClass(cl);
-            actualClasses.put(cl, actual);
+            ACTUAL_CLASSES.put(cl, actual);
         }
-        MetaComponent model = metaModels.get(actual);
+        MetaComponent model = META_MODELS.get(actual);
         if (model == null) {
             model = new MetaComponent(actual, this, gson, this);
-            metaModels.put(actual, model);
+            META_MODELS.put(actual, model);
         }
         return model;
     }
     
     public void clean() {
-        metaModels.clear();
-        actualClasses.clear();
+        META_MODELS.clear();
+        ACTUAL_CLASSES.clear();
     }
 
     public static Class<?> getActualClass(Object element) {
@@ -76,7 +76,7 @@ public class ComponentBuilderImpl implements ComponentBuilder, ScriptContext {
     }
 
     public static Class<?> getActualClass(Class<?> cl) {
-        Class<?> actual = actualClasses.get(cl);
+        Class<?> actual = ACTUAL_CLASSES.get(cl);
         if (actual != null) {
             return actual;
         } else {
@@ -84,7 +84,7 @@ public class ComponentBuilderImpl implements ComponentBuilder, ScriptContext {
             while (actual.getSimpleName().contains("EnhancerByGuice")) {
                 actual = actual.getSuperclass();
             }
-            actualClasses.put(cl, actual);
+            ACTUAL_CLASSES.put(cl, actual);
             return actual;
         }
     }

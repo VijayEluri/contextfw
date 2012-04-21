@@ -2,6 +2,7 @@ package net.contextfw.web.commons.async.internal.websocket;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.io.UnsupportedEncodingException;
 import java.net.URLDecoder;
 import java.util.Arrays;
 import java.util.Collections;
@@ -11,10 +12,10 @@ import java.util.Map;
 import java.util.concurrent.Callable;
 
 import net.contextfw.web.application.PageHandle;
+import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.component.ComponentRegister;
 import net.contextfw.web.application.configuration.Configuration;
-import net.contextfw.web.application.lifecycle.PageScopedExecutor;
 import net.contextfw.web.application.lifecycle.UpdateExecutor;
 import net.contextfw.web.commons.async.AsyncConf;
 
@@ -30,7 +31,7 @@ import com.google.inject.Provider;
 
 public class WebSocketServiceImpl implements WebSocketHandler, WebSocketService {
 
-    private final Logger LOG = LoggerFactory.getLogger(WebSocketServiceImpl.class);
+    private static final Logger LOG = LoggerFactory.getLogger(WebSocketServiceImpl.class);
 
     private final Map<String, WebSocketConnection> connections = 
             new HashMap<String, WebSocketConnection>();
@@ -44,7 +45,6 @@ public class WebSocketServiceImpl implements WebSocketHandler, WebSocketService 
     @Inject
     public WebSocketServiceImpl(Configuration conf,
                                 UpdateExecutor executor, 
-                                PageScopedExecutor pageScopedExecutor,
                                 Provider<ComponentRegister> register) {
         this.executor = executor;
         
@@ -60,30 +60,30 @@ public class WebSocketServiceImpl implements WebSocketHandler, WebSocketService 
     }
 
     @Override
-    public synchronized void onOpen(WebSocketConnection connection) throws Exception {
+    public synchronized void onOpen(WebSocketConnection connection) {
         String handle = connection.httpRequest().queryParam("handle");
         LOG.debug("Opening connection: {}", handle);
         connections.put(handle, connection);
     }
 
     @Override
-    public synchronized void onClose(WebSocketConnection connection) throws Exception {
+    public synchronized void onClose(WebSocketConnection connection) {
         String handle = connection.httpRequest().queryParam("handle");
         LOG.debug("Closing connection: {}", handle);
         connections.remove(handle);
     }
 
     @Override
-    public void onMessage(WebSocketConnection connection, byte[] msg) throws Throwable {
+    public void onMessage(WebSocketConnection connection, byte[] msg) {
         throw new UnsupportedOperationException();
     }
     
     @SuppressWarnings("unchecked")
     @Override
-    public void onMessage(WebSocketConnection connection, String msg) throws Throwable {
+    public void onMessage(WebSocketConnection connection, String msg) {
         List<String> splits = Arrays.asList(msg.split("&"));
         for (int i = 0; i < splits.size(); i++) {
-            splits.set(i, URLDecoder.decode(splits.get(i), "UTF-8"));
+            splits.set(i, decode(splits.get(i)));
         }
         
         PageHandle handle = new PageHandle(splits.get(0));
@@ -98,13 +98,21 @@ public class WebSocketServiceImpl implements WebSocketHandler, WebSocketService 
         connection.send(out.toString());
     }
     
+    private String decode(String encoded) {
+        try {
+            return URLDecoder.decode(encoded, "UTF-8");
+        } catch (UnsupportedEncodingException e) {
+            throw new WebApplicationException(e);
+        }
+    }
+    
     @Override
     public synchronized boolean asyncUpdate(final PageHandle handle, final String componentId) {
         try {
             if (webServer != null) {
                 WebSocketConnection conn = connections.get(handle.toString());
                 if (conn != null) {
-                    Callable<Boolean> call = new Callable<Boolean>() { public Boolean call() throws Exception {
+                    Callable<Boolean> call = new Callable<Boolean>() { public Boolean call() {
                         Component component = register.get().findComponent(Component.class, componentId);
                         if (component != null) {
                             component.refresh();
@@ -121,18 +129,18 @@ public class WebSocketServiceImpl implements WebSocketHandler, WebSocketService 
                 }
                 return conn != null;
             }
-        } catch (Throwable e) {
-            System.out.println(e);
+        } catch (Exception e) {
+            LOG.debug("Excecption", e);
         }
         return false;
     }
 
     @Override
-    public void onPing(WebSocketConnection connection, byte[] msg) throws Throwable {
+    public void onPing(WebSocketConnection connection, byte[] msg) {
         connection.pong(msg);
     }
 
     @Override
-    public void onPong(WebSocketConnection connection, byte[] msg) throws Throwable {
+    public void onPong(WebSocketConnection connection, byte[] msg) {
     }
 }

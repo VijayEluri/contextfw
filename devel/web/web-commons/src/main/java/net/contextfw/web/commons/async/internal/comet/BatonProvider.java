@@ -4,7 +4,9 @@ import net.contextfw.web.application.PageHandle;
 
 public class BatonProvider {
 
-    private Object[] batons = new Object[256];
+    private static final int BATON_COUNT = 256;
+    
+    private Object[] batons = new Object[BATON_COUNT];
     
     public BatonProvider() {
         for (int i = 0; i < 256; i++) {
@@ -13,7 +15,7 @@ public class BatonProvider {
     }
     
     public Object get(PageHandle handle) {
-        return batons[((handle.hashCode() % 256) + 256) % 256];
+        return batons[((handle.hashCode() % BATON_COUNT) + BATON_COUNT) % BATON_COUNT];
     }
     
 }

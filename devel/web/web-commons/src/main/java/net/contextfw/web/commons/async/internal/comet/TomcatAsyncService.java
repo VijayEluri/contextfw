@@ -13,15 +13,19 @@ import net.contextfw.web.commons.async.internal.InternalAsyncService;
 
 import org.apache.catalina.CometEvent;
 import org.apache.catalina.CometEvent.EventType;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.inject.Singleton;
 
 @Singleton
 public class TomcatAsyncService implements CometService {
 
-    public static TomcatAsyncService instance;
+    private static final Logger LOG = LoggerFactory.getLogger(TomcatAsyncService.class);
     
-//    private static final String SPACER = "             ";
+    private static TomcatAsyncService instance;
+    
+    private static final String INWID = "I know what I'm doing";
     
     private final ScheduledThreadPoolExecutor pool = new ScheduledThreadPoolExecutor(10);
 
@@ -31,55 +35,52 @@ public class TomcatAsyncService implements CometService {
 
     private InternalAsyncService asyncService;
     
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
+            value="ST_WRITE_TO_STATIC_FROM_INSTANCE_METHOD", justification=INWID)
     public TomcatAsyncService() {
         instance = this;
     }
     
+    
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
+            value="AvoidCatchingException", justification=INWID)
     public void event(CometEvent event) throws IOException, ServletException {
         HttpServletRequest req = event.getHttpServletRequest();
         PageHandle handle = new PageHandle(req.getParameter("handle"));
         synchronized(BATONS.get(handle)) {
-            //String ts = req.getParameter("ts");
             asyncService.setCurrenHost(req.getLocalAddr() + ":" + req.getLocalPort());
-            //logEvent(handle, ts, event);
             if (event.getEventType() == EventType.BEGIN) {
                 prepareBegin(handle, event);
                 if (asyncService.updateAsync(handle, event.getHttpServletRequest(), 
                         event.getHttpServletResponse(), false)) {
-                    //log(handle, ts, "\tImmediate response");
                     close(event);
                 } else {
-                    //log(handle, ts, "\tWaiting...");
                     addConnection(handle, event);
                     asyncService.registerListener(handle);
                 }
             } else {
-                //log(handle, ts, "\tClose and remove");
                 closeAndRemove(handle, event);
             }
         }
     }
     
     @Override
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
+            value="AvoidCatchingException", justification=INWID)
     public void resume(final PageHandle handle) {
-        //Tracker.debug("Resuming...");
         pool.execute(new Runnable() {
             public void run() {
                 synchronized(BATONS.get(handle)) {
                     try {
                         CometEvent event = remove(handle);
                         if (event != null) {
-                            //String ts = event.getHttpServletRequest().getParameter("ts");
-                            //log(handle, "\tSending resumed. ts="+ts);
                             asyncService.updateAsync(handle,
                                     event.getHttpServletRequest(),
                                     event.getHttpServletResponse(), true);
-                            //log(handle, "Resume sent:" + resumeSent);
                         }
                         close(event);
-                    } catch (Throwable e) {
-                        //log(handle, "\tResume error");
-                        e.printStackTrace();
+                    } catch (Exception e) {
+                        LOG.debug("Exception", e);
                     }
                 }
             }
@@ -90,7 +91,7 @@ public class TomcatAsyncService implements CometService {
         this.asyncService = asyncService;
     }
     
-    private synchronized void prepareBegin(PageHandle handle, CometEvent event) throws UnsupportedOperationException, IOException, ServletException {
+    private synchronized void prepareBegin(PageHandle handle, CometEvent event) throws IOException, ServletException {
         event.setTimeout(30000);
         CometEvent old = _connections.get(handle);
         if (old != null) {
@@ -107,22 +108,10 @@ public class TomcatAsyncService implements CometService {
         close(event);
         try {
             event.close();
-        } catch (Throwable e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            LOG.debug("Exception", e);
         }
     }
-    
-//    private void logEvent(PageHandle handle, String ts, CometEvent event) {
-//        log(handle, ts, event.getEventType() +"\t" +event.getEventSubType());
-//    }
-//    
-//    private void log(PageHandle handle, String ts, String msg) {
-//        //System.out.println("Comet: " + handle + " " + ts + "\t" + msg);
-//    }
-//    
-//    private void log(PageHandle handle, String msg) {
-//        //System.out.println("Comet: " + handle + " " + SPACER + "\t" + msg);
-//    }
     
     private synchronized CometEvent remove(PageHandle handle) {
         return _connections.remove(handle);
@@ -132,14 +121,18 @@ public class TomcatAsyncService implements CometService {
         if (event != null) {
             try {
                 event.getHttpServletResponse().getWriter().flush();
-            } catch (Throwable e) {
-                e.printStackTrace();
+            } catch (Exception e) {
+                LOG.debug("Exception", e);
             }
             try {
                 event.close();
-            } catch (Throwable e) {
-               // e.printStackTrace();
+            } catch (Exception e) {
+                LOG.debug("Exception", e);
             }
         }
+    }
+    
+    public static TomcatAsyncService getInstance() {
+        return instance;
     }
 }

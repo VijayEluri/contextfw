@@ -67,14 +67,14 @@ public final class WebApplicationModule extends AbstractModule {
     private AutoRegisterListener autoRegisterListener 
             = new AutoRegisterListener();
 
-    private DevelopmentToolsImpl developmentTools;
+    private DevelopmentToolsImpl developmentTools = null;
 
+    private PageScope pageScope = null;
+    
     public WebApplicationModule(Configuration configuration) {
         this.configuration = configuration;
     }
     
-    private PageScope pageScope;
-
     @SuppressWarnings("unchecked")
     private <T> void bind(Class<T> type, BindableProperty<T> property) {
         Object obj = configuration.get(property);

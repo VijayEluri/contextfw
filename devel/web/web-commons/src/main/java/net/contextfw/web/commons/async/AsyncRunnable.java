@@ -17,12 +17,12 @@ import com.google.inject.Provider;
  */
 public abstract class AsyncRunnable<C extends Component> {
 
-    private PageHandle handle;
+    private PageHandle handle = null;
     private final String componentId;
     private final Class<C> componentClass;
-    private PageScopedExecutor pageScopedExecutor;
-    private Provider<ComponentRegister> register;
-    private InternalAsyncService asyncService;
+    private PageScopedExecutor pageScopedExecutor = null;
+    private Provider<ComponentRegister> register = null;
+    private InternalAsyncService asyncService = null;
     
     @SuppressWarnings("unchecked")
     public AsyncRunnable(C component) {

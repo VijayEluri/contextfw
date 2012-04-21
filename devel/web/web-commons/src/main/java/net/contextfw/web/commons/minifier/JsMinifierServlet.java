@@ -24,7 +24,7 @@ public class JsMinifierServlet extends ContentServlet implements DocumentProcess
 
     private static final long serialVersionUID = 1L;
 
-    private final MinifierFilter filter;
+    private final transient MinifierFilter filter;
     
     private static final Logger LOG = LoggerFactory.getLogger(JsMinifierServlet.class);
 

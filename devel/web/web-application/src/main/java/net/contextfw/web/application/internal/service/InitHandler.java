@@ -26,7 +26,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import net.contextfw.web.application.ResourceCleaner;
-import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.internal.component.MetaComponentException;
@@ -124,21 +123,20 @@ public class InitHandler extends AbstractHandler {
                                 listeners.beforeRender();
                                 expired.setValue(page.getWebApplication().sendResponse(resp));
                                 listeners.afterRender();
-                            } catch (Exception e) {
-                                // TODO Fix this construct with test
-                                if (e instanceof MetaComponentException) {
-                                    ErrorResolution resolution =
-                                            ((MetaComponentException) e).getResolution();
-                                    try {
-                                        if (resolution == ErrorResolution.SEND_NOT_FOUND_ERROR) {
-                                            response.sendError(HttpServletResponse.SC_NOT_FOUND);
-                                        } else if (resolution == ErrorResolution.SEND_BAD_REQUEST_ERROR) {
-                                            response.sendError(HttpServletResponse.SC_BAD_REQUEST);
-                                        }
-                                    } catch (IOException e1) {
-                                        throw new WebApplicationException(e1);
+                            } catch (MetaComponentException e) {
+                                ErrorResolution resolution =
+                                        ((MetaComponentException) e).getResolution();
+                                try {
+                                    if (resolution == ErrorResolution.SEND_NOT_FOUND_ERROR) {
+                                        response.sendError(HttpServletResponse.SC_NOT_FOUND);
+                                    } else if (resolution == ErrorResolution.SEND_BAD_REQUEST_ERROR) {
+                                        response.sendError(HttpServletResponse.SC_BAD_REQUEST);
                                     }
+                                } catch (IOException e1) {
+                                    logger.debug("Exception", e1);
                                 }
+                                listeners.onException(e);
+                            } catch (RuntimeException e) {
                                 listeners.onException(e);
                             } finally {
                                 pageScope.deactivateCurrentPage();

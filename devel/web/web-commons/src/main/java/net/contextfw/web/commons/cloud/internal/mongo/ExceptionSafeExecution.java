@@ -10,7 +10,6 @@ public abstract class ExceptionSafeExecution implements Runnable {
 
     private static final Logger LOG = LoggerFactory.getLogger(ExceptionSafeExecution.class);
     
-    @Override
     public final void run() {
         try {
             execute();
@@ -19,5 +18,8 @@ public abstract class ExceptionSafeExecution implements Runnable {
         }
     }
 
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
+            value="SignatureDeclareThrowsException", 
+            justification="This is exception safe")
     public abstract void execute() throws Exception;
 }

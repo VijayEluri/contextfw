@@ -20,11 +20,6 @@ public class TomcatAsyncServlet extends HttpServlet implements CometProcessor {
     
     @Override
     public void event(CometEvent event) throws IOException, ServletException {
-        try {
-            TomcatAsyncService.instance.event(event);
-        } catch (ServletException e) {
-            e.printStackTrace();
-            throw e;
-        }
+        TomcatAsyncService.getInstance().event(event);
     }
 }

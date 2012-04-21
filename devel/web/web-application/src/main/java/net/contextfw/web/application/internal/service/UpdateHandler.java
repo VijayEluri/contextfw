@@ -230,7 +230,7 @@ public class UpdateHandler {
             try {
                 response.getWriter().close();
             } catch (Exception e) {
-                // Ingored
+                logger.debug("Exception while closing writer", e);
             }
         }
     }

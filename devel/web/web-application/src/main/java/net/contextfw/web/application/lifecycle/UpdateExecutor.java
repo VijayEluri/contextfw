@@ -1,11 +1,9 @@
 package net.contextfw.web.application.lifecycle;
 
-import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.List;
 import java.util.concurrent.Callable;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -19,7 +17,7 @@ public interface UpdateExecutor {
 
     
     /**
-     * USed mainly througn normal response
+     * USed mainly through normal response
      * 
      * @param servlet
      * @param request

@@ -22,7 +22,7 @@ import com.yahoo.platform.yui.compressor.CssCompressor;
 @Singleton
 class CssMinifierServlet extends ContentServlet implements DocumentProcessor {
 
-    private MinifierFilter filter;
+    private transient MinifierFilter filter;
 
     CssMinifierServlet(String host, 
                        String minifiedPath,

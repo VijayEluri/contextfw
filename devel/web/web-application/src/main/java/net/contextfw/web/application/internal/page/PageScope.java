@@ -25,7 +25,6 @@ import net.contextfw.web.application.PageContext;
 import net.contextfw.web.application.lifecycle.LifecycleListener;
 import net.contextfw.web.application.util.Tracker;
 
-import com.google.inject.Inject;
 import com.google.inject.Key;
 import com.google.inject.OutOfScopeException;
 import com.google.inject.Provider;

@@ -48,7 +48,7 @@ public abstract class MongoBase {
         executor = new ScheduledThreadPoolExecutor(10, handler);
     }
     
-    protected void setIndexes(DBCollection collection) {
+    protected final void setIndexes(DBCollection collection) {
         collection.ensureIndex(KEY_HANDLE);
         collection.ensureIndex(KEY_REMOTE_ADDR);
     }
@@ -70,7 +70,7 @@ public abstract class MongoBase {
         if (now > nextCleanup) {
             nextCleanup = now + new Random().nextInt((int) removalSchedulePeriod*2);
             executeAsync(new ExceptionSafeExecution() {
-                public void execute() throws Exception {
+                public void execute() {
                     DBCollection collection = getCollection();
                     DBObject query = o(KEY_VALID_THROUGH, o("$lt", now));
                     if (LOG.isDebugEnabled()) {

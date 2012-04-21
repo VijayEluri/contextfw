@@ -11,7 +11,6 @@ import java.util.UUID;
 
 import net.contextfw.web.application.PageHandle;
 import net.contextfw.web.application.WebApplication;
-import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.util.Tracker;
 

@@ -435,12 +435,10 @@ public final class MetaComponent {
                                         field.getType(),
                                         name,
                                         request));
-            } catch (Exception e) {
-                if (e instanceof WebApplicationException) {
-                    throw (RuntimeException) e;
-                } else {
-                    throw new WebApplicationException(e);
-                }
+            } catch (RuntimeException e) {
+                throw WebApplicationException.getRethrowable(e);
+            } catch (IllegalAccessException e) {
+                throw WebApplicationException.getRethrowable(e);
             }
         }
         for (Method method : requestParamMethods) {
@@ -452,11 +450,7 @@ public final class MetaComponent {
                                         name,
                                         request));
             } catch (Exception e) {
-                if (e instanceof WebApplicationException) {
-                    throw (RuntimeException) e;
-                } else {
-                    throw new WebApplicationException(e);
-                }
+                throw WebApplicationException.getRethrowable(e);
             }
         }
     }
@@ -474,12 +468,10 @@ public final class MetaComponent {
                                         name,
                                         mapping,
                                         uri));
-            } catch (Exception e) {
-                if (e instanceof WebApplicationException) {
-                    throw (RuntimeException) e;
-                } else {
-                    throw new WebApplicationException(e);
-                }
+            } catch (RuntimeException e) {
+                throw WebApplicationException.getRethrowable(e);
+            } catch (IllegalAccessException e) {
+                throw WebApplicationException.getRethrowable(e);
             }
         }
         for (Method method : pathParamMethods) {
@@ -491,12 +483,12 @@ public final class MetaComponent {
                                         name,
                                         mapping,
                                         uri));
-            } catch (Exception e) {
-                if (e instanceof WebApplicationException) {
-                    throw (RuntimeException) e;
-                } else {
-                    throw new WebApplicationException(e);
-                }
+            } catch (RuntimeException e) {
+                throw WebApplicationException.getRethrowable(e);
+            } catch (IllegalAccessException e) {
+                throw WebApplicationException.getRethrowable(e);
+            } catch (InvocationTargetException e) {
+                throw WebApplicationException.getRethrowable(e);
             }
         }
     }
@@ -516,7 +508,7 @@ public final class MetaComponent {
                 throw new WebApplicationException(cl, "Null value for request param: " + name, null);
             case SEND_NOT_FOUND_ERROR:
             case SEND_BAD_REQUEST_ERROR:
-                throw new MetaComponentException(annotation.onNull());
+                throw new MetaComponentException(annotation.onNull(), null);
             }
         }
         Object rv = null;
@@ -537,7 +529,7 @@ public final class MetaComponent {
                     throw new WebApplicationException(e);
                 case SEND_NOT_FOUND_ERROR:
                 case SEND_BAD_REQUEST_ERROR:
-                    throw new MetaComponentException(annotation.onError());
+                    throw new MetaComponentException(annotation.onError(), e);
                 }
             }
         }
@@ -559,7 +551,7 @@ public final class MetaComponent {
                 throw new WebApplicationException(cl, "Null value for path param: " + name, null);
             case SEND_NOT_FOUND_ERROR:
             case SEND_BAD_REQUEST_ERROR:
-                throw new MetaComponentException(annotation.onNull());
+                throw new MetaComponentException(annotation.onNull(), null);
             }
         }
         Object rv = null;
@@ -580,7 +572,7 @@ public final class MetaComponent {
                     throw new WebApplicationException(e);
                 case SEND_NOT_FOUND_ERROR:
                 case SEND_BAD_REQUEST_ERROR:
-                    throw new MetaComponentException(annotation.onError());
+                    throw new MetaComponentException(annotation.onError(), e);
                 }
             }
         }

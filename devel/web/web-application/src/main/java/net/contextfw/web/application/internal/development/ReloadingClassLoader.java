@@ -56,7 +56,7 @@ public class ReloadingClassLoader extends ClassLoader {
     public Class<?> findReloadableClass(String s) throws ClassNotFoundException {
         try {
             byte[] bytes = loadClassData(s);
-            if (bytes != null) {
+            if (bytes.length > 0) {
                 return defineClass(s, bytes, 0, bytes.length);
             } else {
                 return super.loadClass(s);
@@ -80,7 +80,7 @@ public class ReloadingClassLoader extends ClassLoader {
             dis.close();
             return buff;
         } else {
-            return null;
+            return new byte[0];
         }
     }
 }

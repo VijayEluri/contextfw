@@ -24,6 +24,8 @@ import com.google.inject.Singleton;
 @Singleton
 public class LocaleServiceImpl implements LocaleService {
 
+    private static final String UNCHECKED = "unchecked";
+
     private Map<String, LocaleMessage> messages = new HashMap<String, LocaleMessage>();
 
     private final Locale defaultLocale;
@@ -86,7 +88,7 @@ public class LocaleServiceImpl implements LocaleService {
             if (LocaleConf.NS.equals(element.getNamespaceURI())) {
                 toCallTemplate(element);
             } else {
-                @SuppressWarnings("unchecked")
+                @SuppressWarnings(UNCHECKED)
                 Iterator<Attribute> attributes = element.attributeIterator();
                 int i = 0;
                 while (attributes.hasNext()) {
@@ -101,7 +103,7 @@ public class LocaleServiceImpl implements LocaleService {
         }
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     private void toCallTemplate(int i, Element element, Attribute attr) {
         String name = attr.getName();
         String value = attr.getValue();
@@ -124,14 +126,14 @@ public class LocaleServiceImpl implements LocaleService {
         element.addAttribute("name", LocaleConf.PREFIX + ":" + name);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     private List<Element> getI18nElements(Document document) {
         return document.getRootElement()
                 .selectNodes("//*[namespace-uri()='" + LocaleConf.NS + "' or "
                         + "@*[namespace-uri()='" + LocaleConf.NS + "']]");
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     private Set<String> getNames(List<Element> elements) {
         Set<String> names = new HashSet<String>();
         for (Element element : elements) {

@@ -8,8 +8,13 @@ import javax.servlet.http.HttpServletResponse;
 
 import net.contextfw.web.application.WebApplicationException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ServletResponder implements Responder {
 
+    private static final Logger LOG = LoggerFactory.getLogger(ServletResponder.class);
+    
     private final HttpServletResponse response;
     
     public ServletResponder(HttpServletResponse response) {
@@ -41,8 +46,8 @@ public class ServletResponder implements Responder {
     public void close() {
         try {
             response.getWriter().close();
-        } catch (Exception e) {
-            // Ignored
+        } catch (IOException e) {
+            LOG.debug("Exception while closing writer", e);
         }
     }
 

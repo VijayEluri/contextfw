@@ -26,7 +26,8 @@ public class MetaComponentException extends WebApplicationException {
     
     private static final long serialVersionUID = 1L;
 
-    public MetaComponentException(ErrorResolution resolution) {
+    public MetaComponentException(ErrorResolution resolution, Exception cause) {
+        super(cause);
         this.resolution = resolution;
     }
 

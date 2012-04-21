@@ -1,7 +1,10 @@
 package net.contextfw.web.application.util;
 
-public class Tracker {
+public final class Tracker {
 
+    private Tracker() {
+    }
+    
     public static void initialized(Class<?> implemented, Class<?> implementor) {
         System.out.println("Dependency initialized: " 
                 + implemented.getSimpleName() + "(" + implementor.getSimpleName() + ")");

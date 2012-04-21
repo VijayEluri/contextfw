@@ -12,7 +12,6 @@ import javax.servlet.http.HttpServletResponse;
 import net.contextfw.web.application.PageHandle;
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.component.ComponentRegister;
-import net.contextfw.web.application.configuration.Configuration;
 import net.contextfw.web.application.lifecycle.PageScopedExecutor;
 import net.contextfw.web.application.lifecycle.UpdateExecutor;
 import net.contextfw.web.application.scope.WebApplicationStorage;
@@ -21,11 +20,16 @@ import net.contextfw.web.commons.async.BaseAsyncServiceImpl;
 import net.contextfw.web.commons.async.internal.comet.CometService;
 import net.contextfw.web.commons.async.internal.websocket.WebSocketService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
 public class AsyncServiceImpl extends BaseAsyncServiceImpl implements InternalAsyncService {
 
+    private static final Logger LOG = LoggerFactory.getLogger(AsyncServiceImpl.class);
+    
     private final ScheduledThreadPoolExecutor pool;
     private final PageScopedExecutor executor;
     private final Provider<ComponentRegister> register;
@@ -38,8 +42,7 @@ public class AsyncServiceImpl extends BaseAsyncServiceImpl implements InternalAs
     private final WebSocketService webSocketServiceImpl;
     
     @Inject
-    public AsyncServiceImpl(Configuration conf,
-                            WebApplicationStorage storage,
+    public AsyncServiceImpl(WebApplicationStorage storage,
                             WebSocketService webSocketServiceImpl,
                             CometService cometService,
                             PageScopedExecutor executor,
@@ -72,7 +75,8 @@ public class AsyncServiceImpl extends BaseAsyncServiceImpl implements InternalAs
             try {
                 runnable.run();
             } catch (RuntimeException e) {
-                e.printStackTrace();
+                LOG.debug("Exception while running async execution", e);
+                throw e;
             } finally {
                 // Outside page scope
                 storage.executeSynchronized(handle, new Runnable() { public void run() {
@@ -109,9 +113,9 @@ public class AsyncServiceImpl extends BaseAsyncServiceImpl implements InternalAs
                             String urlName = "http://"+infoHost+"/asyncRefresh?handle="+handle;
                             new URL(urlName).openConnection().getInputStream().close();
                         } catch (MalformedURLException e) {
-                            e.printStackTrace();
+                            LOG.debug("Exception while running async refresh", e);
                         } catch (IOException e) {
-                            e.printStackTrace();
+                            LOG.debug("Exception while running async refresh", e);
                         }    
                     }});
                 }
@@ -125,7 +129,7 @@ public class AsyncServiceImpl extends BaseAsyncServiceImpl implements InternalAs
                                HttpServletResponse response,
                                final boolean forced) {
         
-        Callable<Boolean> call = new Callable<Boolean>() { public Boolean call() throws Exception {
+        Callable<Boolean> call = new Callable<Boolean>() { public Boolean call() {
             return refreshComponents(handle) || forced;
         }};
     

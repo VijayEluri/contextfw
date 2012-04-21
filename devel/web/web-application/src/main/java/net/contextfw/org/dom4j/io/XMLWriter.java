@@ -38,7 +38,6 @@ import org.dom4j.io.OutputFormat;
 import org.dom4j.tree.NamespaceStack;
 import org.xml.sax.Attributes;
 import org.xml.sax.InputSource;
-import org.xml.sax.Locator;
 import org.xml.sax.SAXException;
 import org.xml.sax.SAXNotRecognizedException;
 import org.xml.sax.SAXNotSupportedException;
@@ -72,11 +71,10 @@ import org.xml.sax.helpers.XMLFilterImpl;
  * @author Joseph Bowbeer
  * @version $Revision: 1.83.2.2 $
  */
-@SuppressWarnings("PMD")
 public class XMLWriter extends XMLFilterImpl implements LexicalHandler {
     private static final String PAD_TEXT = " ";
 
-    protected static final String[] LEXICAL_HANDLER_NAMES = {
+    static final String[] LEXICAL_HANDLER_NAMES = {
             "http://xml.org/sax/properties/lexical-handler",
             "http://xml.org/sax/handlers/LexicalHandler"};
 
@@ -138,13 +136,13 @@ public class XMLWriter extends XMLFilterImpl implements LexicalHandler {
      * Whether comments should appear inside DTD declarations - defaults to
      * false
      */
-    private boolean showCommentsInDTDs;
+    private boolean showCommentsInDTDs = false;
 
     /** Is the writer curerntly inside a DTD definition? */
     private boolean inDTD;
 
     /** The namespaces used for the current element when consuming SAX events */
-    private Map namespacesMap;
+    private Map<String, String> namespacesMap;
 
     /**
      * what is the maximum allowed character code such as 127 in US-ASCII (7
@@ -551,7 +549,7 @@ public class XMLWriter extends XMLFilterImpl implements LexicalHandler {
         } else if (object instanceof String) {
             write((String) object);
         } else if (object instanceof List) {
-            List list = (List) object;
+            List<?> list = (List<?>) object;
 
             for (int i = 0, size = list.size(); i < size; i++) {
                 write(list.get(i));
@@ -628,7 +626,7 @@ public class XMLWriter extends XMLFilterImpl implements LexicalHandler {
 
     public void setLexicalHandler(LexicalHandler handler) {
         if (handler == null) {
-            throw new NullPointerException("Null lexical handler");
+            throw new IllegalArgumentException("Null lexical handler");
         } else {
             this.lexicalHandler = handler;
         }
@@ -636,12 +634,6 @@ public class XMLWriter extends XMLFilterImpl implements LexicalHandler {
 
     public LexicalHandler getLexicalHandler() {
         return lexicalHandler;
-    }
-
-    // ContentHandler interface
-    // -------------------------------------------------------------------------
-    public void setDocumentLocator(Locator locator) {
-        super.setDocumentLocator(locator);
     }
 
     public void startDocument() throws SAXException {
@@ -667,15 +659,11 @@ public class XMLWriter extends XMLFilterImpl implements LexicalHandler {
     public void startPrefixMapping(String prefix, String uri)
             throws SAXException {
         if (namespacesMap == null) {
-            namespacesMap = new HashMap();
+            namespacesMap = new HashMap<String, String>();
         }
 
         namespacesMap.put(prefix, uri);
         super.startPrefixMapping(prefix, uri);
-    }
-
-    public void endPrefixMapping(String prefix) throws SAXException {
-        super.endPrefixMapping(prefix);
     }
 
     public void startElement(String namespaceURI, String localName,
@@ -1015,6 +1003,8 @@ public class XMLWriter extends XMLFilterImpl implements LexicalHandler {
      * @throws IOException
      *             DOCUMENT ME!
      */
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
+            value="com.puppycrawl.tools.checkstyle.checks.metrics.CyclomaticComplexityCheck", justification="")
     protected void writeElementContent(Element element) throws IOException {
         boolean trim = format.isTrimText();
         boolean oldPreserve = preserve;
@@ -1072,13 +1062,9 @@ public class XMLWriter extends XMLFilterImpl implements LexicalHandler {
                             // only add the PAD_TEXT if the text itself ends
                             // with whitespace
                             char lastTextChar = 'a';
-                            if (buff != null) {
-                                lastTextChar = buff.charAt(buff.length() - 1);
-                            } else if (lastTextNode != null) {
-                                String txt = lastTextNode.getText();
-                                lastTextChar = (char) (txt.length() > 0 ? txt.charAt(txt.length() - 1) :
-                                    Character.SPACE_SEPARATOR);
-                            }
+                            String txt = lastTextNode.getText();
+                            lastTextChar = (char) (txt.length() > 0 ? txt.charAt(txt.length() - 1) :
+                               Character.SPACE_SEPARATOR);
 
                             if (Character.isWhitespace(lastTextChar)) {
                                 writer.write(PAD_TEXT);
@@ -1186,9 +1172,9 @@ public class XMLWriter extends XMLFilterImpl implements LexicalHandler {
      */
     protected void writeNamespaces() throws IOException {
         if (namespacesMap != null) {
-            for (Iterator iter = namespacesMap.entrySet().iterator(); iter
+            for (Iterator<?> iter = namespacesMap.entrySet().iterator(); iter
                     .hasNext();) {
-                Map.Entry entry = (Map.Entry) iter.next();
+                Map.Entry<?,?> entry = (Map.Entry<?,?>) iter.next();
                 String prefix = (String) entry.getKey();
                 String uri = (String) entry.getValue();
                 writeNamespace(prefix, uri);
@@ -1235,7 +1221,8 @@ public class XMLWriter extends XMLFilterImpl implements LexicalHandler {
         lastOutputNodeType = Node.PROCESSING_INSTRUCTION_NODE;
     }
 
-    protected void writeString(String text) throws IOException {
+    protected void writeString(final String givenText) throws IOException {
+        String text = givenText;
         if ((text != null) && (text.length() > 0)) {
             if (escapeText) {
                 text = escapeElementEntities(text);
@@ -1364,7 +1351,7 @@ public class XMLWriter extends XMLFilterImpl implements LexicalHandler {
         XMLReader parent = getParent();
 
         if (parent == null) {
-            throw new NullPointerException("No parent for filter");
+            throw new IllegalArgumentException("No parent for filter");
         }
 
         // try to register for lexical events
@@ -1569,7 +1556,7 @@ public class XMLWriter extends XMLFilterImpl implements LexicalHandler {
      * @throws UnsupportedEncodingException
      *             DOCUMENT ME!
      */
-    protected Writer createWriter(OutputStream outStream, String encoding)
+    protected final Writer createWriter(OutputStream outStream, String encoding)
             throws UnsupportedEncodingException {
         return new BufferedWriter(new OutputStreamWriter(outStream, encoding));
     }
@@ -1851,24 +1838,20 @@ public class XMLWriter extends XMLFilterImpl implements LexicalHandler {
     protected int defaultMaximumAllowedCharacter() {
         String encoding = format.getEncoding();
 
-        if (encoding != null) {
-            if (encoding.equals("US-ASCII")) {
-                return 127;
-            }
+        if (encoding != null && encoding.equals("US-ASCII")) {
+            return 127;
+        } else {
+            // no encoding for things like ISO-*, UTF-8 or UTF-16
+            return -1;
         }
-
-        // no encoding for things like ISO-*, UTF-8 or UTF-16
-        return -1;
     }
 
     protected boolean isNamespaceDeclaration(Namespace ns) {
         if ((ns != null) && (ns != Namespace.XML_NAMESPACE)) {
             String uri = ns.getURI();
-
-            if (uri != null) {
-                if (!namespaceStack.contains(ns)) {
-                    return true;
-                }
+            
+            if (uri != null && !namespaceStack.contains(ns)) {
+                return true;
             }
         }
 

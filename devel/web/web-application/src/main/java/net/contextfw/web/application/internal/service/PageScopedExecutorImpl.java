@@ -10,8 +10,13 @@ import net.contextfw.web.application.scope.ScopedWebApplicationExecution;
 import net.contextfw.web.application.scope.WebApplicationStorage;
 import net.contextfw.web.application.util.Tracker;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class PageScopedExecutorImpl implements PageScopedExecutor {
 
+    private static final Logger LOG = LoggerFactory.getLogger(PageScopedExecutorImpl.class);
+    
     private final WebApplicationStorage storage;
 
     private final PageScope pageScope;
@@ -34,7 +39,7 @@ public class PageScopedExecutorImpl implements PageScopedExecutor {
                             try {
                                 runnable.run();
                             } catch (RuntimeException e) {
-                                e.printStackTrace();
+                                LOG.debug("Exception while executing", e);
                             } finally {
                                 pageScope.deactivateCurrentPage();
                             }

@@ -46,7 +46,7 @@ public class InitServlet extends HttpServlet {
             justification=Constants.DEFAULT_JUSTIFICATION)
     private final InitHandler handler;
     
-    private final RequestInvocationFilter filter;
+    private final transient RequestInvocationFilter filter;
     
     @edu.umd.cs.findbugs.annotations.SuppressWarnings(
             value={Constants.SE_BAD_FIELD}, 

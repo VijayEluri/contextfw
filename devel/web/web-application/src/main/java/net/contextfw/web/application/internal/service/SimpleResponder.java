@@ -2,8 +2,13 @@ package net.contextfw.web.application.internal.service;
 
 import java.io.PrintWriter;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class SimpleResponder implements Responder {
 
+    private static final Logger LOG = LoggerFactory.getLogger(SimpleResponder.class);
+    
     private final PrintWriter out;
     
     public SimpleResponder(PrintWriter out) {
@@ -32,7 +37,7 @@ public class SimpleResponder implements Responder {
         try {
             out.close();
         } catch (Exception e) {
-            // Ignored
+            LOG.debug("Exception whil closing", e);
         }
     }
 

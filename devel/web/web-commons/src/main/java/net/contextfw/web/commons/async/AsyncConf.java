@@ -5,7 +5,10 @@ import net.contextfw.web.application.configuration.SettableProperty;
 import net.contextfw.web.commons.minifier.MinifierConf;
 
 
-public class AsyncConf {
+public final class AsyncConf {
+    
+    private AsyncConf() {
+    }
     
     public enum AsyncMode {
         JETTY, TOMCAT, OTHER, NONE

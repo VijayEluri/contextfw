@@ -54,5 +54,21 @@ public class WebApplicationException extends RuntimeException {
     public WebApplicationException(Field field, String msg, Throwable cause) {
         super(field.getDeclaringClass().getName()+"."+field.getName()+":" + msg, cause);
     }
+    
+    public static final RuntimeException getRethrowable(Exception e) {
+        if (e instanceof WebApplicationException) {
+            return (WebApplicationException) e;
+        } else {
+            return new WebApplicationException(e);
+        }
+    }
+    
+    public static final RuntimeException getRethrowable(String msg, Exception e) {
+        if (e instanceof WebApplicationException) {
+            return (WebApplicationException) e;
+        } else {
+            return new WebApplicationException(msg, e);
+        }
+    }
 
 }

@@ -18,13 +18,11 @@
 package net.contextfw.web.application.internal.service;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServletResponse;
 
 import net.contextfw.web.application.PageContext;
 import net.contextfw.web.application.PageHandle;
@@ -146,11 +144,7 @@ public class WebApplicationImpl implements WebApplication {
                 return false;
             }
         } catch (Exception e) {
-            if (e instanceof WebApplicationException) {
-                throw (WebApplicationException) e;
-            } else {
-                throw new WebApplicationException("Exception while trying to init state", e);
-            }
+            throw WebApplicationException.getRethrowable("Exception while trying to init state", e);
         }
     }
 
@@ -254,11 +248,7 @@ public class WebApplicationImpl implements WebApplication {
                     return UpdateInvocation.NONE;
                 }
         } catch (Exception e) {
-            if (e instanceof WebApplicationException) {
-                throw (WebApplicationException) e;
-            } else {
-                throw new WebApplicationException("Failed to update elements", e);
-            }
+            throw WebApplicationException.getRethrowable("Failed to update elements", e);
         }
     }
 

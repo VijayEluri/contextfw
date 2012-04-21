@@ -34,7 +34,7 @@ public class UpdateServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
 
-    private final UpdateExecutor executor;
+    private final transient UpdateExecutor executor;
     
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException, IOException {

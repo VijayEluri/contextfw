@@ -96,7 +96,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
     private final int throttleTreshold;
     private final boolean logThrottle;
     private final double throttleCurve;
-    private final String collection;
+    private final String collectionName;
 
     private final Serializer serializer;
     
@@ -110,7 +110,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
         throttleTreshold = configuration.getOrElse(THROTTLE_TRESHOLD, INITIAL_TRESHOLD);
         logThrottle = configuration.getOrElse(THROTTLE_LOG, false);
         throttleCurve = configuration.getOrElse(THROTTLE_CURVE, INITIAL_CURVE);
-        collection = configuration.getOrElse(COLLECTION_NAME, "pages");
+        collectionName = configuration.getOrElse(COLLECTION_NAME, "pages");
         this.serializer = serializer;
         setIndexes(getCollection());
     }
@@ -168,7 +168,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
     
     @Override
     protected DBCollection getCollection() {
-        return getDb().getCollection(collection);
+        return getDb().getCollection(collectionName);
     }
     
     private void removeExpiredPages() {
@@ -270,7 +270,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
                                 final WebApplication application) {
         
         executeAsync(new ExceptionSafeExecution() {
-            public void execute() throws Exception {
+            public void execute() {
 
                 DBObject query = o(KEY_HANDLE, handle);
                 
@@ -403,10 +403,8 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
             } else {
                 throw new NoPageScopeException(handle);
             }
-        } catch (WebApplicationException e) {
-            throw e;
         } catch (RuntimeException e) {
-            throw new WebApplicationException(e);
+            throw WebApplicationException.getRethrowable(e);
         } finally {
             closeExclusive(handle.toString(), null, null);
         }

@@ -25,9 +25,9 @@ public class JettyAsyncServlet extends HttpServlet implements CometService {
 
     private static final BatonProvider BATONS = new BatonProvider();
     
-    private InternalAsyncService asyncService;
+    private transient InternalAsyncService asyncService;
     
-    private Map<PageHandle, Continuation> continuations =
+    private transient Map<PageHandle, Continuation> continuations =
             Collections.synchronizedMap(new HashMap<PageHandle, Continuation>());
 
     @Override
