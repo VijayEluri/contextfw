@@ -51,7 +51,7 @@
         <dependency>
             <groupId>com.google.javascript</groupId>
             <artifactId>closure-compiler</artifactId>
-            <version>r1043</version>
+            <version>r1810</version>
         </dependency>
         <dependency>
             <groupId>com.thoughtworks.xstream</groupId>
@@ -74,5 +74,22 @@
             <version>3.0</version>
             <scope>test</scope>
         </dependency>
+        <dependency>
+            <groupId>org.apache.tomcat</groupId>
+            <artifactId>catalina</artifactId>
+            <version>6.0.35</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.eclipse.jetty</groupId>
+            <artifactId>jetty-server</artifactId>
+            <version>7.0.2.v20100331</version>
+            <scope>provided</scope>
+        </dependency>
+         <dependency>
+           <groupId>org.webbitserver</groupId>
+           <artifactId>webbit</artifactId>
+           <version>0.4.6</version>
+       </dependency>
 	</dependencies>
 </project>
