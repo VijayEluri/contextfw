@@ -33,6 +33,7 @@ public class DefaultWebApplicationStorage implements WebApplicationStorage {
         private long validThrough;
         private final String remoteAddr;
         private final WebApplication application;
+        @SuppressWarnings("PMD.UnusedPrivateField") // For some reason PMD reports this as unused
         private final Map<String, Object> largeObjects = new HashMap<String, Object>();
         
         private Holder(WebApplication application, 

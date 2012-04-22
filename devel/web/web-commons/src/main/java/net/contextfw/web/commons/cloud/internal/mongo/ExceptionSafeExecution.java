@@ -18,8 +18,6 @@ public abstract class ExceptionSafeExecution implements Runnable {
         }
     }
 
-    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
-            value="SignatureDeclareThrowsException", 
-            justification="This is exception safe")
+    @SuppressWarnings("PMD.SignatureDeclareThrowsException")
     public abstract void execute() throws Exception;
 }

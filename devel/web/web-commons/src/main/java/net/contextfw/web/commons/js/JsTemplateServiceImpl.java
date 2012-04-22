@@ -1,7 +1,9 @@
 package net.contextfw.web.commons.js;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Set;
 
 import org.apache.commons.lang.StringEscapeUtils;
 import org.apache.commons.lang.StringUtils;
@@ -30,10 +32,24 @@ import com.google.inject.Singleton;
 @Singleton
 class JsTemplateServiceImpl implements JsTemplateService {
 
-    private final JsTemplateServlet servlet;    
+    private final JsTemplateServlet servlet;
+    
+    private final Set<String> selfClosedTags = new HashSet<String>();
     
     public JsTemplateServiceImpl(JsTemplateServlet servlet) {
         this.servlet = servlet;
+        selfClosedTags.add("area");
+        selfClosedTags.add("base");
+        selfClosedTags.add("basefont");
+        selfClosedTags.add("br");
+        selfClosedTags.add("col");
+        selfClosedTags.add("frame");
+        selfClosedTags.add("hr");
+        selfClosedTags.add("img");
+        selfClosedTags.add("input");
+        selfClosedTags.add("link");
+        selfClosedTags.add("meta");
+        selfClosedTags.add("param");
     }
     
     @SuppressWarnings("unchecked")
@@ -90,19 +106,7 @@ class JsTemplateServiceImpl implements JsTemplateService {
 
             String lName = name.toLowerCase(Locale.ENGLISH);
 
-            if ("area".equals(lName) ||
-                    "base".equals(lName) ||
-                    "basefont".equals(lName) ||
-                    "br".equals(lName) ||
-                    "col".equals(lName) ||
-                    "frame".equals(lName) ||
-                    "hr".equals(lName) ||
-                    "img".equals(lName) ||
-                    "input".equals(lName) ||
-                    "link".equals(lName) ||
-                    "meta".equals(lName) ||
-                    "param".equals(lName)) {
-
+            if (selfClosedTags.contains(lName)) {
                 buffer.append("/>");
             } else {
                 buffer.append(">");

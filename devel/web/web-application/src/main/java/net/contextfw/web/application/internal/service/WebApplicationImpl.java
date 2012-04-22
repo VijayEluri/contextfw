@@ -217,7 +217,6 @@ public class WebApplicationImpl implements WebApplication {
         responder.sendResponse(d.toDocument(), resp, mode);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public UpdateInvocation updateState(String id, 
                                         String method,
@@ -235,15 +234,9 @@ public class WebApplicationImpl implements WebApplication {
                 ComponentUpdateHandler handler = updateHandlers.get(key);
 
                 if (handler != null) {
-                    if (handler.getDelayed() == null
-                                || !injector.getInstance(handler.getDelayed().value())
-                                  .isUpdateDelayed(component, pageContext.getRequest())) {
-                        return new UpdateInvocation(
-                                handler.isResource(),
-                                handler.invoke(rootComponent, component, parameters));
-                    } else {
-                        return UpdateInvocation.DELAYED;
-                    }
+                    return new UpdateInvocation(
+                          handler.isResource(),
+                          handler.invoke(rootComponent, component, parameters));
                 } else {
                     return UpdateInvocation.NONE;
                 }

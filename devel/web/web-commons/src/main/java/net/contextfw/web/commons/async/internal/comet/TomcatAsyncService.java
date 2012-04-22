@@ -21,6 +21,8 @@ import com.google.inject.Singleton;
 @Singleton
 public class TomcatAsyncService implements CometService {
 
+    private static final String EXCEPTION = "Exception";
+
     private static final Logger LOG = LoggerFactory.getLogger(TomcatAsyncService.class);
     
     private static TomcatAsyncService instance;
@@ -80,7 +82,7 @@ public class TomcatAsyncService implements CometService {
                         }
                         close(event);
                     } catch (Exception e) {
-                        LOG.debug("Exception", e);
+                        LOG.debug(EXCEPTION, e);
                     }
                 }
             }
@@ -109,7 +111,7 @@ public class TomcatAsyncService implements CometService {
         try {
             event.close();
         } catch (Exception e) {
-            LOG.debug("Exception", e);
+            LOG.debug(EXCEPTION, e);
         }
     }
     
@@ -122,12 +124,12 @@ public class TomcatAsyncService implements CometService {
             try {
                 event.getHttpServletResponse().getWriter().flush();
             } catch (Exception e) {
-                LOG.debug("Exception", e);
+                LOG.debug(EXCEPTION, e);
             }
             try {
                 event.close();
             } catch (Exception e) {
-                LOG.debug("Exception", e);
+                LOG.debug(EXCEPTION, e);
             }
         }
     }

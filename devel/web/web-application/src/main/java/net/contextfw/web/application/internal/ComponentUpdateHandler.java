@@ -26,7 +26,6 @@ import net.contextfw.web.application.WebApplicationException;
 import net.contextfw.web.application.component.Component;
 import net.contextfw.web.application.internal.util.ClassScanner;
 import net.contextfw.web.application.lifecycle.LifecycleListener;
-import net.contextfw.web.application.remote.Delayed;
 import net.contextfw.web.application.remote.ResourceBody;
 
 import com.google.gson.Gson;
@@ -36,7 +35,6 @@ public class ComponentUpdateHandler {
     private final Gson gson;
     private final String key;
     private final Method method;
-    private final Delayed delayed;
     private final boolean resource;
     private final LifecycleListener listener;
 
@@ -44,7 +42,6 @@ public class ComponentUpdateHandler {
         this.key = key;
         this.method = method;
         this.gson = gson;
-        this.delayed = method.getAnnotation(Delayed.class);
         this.resource = method.getAnnotation(ResourceBody.class) != null;
         this.listener = listener;
     }
@@ -119,10 +116,6 @@ public class ComponentUpdateHandler {
         }
         listener.afterUpdate(component, method, thrown);
         return returnVal;
-    }
-
-    public Delayed getDelayed() {
-        return delayed;
     }
 
     public boolean isResource() {

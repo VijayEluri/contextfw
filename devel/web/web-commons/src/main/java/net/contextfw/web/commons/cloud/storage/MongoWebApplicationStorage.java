@@ -31,6 +31,8 @@ import com.mongodb.WriteConcern;
 @Singleton
 public class MongoWebApplicationStorage extends MongoBase implements WebApplicationStorage {
 
+    private static final String LARGE = "large_";
+
     private static final double INITIAL_CURVE = 1.3;
     
     private static final int TRY_OUTS = 100;
@@ -167,7 +169,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
     }
     
     @Override
-    protected DBCollection getCollection() {
+    protected final DBCollection getCollection() {
         return getDb().getCollection(collectionName);
     }
     
@@ -219,9 +221,9 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
         DBObject query = b()
                 .add(KEY_HANDLE, handle.toString())
                 .add(KEY_REMOTE_ADDR, remoteAddr)
-                .add(KEY_VALID_THROUGH, o("$gte", System.currentTimeMillis())).get();
+                .add(KEY_VALID_THROUGH, o(GTE, System.currentTimeMillis())).get();
 
-        getCollection().update(query, o("$set", o(KEY_VALID_THROUGH, validThrough)), 
+        getCollection().update(query, o(SET, o(KEY_VALID_THROUGH, validThrough)), 
                 false, false, WriteConcern.SAFE);        
     }
 
@@ -241,7 +243,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
                 .add(KEY_HANDLE, handle)
                 .add(KEY_LOCKED, false);
 
-        DBObject update = o("$set", o(KEY_LOCKED, true));
+        DBObject update = o(SET, o(KEY_LOCKED, true));
         DBObject query = queryBuilder.get();
         
         for (int i = 0; i < TRY_OUTS; i++) {
@@ -275,7 +277,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
                 DBObject query = o(KEY_HANDLE, handle);
                 
                 BasicDBObjectBuilder updateBuilder = b();
-                updateBuilder.push("$set");
+                updateBuilder.push(SET);
                 updateBuilder.add(KEY_LOCKED, false);
                 
                 if (newValidThrough != null) {
@@ -328,7 +330,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
 
         queryBuilder
             .push(KEY_VALID_THROUGH)
-            .add("$gte", System.currentTimeMillis())
+            .add(GTE, System.currentTimeMillis())
             .pop();
         
         DBObject query = queryBuilder.get();
@@ -340,21 +342,21 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
     public void storeLarge(PageHandle handle, String key, Object obj) {
         
         if (handle == null) {
-            throw new IllegalArgumentException("Handle cannot be null");
+            throw new IllegalArgumentException(HANDLE_CANNOT_BE_NULL);
         } else if (StringUtils.isBlank(key)) {
-            throw new IllegalArgumentException("Key cannot be null or blank!");
+            throw new IllegalArgumentException(KEY_CANNOT_BE_NULL_OR_BLANK);
         }
         
         DBObject query = b()
                 .add(KEY_HANDLE, handle.toString())
-                .add(KEY_VALID_THROUGH, o("$gte", System.currentTimeMillis())).get();
+                .add(KEY_VALID_THROUGH, o(GTE, System.currentTimeMillis())).get();
         
         DBObject update;
         
         if (obj == null) {
-            update = o("$unset", o("large_" + key, 1));
+            update = o(UNSET, o(LARGE + key, 1));
         } else {
-            update = o("$set", o("large_" + key, serializer.serialize(obj)));
+            update = o(SET, o(LARGE + key, serializer.serialize(obj)));
         }
         
         if (getCollection().update(query, update).getN() != 1) {
@@ -366,24 +368,24 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
     @Override
     public <T> T loadLarge(PageHandle handle, String key, Class<T> type) {
         if (handle == null) {
-            throw new IllegalArgumentException("Handle cannot be null");
+            throw new IllegalArgumentException(HANDLE_CANNOT_BE_NULL);
         } else if (StringUtils.isBlank(key)) {
-            throw new IllegalArgumentException("Key cannot be null or blank!");
+            throw new IllegalArgumentException(KEY_CANNOT_BE_NULL_OR_BLANK);
         }
         
         DBObject query = b()
                 .add(KEY_HANDLE, handle.toString())
-                .add(KEY_VALID_THROUGH, o("$gte", System.currentTimeMillis())).get();
+                .add(KEY_VALID_THROUGH, o(GTE, System.currentTimeMillis())).get();
         
         
-        DBObject field = o("large_" + key, 1);
+        DBObject field = o(LARGE + key, 1);
         DBObject obj = getCollection().findOne(query, field);
         
         if (obj == null) {
             throw new NoPageScopeException(handle);
         }
         
-        byte[] data = (byte[]) obj.get("large_" + key);
+        byte[] data = (byte[]) obj.get(LARGE + key);
         
         return data == null ? null : (T) serializer.unserialize(data);
     }
@@ -392,7 +394,7 @@ public class MongoWebApplicationStorage extends MongoBase implements WebApplicat
     public void executeSynchronized(PageHandle handle, Runnable runnable) {
         
         if (handle == null) {
-            throw new IllegalArgumentException("Handle cannot be null");
+            throw new IllegalArgumentException(HANDLE_CANNOT_BE_NULL);
         } else if (runnable == null) {
             throw new IllegalArgumentException("Runnable cannot be null");
         }

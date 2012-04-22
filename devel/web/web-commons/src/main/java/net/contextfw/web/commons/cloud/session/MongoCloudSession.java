@@ -40,6 +40,10 @@ import com.mongodb.DBObject;
 @Singleton
 public class MongoCloudSession extends MongoBase implements CloudSession {
 
+    private static final String KEY_CANNOT_BE_EMPTY_OR_NULL = "Key cannot be empty or null.";
+
+    private static final String TYPE_CANNOT_BE_EMPTY_OR_NULL = "Type cannot be empty or null.";
+
     private static final String NO_SESSION = "Cannot open session in EXISTING-mode! " +
         	  "Session has not been initialized";
     
@@ -54,7 +58,7 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
     
     private final Provider<CloudSessionHolder> holderProvider;
     
-    private final ThreadLocal<LocalData> localData = new ThreadLocal<LocalData>() {
+    private final ThreadLocal<LocalData> localDataHolder = new ThreadLocal<LocalData>() {
         protected LocalData initialValue() {
             return new LocalData();
         }
@@ -96,10 +100,10 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
         assertSessionIsUsable();
         
         if (StringUtils.isBlank(key)) {
-            throw new IllegalArgumentException("Key cannot be empty or null.");
+            throw new IllegalArgumentException(KEY_CANNOT_BE_EMPTY_OR_NULL);
         }
         
-        final String handle = getSessionHandle(localData.get().openMode != OpenMode.EXISTING, true);
+        final String handle = getSessionHandle(localDataHolder.get().openMode != OpenMode.EXISTING, true);
         
         if (handle != null) {
             
@@ -107,7 +111,7 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
                 unset(handle, key, nonCached);
             }
             
-            LocalData data = localData.get();
+            LocalData data = localDataHolder.get();
             
             data.removed.remove(key);
             data.changed.add(key);
@@ -115,7 +119,7 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
             
             if (nonCached) {
                 DBObject query = o(KEY_HANDLE, handle);
-                DBObject update = o("$set", o(key, serializer.serialize(value)));
+                DBObject update = o(SET, o(key, serializer.serialize(value)));
                 getCollection().update(query, update);
             }
         }
@@ -125,7 +129,7 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
         DBObject query = b()
                 .add(KEY_HANDLE, handle)
                 .push(KEY_VALID_THROUGH)
-                .add("$gte", System.currentTimeMillis()).get();
+                .add(GTE, System.currentTimeMillis()).get();
         
         return getCollection().count(query) > 0;
     }
@@ -191,10 +195,10 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
         assertSessionIsUsable();
         
         if (StringUtils.isBlank(key)) {
-            throw new IllegalArgumentException("Key cannot be empty or null.");
+            throw new IllegalArgumentException(KEY_CANNOT_BE_EMPTY_OR_NULL);
         }
         if (type == null) {
-            throw new IllegalArgumentException("Type cannot be empty or null.");
+            throw new IllegalArgumentException(TYPE_CANNOT_BE_EMPTY_OR_NULL);
         }
         
         LocalData localData = getLocalData();
@@ -221,13 +225,13 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
     }
 
     private LocalData getLocalData() {
-        return localData.get();
+        return localDataHolder.get();
     }
 
     @Override
     public <T> T get(Class<T> type) {
         if (type == null) {
-            throw new IllegalArgumentException("Type cannot be empty or null.");
+            throw new IllegalArgumentException(TYPE_CANNOT_BE_EMPTY_OR_NULL);
         }
         return get(typeToKey(type), type, false);
     }
@@ -242,7 +246,7 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
     @Override
     public void remove(String key, boolean nonCached) {
         if (StringUtils.isBlank(key)) {
-            throw new IllegalArgumentException("Key cannot be empty or null.");
+            throw new IllegalArgumentException(KEY_CANNOT_BE_EMPTY_OR_NULL);
         }
         
         String handle = getSessionHandle(false, false);
@@ -253,14 +257,14 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
     
     private void unset(final String handle, final String key, boolean nonCached) {
         assertSessionIsUsable();
-        LocalData localData = this.localData.get();
+        LocalData localData = this.localDataHolder.get();
         localData.cache.remove(key);
         localData.changed.remove(key);
         localData.removed.add(key);
         
         if (nonCached) {
             DBObject query = o(KEY_HANDLE, handle);
-            DBObject update = o("$unset", o(key, 1));
+            DBObject update = o(UNSET, o(key, 1));
             getCollection().update(query, update);
         }
     }
@@ -268,7 +272,7 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
     @Override
     public void remove(Class<?> type) {
         if (type == null) {
-            throw new IllegalArgumentException("Type cannot be empty or null.");
+            throw new IllegalArgumentException(TYPE_CANNOT_BE_EMPTY_OR_NULL);
         }
         remove(typeToKey(type));
     }
@@ -276,7 +280,7 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
     @Override
     public void expireSession() {
         String handle = getSessionHandle(false, false);
-        localData.remove();
+        localDataHolder.remove();
         if (handle != null) {
             setSessionCookie(handle, true);
             removeSession(handle);
@@ -304,8 +308,8 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
     
     @Override
     public void openSession(OpenMode mode) {
-        localData.remove();
-        localData.get().openMode = mode;
+        localDataHolder.remove();
+        localDataHolder.get().openMode = mode;
         removeExpiredSessions();
         CloudSessionHolder holder = this.holderProvider.get();
         
@@ -344,13 +348,13 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
 
     private void refreshSession(String handle) {
         getCollection().update(o(KEY_HANDLE, handle),
-                o("$set", 
+                o(SET, 
                         o(KEY_VALID_THROUGH, 
                         System.currentTimeMillis() + maxInactivity)));
     }
     
     @Override
-    protected DBCollection getCollection() {
+    protected final DBCollection getCollection() {
         return getDb().getCollection(sessionCollection);
     }
     
@@ -361,8 +365,8 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
     @Override
     public void closeSession() {
         
-        final String handle = getSessionHandle(localData.get().openMode != OpenMode.EXISTING, false);
-        final LocalData ld = localData.get();
+        final String handle = getSessionHandle(localDataHolder.get().openMode != OpenMode.EXISTING, false);
+        final LocalData ld = localDataHolder.get();
         
         if (!ld.changed.isEmpty() || !ld.removed.isEmpty()) {
         
@@ -370,14 +374,14 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
             
             BasicDBObjectBuilder update = b();
             if (!ld.removed.isEmpty()) {
-                update.push("$unset");
+                update.push(UNSET);
                 for (String _ : ld.removed) {
                     update.add(_, 1);
                 }
                 update.pop();
             }
             if (!ld.changed.isEmpty()) {
-                update.push("$set");
+                update.push(SET);
                 for (String _ : ld.changed) {
                     update.add(_, serializer.serialize(ld.cache.get(_)));
                 }
@@ -387,7 +391,7 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
             getCollection().update(query, update.get());
         }
         
-        localData.remove();
+        localDataHolder.remove();
         holderProvider.get().setOpen(false);
     }
 
@@ -412,7 +416,7 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
     @Override
     public <T> T get(Class<T> type, boolean nonCached) {
         if (type == null) {
-            throw new IllegalArgumentException("Type cannot be empty or null.");
+            throw new IllegalArgumentException(TYPE_CANNOT_BE_EMPTY_OR_NULL);
         }
         return get(typeToKey(type), type, nonCached);
     }
@@ -425,7 +429,7 @@ public class MongoCloudSession extends MongoBase implements CloudSession {
     @Override
     public void remove(Class<?> type, boolean nonCached) {
         if (type == null) {
-            throw new IllegalArgumentException("Type cannot be empty or null.");
+            throw new IllegalArgumentException(TYPE_CANNOT_BE_EMPTY_OR_NULL);
         }
         remove(typeToKey(type), nonCached);
     }

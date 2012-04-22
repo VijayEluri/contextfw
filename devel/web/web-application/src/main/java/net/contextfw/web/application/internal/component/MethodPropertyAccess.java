@@ -27,6 +27,21 @@ import net.contextfw.web.application.internal.InternalWebApplicationException;
 
 final class MethodPropertyAccess implements PropertyAccess<Object> {
 
+    private static final class SetAccessibleAction implements PrivilegedAction<Void> {
+        
+        private final Method method;
+
+        private SetAccessibleAction(Method method) {
+            this.method = method;
+        }
+
+        @Override
+        public Void run() {
+            method.setAccessible(true);
+            return null;
+        }
+    }
+
     private final Method method;
     
     public MethodPropertyAccess(final Method method) {
@@ -35,13 +50,7 @@ final class MethodPropertyAccess implements PropertyAccess<Object> {
                     + "." + method.getName() + "() cannot take any parameters");
         }
         this.method = method;
-        AccessController.doPrivileged(new PrivilegedAction<Void>() {
-            @Override
-            public Void run() {
-                method.setAccessible(true);
-                return null;
-            }
-        });
+        AccessController.doPrivileged(new SetAccessibleAction(method));
     }
 
     @Override

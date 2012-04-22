@@ -25,10 +25,16 @@ public abstract class MongoBase {
     
     private final DB db;
 
+    protected static final String GTE = "$gte";
+    protected static final String SET = "$set";
+    protected static final String UNSET = "$unset";
+    
     protected static final String KEY_HANDLE = "handle";
     protected static final String KEY_VALID_THROUGH = "validThrough";
     protected static final String KEY_LOCKED = "locked";
     protected static final String KEY_REMOTE_ADDR = "remoteAddr";
+    protected static final String HANDLE_CANNOT_BE_NULL = "Handle cannot be null";
+    protected static final String KEY_CANNOT_BE_NULL_OR_BLANK = "Key cannot be null or blank!";
     
     private long nextCleanup = 0;
     
@@ -61,7 +67,7 @@ public abstract class MongoBase {
         return BasicDBObjectBuilder.start();
     }
 
-    protected DB getDb() {
+    protected final DB getDb() {
         return db;
     }
     

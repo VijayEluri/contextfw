@@ -24,6 +24,10 @@ import com.google.inject.Singleton;
 @Singleton
 public class LocaleServiceImpl implements LocaleService {
 
+    private static final String XSL_CALL_TEMPLATE = "xsl:call-template";
+
+    private static final String NAME = "name";
+
     private static final String UNCHECKED = "unchecked";
 
     private Map<String, LocaleMessage> messages = new HashMap<String, LocaleMessage>();
@@ -110,10 +114,10 @@ public class LocaleServiceImpl implements LocaleService {
 
         Element attribute = element
                 .addElement("xsl:attribute")
-                .addAttribute("name", name);
+                .addAttribute(NAME, name);
 
-        attribute.addElement("xsl:call-template")
-                .addAttribute("name", LocaleConf.PREFIX + ":" + value);
+        attribute.addElement(XSL_CALL_TEMPLATE)
+                .addAttribute(NAME, LocaleConf.PREFIX + ":" + value);
 
         attribute.detach();
 
@@ -122,8 +126,8 @@ public class LocaleServiceImpl implements LocaleService {
 
     private void toCallTemplate(Element element) {
         String name = element.getName();
-        element.setName("xsl:call-template");
-        element.addAttribute("name", LocaleConf.PREFIX + ":" + name);
+        element.setName(XSL_CALL_TEMPLATE);
+        element.addAttribute(NAME, LocaleConf.PREFIX + ":" + name);
     }
 
     @SuppressWarnings(UNCHECKED)
@@ -155,7 +159,7 @@ public class LocaleServiceImpl implements LocaleService {
 
         for (Entry<String, Map<Locale, String>> entry : localizations.entrySet()) {
             Element template = root.addElement("xsl:template");
-            template.addAttribute("name", LocaleConf.PREFIX + ":" + entry.getKey());
+            template.addAttribute(NAME, LocaleConf.PREFIX + ":" + entry.getKey());
             //template.addAttribute("match", LocalizationConf.PREFIX + ":" + entry.getKey());
             Element choose = template.addElement("xsl:choose");
             for (Entry<Locale, String> text : entry.getValue().entrySet()) {

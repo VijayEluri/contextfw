@@ -134,11 +134,7 @@ public class UpdateHandler {
                                                 componentId,
                                                 method,
                                                 params);
-                                if (invocation[0].isDelayed()) {
-                                    pageScope.deactivateCurrentPage();
-                                    return;
-                                }
-
+                                
                                 if (!invocation[0].isResource() && !invocation[0].isCancelled()) {
                                     listeners.beforeRender();
                                     page.getWebApplication().sendResponse(responder);

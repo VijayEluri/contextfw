@@ -6,7 +6,6 @@ import java.net.URL;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Locale;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -27,13 +26,9 @@ abstract class ContentServlet extends HttpServlet {
 
     private static final long serialVersionUID = 1L;
     
-    Logger logger = LoggerFactory.getLogger(ContentServlet.class);
+    private static final Logger LOG = LoggerFactory.getLogger(ContentServlet.class);
     
-    private ThreadLocal<SimpleDateFormat> format = new ThreadLocal<SimpleDateFormat>() {
-        protected SimpleDateFormat initialValue() {
-            return new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz", Locale.ENGLISH);
-        }
-    };
+    private ThreadLocal<SimpleDateFormat> format = new DateFormat();
 
     private volatile String content;
     
@@ -94,7 +89,7 @@ abstract class ContentServlet extends HttpServlet {
             try {
                 mod = format.get().parse(modifiedHeader);
             } catch (ParseException e) {
-                logger.error("Error while parsing", e);
+                LOG.error("Error while parsing", e);
             }
         }
 

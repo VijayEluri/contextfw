@@ -114,6 +114,7 @@ public class ComponentBuilderImpl implements ComponentBuilder, ScriptContext {
         }
     }
 
+    @SuppressWarnings("PMD.UnusedPrivateMethod") // For some reason PMD reports this as unused
     private void build(MetaComponent model, DOMBuilder b, Object component,
             List<Builder> builders, boolean partial, Set<String> updates,
             Object... buildins) {

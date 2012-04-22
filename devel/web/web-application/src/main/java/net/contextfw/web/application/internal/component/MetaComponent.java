@@ -50,7 +50,15 @@ import com.google.gson.Gson;
 
 public final class MetaComponent {
 
+    private static final String REQUEST_PARAM = "@RequestParam";
+
+    private static final String PATH_PARAM = "@PathParam";
+
     private static Map<Class<?>, Class<?>> primitives = new HashMap<Class<?>, Class<?>>();
+    
+    private static final String MISSING_STRING_CONSTRUCTOR = "-annotated field " +
+            "type does not contain constructor " +
+            "having String as parameter";
 
     static {
         primitives.put(boolean.class, Boolean.class);
@@ -312,9 +320,7 @@ public final class MetaComponent {
                     throw new WebApplicationException(e);
                 } catch (NoSuchMethodException e) {
                     throw new WebApplicationException(field,
-                            "@PathParam-annotated field " +
-                                    "type does not contain constructor " +
-                                    "having String as parameter", e);
+                            PATH_PARAM+MISSING_STRING_CONSTRUCTOR, e);
                 }
             }
             pathParamFields.add(field);
@@ -333,9 +339,7 @@ public final class MetaComponent {
                     throw new WebApplicationException(e);
                 } catch (NoSuchMethodException e) {
                     throw new WebApplicationException(field,
-                            "@RequestParam-annotated field " +
-                                    "type does not contain constructor " +
-                                    "having String as parameter", e);
+                            REQUEST_PARAM+MISSING_STRING_CONSTRUCTOR, e);
                 }
             }
             requestParamFields.add(field);
@@ -359,9 +363,7 @@ public final class MetaComponent {
                     throw new WebApplicationException(e);
                 } catch (NoSuchMethodException e) {
                     throw new WebApplicationException(method,
-                            "@PathParam-annotated method parameter " +
-                                    "type does not contain constructor " +
-                                    "having String as parameter", e);
+                            PATH_PARAM+MISSING_STRING_CONSTRUCTOR, e);
                 }
             }
             pathParamMethods.add(method);
@@ -385,9 +387,7 @@ public final class MetaComponent {
                     throw new WebApplicationException(e);
                 } catch (NoSuchMethodException e) {
                     throw new WebApplicationException(method,
-                            "@RequestParam-annotated method parameter " +
-                                    "type does not contain constructor " +
-                                    "having String as parameter", e);
+                            REQUEST_PARAM+MISSING_STRING_CONSTRUCTOR, e);
                 }
             }
             requestParamMethods.add(method);
@@ -428,10 +428,10 @@ public final class MetaComponent {
     public void applyRequestParams(Object obj,
                                    HttpServletRequest request) {
         for (Field field : requestParamFields) {
-            RequestParam annotation = field.getAnnotation(RequestParam.class);
-            String name = "".equals(annotation.name()) ? field.getName() : annotation.name();
+            RequestParam requestParam = field.getAnnotation(RequestParam.class);
+            String name = "".equals(requestParam.name()) ? field.getName() : requestParam.name();
             try {
-                field.set(obj, getValue(annotation,
+                field.set(obj, getValue(requestParam,
                                         field.getType(),
                                         name,
                                         request));
@@ -442,10 +442,10 @@ public final class MetaComponent {
             }
         }
         for (Method method : requestParamMethods) {
-            RequestParam annotation = method.getAnnotation(RequestParam.class);
-            String name = "".equals(annotation.name()) ? method.getName() : annotation.name();
+            RequestParam requestParam = method.getAnnotation(RequestParam.class);
+            String name = "".equals(requestParam.name()) ? method.getName() : requestParam.name();
             try {
-                method.invoke(obj, getValue(annotation,
+                method.invoke(obj, getValue(requestParam,
                                         method.getParameterTypes()[0],
                                         name,
                                         request));
@@ -460,10 +460,10 @@ public final class MetaComponent {
                                 String uri) {
 
         for (Field field : pathParamFields) {
-            PathParam annotation = field.getAnnotation(PathParam.class);
-            String name = "".equals(annotation.name()) ? field.getName() : annotation.name();
+            PathParam pathParam = field.getAnnotation(PathParam.class);
+            String name = "".equals(pathParam.name()) ? field.getName() : pathParam.name();
             try {
-                field.set(obj, getValue(annotation,
+                field.set(obj, getValue(pathParam,
                                         field.getType(),
                                         name,
                                         mapping,
@@ -475,10 +475,10 @@ public final class MetaComponent {
             }
         }
         for (Method method : pathParamMethods) {
-            PathParam annotation = method.getAnnotation(PathParam.class);
-            String name = "".equals(annotation.name()) ? method.getName() : annotation.name();
+            PathParam pathParam = method.getAnnotation(PathParam.class);
+            String name = "".equals(pathParam.name()) ? method.getName() : pathParam.name();
             try {
-                method.invoke(obj, getValue(annotation,
+                method.invoke(obj, getValue(pathParam,
                                         method.getParameterTypes()[0],
                                         name,
                                         mapping,
@@ -493,6 +493,8 @@ public final class MetaComponent {
         }
     }
 
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
+            value="REC_CATCH_EXCEPTION", justification="")
     private Object getValue(RequestParam annotation,
                             Class<?> type,
                             String name, 
@@ -536,6 +538,8 @@ public final class MetaComponent {
         return rv;
     }
     
+    @edu.umd.cs.findbugs.annotations.SuppressWarnings(
+            value="REC_CATCH_EXCEPTION", justification="")
     private Object getValue(PathParam annotation,
                             Class<?> type,
                             String name,
