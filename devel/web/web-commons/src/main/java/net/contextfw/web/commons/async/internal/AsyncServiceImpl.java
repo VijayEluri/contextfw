@@ -112,6 +112,7 @@ public class AsyncServiceImpl extends BaseAsyncServiceImpl implements InternalAs
                         try {
                             String urlName = "http://"+infoHost+"/asyncRefresh?handle="+handle;
                             new URL(urlName).openConnection().getInputStream().close();
+                            LOG.debug("Sent async refresh: {}", handle);
                         } catch (MalformedURLException e) {
                             LOG.debug("Exception while running async refresh", e);
                         } catch (IOException e) {
@@ -152,6 +153,7 @@ public class AsyncServiceImpl extends BaseAsyncServiceImpl implements InternalAs
         storage.executeSynchronized(handle, new Runnable() { public void run() {
             AsyncServerInfo info = loadInfo(handle);
             String infoHost = info.getHost(handle);
+            LOG.debug("Host check: {} {}", host, infoHost);
             if (host.equals(infoHost)) {
                 info.removeHost(handle);
                 storeInfo(handle, info);

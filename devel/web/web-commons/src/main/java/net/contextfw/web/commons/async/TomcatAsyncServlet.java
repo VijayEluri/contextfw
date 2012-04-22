@@ -1,16 +1,15 @@
-package net.contextfw.web.commons.async.internal.comet;
+package net.contextfw.web.commons.async;
 
 import java.io.IOException;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 
+import net.contextfw.web.commons.async.internal.comet.TomcatAsyncService;
+
 import org.apache.catalina.CometEvent;
 import org.apache.catalina.CometProcessor;
 
-import com.google.inject.Singleton;
-
-@Singleton
 public class TomcatAsyncServlet extends HttpServlet implements CometProcessor {
 
     private static final long serialVersionUID = 1L;

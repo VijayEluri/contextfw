@@ -10,12 +10,17 @@ import javax.servlet.http.HttpServletResponse;
 import net.contextfw.web.application.PageHandle;
 import net.contextfw.web.commons.async.internal.InternalAsyncService;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 @Singleton
 public class AsyncRefreshServlet extends HttpServlet {
 
+    private static final Logger LOG = LoggerFactory.getLogger(AsyncRefreshServlet.class);
+    
     private static final long serialVersionUID = 1L;
     
     private InternalAsyncService asyncService = null;
@@ -25,7 +30,9 @@ public class AsyncRefreshServlet extends HttpServlet {
     @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp) throws ServletException,
             IOException {
-        asyncService.requestRemoteRefresh(new PageHandle(req.getParameter("handle")));
+        PageHandle handle = new PageHandle(req.getParameter("handle"));
+        LOG.debug("Received async refresh: {}", handle);
+        asyncService.requestRemoteRefresh(handle);
         resp.setStatus(HttpServletResponse.SC_OK);
     }
 
